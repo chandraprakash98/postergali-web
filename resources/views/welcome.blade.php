@@ -31,10 +31,60 @@ body { font-family: 'Poppins', sans-serif; }
   background: rgba(255,255,255,0.85);
   backdrop-filter: blur(10px);
 }
+
+/* SCROLLING DISCLAIMER */
+.ticker {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #000;
+  color: #fff;
+  overflow: hidden;
+  z-index: 9999;
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.ticker p {
+  white-space: nowrap;
+  display: inline-block;
+  padding-left: 100%;
+  animation: scrollText 15s linear infinite;
+  font-size: 12px;
+}
+
+@keyframes scrollText {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
 </style>
 </head>
 
 <body class="m-0">
+
+<!-- TOP MOVING DISCLAIMER -->
+<div class="ticker">
+  <p>🚧 This website is currently under development. Some features may not work properly. Stay tuned for updates 🚀 🚧 This website is currently under development. Some features may not work properly. Stay tuned for updates 🚀</p>
+</div>
+
+<!-- WORK IN PROGRESS RIBBON -->
+<div style="
+position: fixed;
+top: 40px;
+right: -60px;
+background: #facc15;
+color: #000;
+padding: 10px 80px;
+font-size: 12px;
+font-weight: 600;
+transform: rotate(45deg);
+z-index: 9999;
+box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+letter-spacing: 1px;
+">
+🚧 WORK IN PROGRESS
+</div>
 
 <div class="min-h-screen flex flex-col hero-bg">
 
