@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
+    <title>Jobs Management</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -137,12 +137,12 @@
     <!-- TOP BAR -->
     <div class="topbar">
 
-        <h3>Dashboard</h3>
+        <h3>Jobs Management</h3>
 
         <!-- SEARCH -->
         <form method="GET" class="d-flex search-box">
-            <input type="text" name="city" placeholder="Search City" class="me-2">
-            <input type="text" name="range" placeholder="Search Range" class="me-2">
+            <input type="text" name="title" placeholder="Search Job Title" class="me-2">
+            <input type="text" name="company" placeholder="Search Company" class="me-2">
             <button class="btn btn-dark">Search</button>
         </form>
 
@@ -153,22 +153,22 @@
 
         <div class="col-md-4">
             <div class="stat-card bg-purple">
-                <h4>{{ $total }}</h4>
-                <p>Total Ads</p>
+                <h4>{{ $total ?? 0 }}</h4>
+                <p>Total Jobs</p>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="stat-card bg-green">
-                <h4>{{ $approved }}</h4>
-                <p>Approved</p>
+                <h4>{{ $active ?? 0 }}</h4>
+                <p>Active</p>
             </div>
         </div>
 
         <div class="col-md-4">
             <div class="stat-card bg-pink">
-                <h4>{{ $rejected }}</h4>
-                <p>Rejected</p>
+                <h4>{{ $expired ?? 0 }}</h4>
+                <p>Expired</p>
             </div>
         </div>
 
@@ -181,15 +181,13 @@
 
             <thead>
                 <tr>
-                    <th>Image</th>
-                    <th>Business</th>
-                    <th>Mobile</th>
+                    <th>Logo</th>
+                    <th>Job Title</th>
+                    <th>Company</th>
                     <th>City</th>
-                    <th>Location</th>
-                    <th>Created</th>
-                     <th>Range</th>
-               
-                    <th>Expiry</th>
+                    <th>Salary</th>
+                    <th>Posted</th>
+                    <th>Expires</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -197,39 +195,28 @@
 
             <tbody>
 
-            @foreach($ads as $ad)
-
-            @php
-                $coords = explode(',', $ad->location);
-                $lat = $coords[0] ?? '';
-                $lng = $coords[1] ?? '';
-                $mapLink = "https://www.google.com/maps?q=$lat,$lng";
-            @endphp
+            @if(isset($jobs) && $jobs->count() > 0)
+            @foreach($jobs as $job)
 
             <tr>
                 <td>
-                    <img src="{{ asset('storage/'.$ad->ad_media) }}">
+                    <img src="{{ asset('storage/default-logo.png') }}" alt="Company Logo">
                 </td>
 
-                <td>{{ $ad->business_name }}</td>
-                <td>{{ $ad->mobile }}</td>
-                <td>{{ $ad->city }}</td>
-                <!-- LOCATION CONVERTED -->
-                <td>
-                    <a href="{{ $mapLink }}" target="_blank">View Map</a>
-                </td>
-                <td>{{ $ad->created_at }}</td>
-                <td>{{ $ad->ad_range }}</td>
-              
-                <td>{{ $ad->expired_at }}</td>
+                <td>{{ $job->business_name ?? 'N/A' }}</td>
+                <td>{{ $job->business_name ?? 'N/A' }}</td>
+                <td>{{ $job->city ?? 'N/A' }}</td>
+                <td>{{ $job->ad_job_salary ? '$'.$job->ad_job_salary : 'Not specified' }}</td>
+                <td>{{ $job->ad_creation_timestamp ? $job->ad_creation_timestamp->format('M d, Y') : 'N/A' }}</td>
+                <td>{{ $job->ad_expiry_timestamp ? $job->ad_expiry_timestamp->format('M d, Y') : 'N/A' }}</td>
 
                 <td>
-                    @if($ad->status == 'approved')
+                    @if($job->ad_status == 'Approved')
                         <span class="badge bg-success rounded-pill px-3 py-2">
-                            <i class="fa fa-check"></i> Approved
+                            <i class="fa fa-check"></i> Active
                         </span>
 
-                    @elseif($ad->status == 'rejected')
+                    @elseif($job->ad_status == 'Rejected')
                         <span class="badge bg-danger rounded-pill px-3 py-2">
                             <i class="fa fa-times"></i> Rejected
                         </span>
@@ -242,13 +229,21 @@
                 </td>
 
                 <td>
-                    <a href="/admin/ads/{{ $ad->ad_id }}" class="btn btn-sm btn-purple">
+                    <a href="/admin/jobs/{{ $job->ad_id }}" class="btn btn-sm btn-purple">
                         View
                     </a>
                 </td>
             </tr>
 
             @endforeach
+            @else
+            <tr>
+                <td colspan="9" class="text-center py-4">
+                    <i class="fa fa-briefcase fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No jobs found</p>
+                </td>
+            </tr>
+            @endif
 
             </tbody>
 
