@@ -32,7 +32,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            height: 100vh;
+            height: 80vh;
             padding: 0 60px;
             background: linear-gradient(135deg, #5cc400, #9be300);
             color: white;
@@ -128,7 +128,7 @@
     <div class="left">
         <h1>Promote Your Business 🚀</h1>
         <p>Post ads, jobs and offers easily with our powerful app.</p>
-        <button class="btn">Get Started</button>
+        <button class="btn">Get Started with app</button>
     </div>
 
     <div class="right">
