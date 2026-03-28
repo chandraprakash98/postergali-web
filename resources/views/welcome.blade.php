@@ -241,8 +241,8 @@ svg{
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-10 main-title">
-          <h1>Website</h1>
-          <h2>under construction</h2>
+          <h1>Coming</h1>
+          <h2>Soon</h2>
         </div>
       </div>
       <div class="row align-items-center">
