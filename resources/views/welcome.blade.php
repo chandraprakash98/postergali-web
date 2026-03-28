@@ -462,7 +462,7 @@ svg{
     </div>
       <footer class="footer">
         <div class="container text-center">
-          <span>your-website-name.com</span>
+          <span>postergali.com</span>
         </div>
       </footer>
 
