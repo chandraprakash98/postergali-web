@@ -22,6 +22,7 @@ Route::middleware('auth:admin')->prefix('admin')->group(function () {
     Route::post('/ads/{id}/reject', [AdAdminController::class, 'reject']);
     Route::post('/ads/{id}/update-range', [AdAdminController::class, 'updateRange']);
     Route::post('/ads/{id}/update-all', [AdAdminController::class, 'updateAll']);
+    Route::post('/ads/{id}/update', [AdAdminController::class, 'updateField']);
 });
 
 Route::post('/ads/{id}/update-range', [AdAdminController::class, 'updateRange']);

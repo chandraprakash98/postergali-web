@@ -95,7 +95,7 @@ body{
 .card{
     flex:1;
     background:#ffffff;
-    padding:22px;
+    padding:16px;
     border-radius:14px;
     border:1px solid #e5e7eb;
     display:flex;
@@ -111,7 +111,7 @@ body{
 .card h3{
     font-size:13px;
     color:#6b7280;
-    margin-bottom:5px;
+    margin-bottom:3px;
 }
 
 .value{
@@ -139,14 +139,14 @@ body{
     background:#fff;
     border-radius:14px;
     border:1px solid #e5e7eb;
-    padding:20px;
+    padding:16px;
 }
 
 .table-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:18px;
+    margin-bottom:15px;
 }
 
 .table-header h2{
@@ -186,13 +186,13 @@ th{
     text-align:left;
     font-size:12px;
     color:#6b7280;
-    padding:14px 12px;
+    padding:10px 12px;
     border-bottom:1px solid #e5e7eb;
     font-weight:500;
 }
 
 td{
-    padding:14px 12px;
+    padding:10px 12px;
     font-size:13px;
     border-bottom:1px solid #f1f5f9;
 }
@@ -341,11 +341,9 @@ tr:hover{
         <table>
             <thead>
                 <tr>
-                    <th>Image</th>
+                    <th>AD ID</th>
                     <th>Business Name</th>
-                    <th>Mobile</th>
-                    <th>City</th>
-                    <th>Map</th>
+                    <th>Category</th>
                     <th>Date Posted</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -356,25 +354,12 @@ tr:hover{
 
             @foreach($ads as $ad)
 
-            @php
-                $coords = explode(',', $ad->location);
-                $map = "https://www.google.com/maps?q=".$coords[0].",".$coords[1];
-            @endphp
-
             <tr>
 
-                <td>
-                    <img src="{{ asset('storage/'.$ad->ad_media) }}" class="ad-img">
-                </td>
+                <td>{{ $ad->ad_id }}</td>
 
                 <td>{{ $ad->business_name }}</td>
-                <td>{{ $ad->mobile }}</td>
-                <td>{{ $ad->city }}</td>
-
-                <td>
-                    <a href="{{ $map }}" target="_blank">View</a>
-                </td>
-
+                <td>{{ $ad->master_category }}</td>
                 <td>{{ $ad->created_at->format('M d, Y') }}</td>
 
                 <td>

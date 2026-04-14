@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
+use App\Services\GeocodeService;
 use Illuminate\Http\Request;
 
 class AdAdminController extends Controller
@@ -47,7 +48,19 @@ public function updateAll(Request $request, $id)
     public function show($id)
     {
         $ad = Ad::findOrFail($id);
-        return view('admin.ads.show', compact('ad'));
+        
+        // Get address from coordinates
+        $address = null;
+        if ($ad->location) {
+            $coords = explode(',', $ad->location);
+            if (count($coords) == 2) {
+                $latitude = trim($coords[0]);
+                $longitude = trim($coords[1]);
+                $address = GeocodeService::getAddress($latitude, $longitude);
+            }
+        }
+        
+        return view('admin.ads.show', compact('ad', 'address'));
     }
 
     // Approve
@@ -81,10 +94,29 @@ public function updateAll(Request $request, $id)
 
         $ad->update([
             'status' => 'rejected',
-            'ad_status_comment' => $request->reason
+            'ad_status_comment' => $request->rejection_reason ?? $request->reason
         ]);
 
         return redirect()->back()->with('error', 'Ad Rejected');
+    }
+
+    // Update field
+    public function updateField(Request $request, $id)
+    {
+        $ad = Ad::findOrFail($id);
+        $field = $request->field;
+        $value = $request->value;
+
+        // Validate field name to prevent mass assignment attacks
+        $allowed = ['business_name', 'master_category', 'ad_subcategory', 'mobile', 'location', 'ad_description'];
+        
+        if (!in_array($field, $allowed)) {
+            return response()->json(['success' => false, 'message' => 'Invalid field'], 400);
+        }
+
+        $ad->update([$field => $value]);
+
+        return response()->json(['success' => true, 'message' => 'Updated successfully']);
     }
 
     public function updateRange(Request $request, $id)
