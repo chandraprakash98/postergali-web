@@ -542,7 +542,18 @@ h1,h2,h3{
             </div>
 
             <div class="image-box">
-                <img src="{{ asset('storage/'.$ad->ad_media) }}">
+                @php
+                    $extension = pathinfo($ad->ad_media, PATHINFO_EXTENSION);
+                    $videoExtensions = ['mp4', 'webm', 'ogg', 'mov'];
+                    $isVideo = in_array(strtolower($extension), $videoExtensions);
+                @endphp
+                @if($isVideo)
+                    <video width="100%" height="100%" controls style="object-fit: cover;">
+                        <source src="{{ asset('storage/'.$ad->ad_media) }}" type="video/{{ strtolower($extension) == 'mov' ? 'quicktime' : strtolower($extension) }}">
+                    </video>
+                @else
+                    <img src="{{ asset('storage/'.$ad->ad_media) }}">
+                @endif
             </div>
         </div>
 
