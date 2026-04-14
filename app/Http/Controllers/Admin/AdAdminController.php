@@ -40,8 +40,85 @@ public function updateAll(Request $request, $id)
 
         // 💰 Example revenue (you can change logic)
         $revenue = Ad::sum('ad_boost_poster');
+        
+        $filter = null;
 
-        return view('admin.ads.index', compact('ads', 'total', 'approved', 'rejected', 'revenue'));
+        return view('admin.ads.index', compact('ads', 'total', 'approved', 'rejected', 'revenue', 'filter'));
+    }
+
+    // Pending Ads
+    public function pending(Request $request)
+    {
+        $query = Ad::where('status', 'pending');
+
+        if ($request->city) {
+            $query->where('city', 'like', '%' . $request->city . '%');
+        }
+
+        if ($request->range) {
+            $query->where('ad_range', 'like', '%' . $request->range . '%');
+        }
+
+        $ads = $query->latest()->get();
+
+        // COUNTS
+        $total = Ad::count();
+        $approved = Ad::where('status', 'approved')->count();
+        $rejected = Ad::where('status', 'rejected')->count();
+        
+        $filter = 'pending';
+
+        return view('admin.ads.index', compact('ads', 'total', 'approved', 'rejected', 'filter'));
+    }
+
+    // Approved Ads
+    public function approved(Request $request)
+    {
+        $query = Ad::where('status', 'approved');
+
+        if ($request->city) {
+            $query->where('city', 'like', '%' . $request->city . '%');
+        }
+
+        if ($request->range) {
+            $query->where('ad_range', 'like', '%' . $request->range . '%');
+        }
+
+        $ads = $query->latest()->get();
+
+        // COUNTS
+        $total = Ad::count();
+        $approved = Ad::where('status', 'approved')->count();
+        $rejected = Ad::where('status', 'rejected')->count();
+        
+        $filter = 'approved';
+
+        return view('admin.ads.index', compact('ads', 'total', 'approved', 'rejected', 'filter'));
+    }
+
+    // Expired Ads
+    public function expired(Request $request)
+    {
+        $query = Ad::where('status', 'expired');
+
+        if ($request->city) {
+            $query->where('city', 'like', '%' . $request->city . '%');
+        }
+
+        if ($request->range) {
+            $query->where('ad_range', 'like', '%' . $request->range . '%');
+        }
+
+        $ads = $query->latest()->get();
+
+        // COUNTS
+        $total = Ad::count();
+        $approved = Ad::where('status', 'approved')->count();
+        $rejected = Ad::where('status', 'rejected')->count();
+        
+        $filter = 'expired';
+
+        return view('admin.ads.index', compact('ads', 'total', 'approved', 'rejected', 'filter'));
     }
 
     // View Single

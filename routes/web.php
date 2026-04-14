@@ -17,6 +17,9 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 // Admin Routes (Protected)
 Route::middleware('auth:admin')->prefix('admin')->group(function () {
     Route::get('/ads', [AdAdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/pending', [AdAdminController::class, 'pending'])->name('admin.pending');
+    Route::get('/approved', [AdAdminController::class, 'approved'])->name('admin.approved');
+    Route::get('/expired', [AdAdminController::class, 'expired'])->name('admin.expired');
     Route::get('/ads/{id}', [AdAdminController::class, 'show'])->name('admin.ads.show');
     Route::post('/ads/{id}/approve', [AdAdminController::class, 'approve']);
     Route::post('/ads/{id}/reject', [AdAdminController::class, 'reject']);

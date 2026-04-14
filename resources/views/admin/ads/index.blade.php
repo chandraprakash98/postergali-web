@@ -259,19 +259,19 @@ tr:hover{
     <div class="logo">PosterGali</div>
 
     <div class="menu">
-        <a href="/admin/ads" class="active">
+        <a href="/admin/ads" class="{{isset($filter) && $filter === null ? 'active' : (isset($filter) ? '' : 'active')}}">
             <i class="fa-solid fa-chart-line"></i> Dashboard
         </a>
 
-        <a href="/admin/ads">
+        <a href="/admin/pending" class="{{isset($filter) && $filter === 'pending' ? 'active' : ''}}">
             <i class="fa-solid fa-clock"></i> Pending Ads
         </a>
 
-        <a href="/admin/approved">
+        <a href="/admin/approved" class="{{isset($filter) && $filter === 'approved' ? 'active' : ''}}">
             <i class="fa-solid fa-check-circle"></i> Approved Ads
         </a>
 
-        <a href="/admin/expired">
+        <a href="/admin/expired" class="{{isset($filter) && $filter === 'expired' ? 'active' : ''}}">
             <i class="fa-solid fa-times-circle"></i> Expired Ads
         </a>
 
@@ -286,8 +286,28 @@ tr:hover{
 
     <!-- HEADER -->
     <div class="header">
-        <h1>Dashboard</h1>
-        <p>Overview of all ad listings</p>
+        <h1>
+            @if(isset($filter) && $filter === 'pending')
+                Pending Ads
+            @elseif(isset($filter) && $filter === 'approved')
+                Approved Ads
+            @elseif(isset($filter) && $filter === 'expired')
+                Expired Ads
+            @else
+                Dashboard
+            @endif
+        </h1>
+        <p>
+            @if(isset($filter) && $filter === 'pending')
+                Ads waiting for approval
+            @elseif(isset($filter) && $filter === 'approved')
+                Live and active ads
+            @elseif(isset($filter) && $filter === 'expired')
+                Expired advertisements
+            @else
+                Overview of all ad listings
+            @endif
+        </p>
     </div>
 
     <!-- CARDS -->
