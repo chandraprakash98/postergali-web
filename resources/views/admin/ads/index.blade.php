@@ -1,122 +1,254 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Admin Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<title>PosterGali Dashboard</title>
 
-    <!-- ICONS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-    <style>
-        /* TABLE PROFESSIONAL LOOK */
-.table thead th {
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
 }
 
-.table tbody td {
-    font-weight: 400;
-    font-size: 13px;
-    color: #666;
+body{
+    background:#f3f6fb;
+    display:flex;
+    color:#111827;
 }
 
-/* Improve spacing */
-.table td, .table th {
-    vertical-align: middle;
-    padding: 12px 10px;
+/* SIDEBAR */
+.sidebar{
+    width:260px;
+    height:100vh;
+    background:#ffffff;
+    border-right:1px solid #e5e7eb;
+    padding:25px 18px;
+    position:fixed;
 }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f4f6fb;
-        }
+.logo{
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:35px;
+}
 
-        /* SIDEBAR */
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            background: white;
-            padding: 20px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-        }
+.menu a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 14px;
+    border-radius:10px;
+    text-decoration:none;
+    color:#374151;
+    font-size:14px;
+    margin-bottom:10px;
+    transition:0.2s;
+}
 
-        .sidebar h3 {
-            font-weight: 600;
-        }
+.menu a i{
+    font-size:15px;
+}
 
-        .sidebar a {
-            display: block;
-            padding: 12px;
-            margin-bottom: 10px;
-            color: #555;
-            border-radius: 10px;
-            text-decoration: none;
-        }
+.menu a.active{
+    background:#0f172a;
+    color:#fff;
+}
 
-        .sidebar a:hover {
-            background: #f1f1f1;
-        }
+.menu a:hover{
+    background:#f1f5f9;
+}
 
-        /* MAIN */
-        .main {
-            margin-left: 270px;
-            padding: 20px;
-        }
+/* MAIN */
+.main{
+    margin-left:260px;
+    padding:30px 35px;
+    width:100%;
+}
 
-        /* TOP BAR */
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
+/* HEADER */
+.header h1{
+    font-size:28px;
+    font-weight:600;
+    margin-bottom:6px;
+}
 
-        .search-box input {
-            border-radius: 20px;
-            padding: 8px 15px;
-            border: 1px solid #ddd;
-        }
+.header p{
+    font-size:14px;
+    color:#6b7280;
+    margin-bottom:25px;
+}
 
-        /* CARDS */
-        .stat-card {
-            color: white;
-            border-radius: 20px;
-            padding: 20px;
-        }
+/* CARDS */
+.cards{
+    display:flex;
+    gap:20px;
+    margin-bottom:30px;
+}
 
-        .bg-purple {
-            background: linear-gradient(45deg,#6a11cb,#2575fc);
-        }
+.card{
+    flex:1;
+    background:#ffffff;
+    padding:22px;
+    border-radius:14px;
+    border:1px solid #e5e7eb;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:0.2s;
+}
 
-        .bg-pink {
-            background: linear-gradient(45deg,#ff416c,#ff4b2b);
-        }
+.card:hover{
+    box-shadow:0 4px 20px rgba(0,0,0,0.05);
+}
 
-        .bg-green {
-            background: linear-gradient(45deg,#00b09b,#96c93d);
-        }
+.card h3{
+    font-size:13px;
+    color:#6b7280;
+    margin-bottom:5px;
+}
 
-        /* TABLE */
-        .table-box {
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-        }
+.value{
+    font-size:30px;
+    font-weight:700;
+}
 
-        .table img {
-            width: 55px;
-            height: 55px;
-            border-radius: 10px;
-        }
+.icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:16px;
+}
 
-        .btn-purple {
-            background: #6a11cb;
-            color: white;
-        }
-    </style>
+.yellow{background:#f59e0b;}
+.green{background:#22c55e;}
+.red{background:#ef4444;}
+
+/* TABLE */
+.table-container{
+    background:#fff;
+    border-radius:14px;
+    border:1px solid #e5e7eb;
+    padding:20px;
+}
+
+.table-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.table-header h2{
+    font-size:18px;
+    font-weight:600;
+}
+
+.search-box{
+    display:flex;
+    gap:10px;
+}
+
+.search-box input{
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid #e5e7eb;
+    font-size:13px;
+}
+
+.search-box button{
+    background:#0f172a;
+    color:#fff;
+    border:none;
+    padding:8px 16px;
+    border-radius:8px;
+    font-size:13px;
+    cursor:pointer;
+}
+
+/* TABLE STYLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    text-align:left;
+    font-size:12px;
+    color:#6b7280;
+    padding:14px 12px;
+    border-bottom:1px solid #e5e7eb;
+    font-weight:500;
+}
+
+td{
+    padding:14px 12px;
+    font-size:13px;
+    border-bottom:1px solid #f1f5f9;
+}
+
+tr:hover{
+    background:#f9fafb;
+}
+
+/* STATUS */
+.status{
+    padding:5px 10px;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:500;
+}
+
+.approved{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.rejected{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.pending{
+    background:#fef3c7;
+    color:#92400e;
+}
+
+/* IMAGE */
+.ad-img{
+    width:45px;
+    height:45px;
+    border-radius:8px;
+    object-fit:cover;
+}
+
+/* BUTTON */
+.btn{
+    background:#0f172a;
+    color:#fff;
+    padding:6px 14px;
+    border-radius:8px;
+    text-decoration:none;
+    font-size:12px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+}
+
+.btn i{
+    font-size:12px;
+}
+</style>
 
 </head>
 
@@ -124,72 +256,97 @@
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-    <h3><i class="fa fa-cube"></i> Admin</h3>
-    <hr>
-    <a href="/admin/ads"><i class="fa fa-home"></i> Dashboard</a>
-    <a href="/admin/ads"><i class="fa fa-bullhorn"></i> Ads</a>
-    <a href="/admin/jobs"><i class="fa fa-briefcase"></i> Jobs</a>
+    <div class="logo">PosterGali</div>
+
+    <div class="menu">
+        <a href="/admin/ads" class="active">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+        </a>
+
+        <a href="/admin/ads">
+            <i class="fa-solid fa-clock"></i> Pending Ads
+        </a>
+
+        <a href="/admin/approved">
+            <i class="fa-solid fa-check-circle"></i> Approved Ads
+        </a>
+
+        <a href="/admin/expired">
+            <i class="fa-solid fa-times-circle"></i> Expired Ads
+        </a>
+
+        <a href="#">
+            <i class="fa-solid fa-dollar-sign"></i> Pricing Info
+        </a>
+    </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-    <!-- TOP BAR -->
-    <div class="topbar">
-
-        <h3>Dashboard</h3>
-
-        <!-- SEARCH -->
-        <form method="GET" class="d-flex search-box">
-            <input type="text" name="city" placeholder="Search City" class="me-2">
-            <input type="text" name="range" placeholder="Search Range" class="me-2">
-            <button class="btn btn-dark">Search</button>
-        </form>
-
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Dashboard</h1>
+        <p>Overview of all ad listings</p>
     </div>
 
-    <!-- STATS -->
-    <div class="row mb-4">
+    <!-- CARDS -->
+    <div class="cards">
 
-        <div class="col-md-4">
-            <div class="stat-card bg-purple">
-                <h4>{{ $total }}</h4>
-                <p>Total Ads</p>
+        <div class="card">
+            <div>
+                <h3>Pending Approvals</h3>
+                <div class="value">{{ $pending ?? 0 }}</div>
+            </div>
+            <div class="icon yellow">
+                <i class="fa-solid fa-clock"></i>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="stat-card bg-green">
-                <h4>{{ $approved }}</h4>
-                <p>Approved</p>
+        <div class="card">
+            <div>
+                <h3>Live Ads</h3>
+                <div class="value">{{ $approved ?? 0 }}</div>
+            </div>
+            <div class="icon green">
+                <i class="fa-solid fa-check"></i>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="stat-card bg-pink">
-                <h4>{{ $rejected }}</h4>
-                <p>Rejected</p>
+        <div class="card">
+            <div>
+                <h3>Expired Ads</h3>
+                <div class="value">{{ $expired ?? 0 }}</div>
+            </div>
+            <div class="icon red">
+                <i class="fa-solid fa-xmark"></i>
             </div>
         </div>
 
     </div>
 
     <!-- TABLE -->
-    <div class="table-box">
+    <div class="table-container">
 
-        <table class="table align-middle">
+        <div class="table-header">
+            <h2>All Ads</h2>
 
+            <form method="GET" class="search-box">
+                <input type="text" name="city" placeholder="City">
+                <input type="text" name="range" placeholder="Range">
+                <button>Search</button>
+            </form>
+        </div>
+
+        <table>
             <thead>
                 <tr>
                     <th>Image</th>
-                    <th>Business</th>
+                    <th>Business Name</th>
                     <th>Mobile</th>
                     <th>City</th>
-                    <th>Location</th>
-                    <th>Created</th>
-                     <th>Range</th>
-               
-                    <th>Expiry</th>
+                    <th>Map</th>
+                    <th>Date Posted</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -201,57 +358,46 @@
 
             @php
                 $coords = explode(',', $ad->location);
-                $lat = $coords[0] ?? '';
-                $lng = $coords[1] ?? '';
-                $mapLink = "https://www.google.com/maps?q=$lat,$lng";
+                $map = "https://www.google.com/maps?q=".$coords[0].",".$coords[1];
             @endphp
 
             <tr>
+
                 <td>
-                    <img src="{{ asset('storage/'.$ad->ad_media) }}">
+                    <img src="{{ asset('storage/'.$ad->ad_media) }}" class="ad-img">
                 </td>
 
                 <td>{{ $ad->business_name }}</td>
                 <td>{{ $ad->mobile }}</td>
                 <td>{{ $ad->city }}</td>
-                <!-- LOCATION CONVERTED -->
+
                 <td>
-                    <a href="{{ $mapLink }}" target="_blank">View Map</a>
+                    <a href="{{ $map }}" target="_blank">View</a>
                 </td>
-                <td>{{ $ad->created_at }}</td>
-                <td>{{ $ad->ad_range }}</td>
-              
-                <td>{{ $ad->expired_at }}</td>
+
+                <td>{{ $ad->created_at->format('M d, Y') }}</td>
 
                 <td>
-                    @if($ad->status == 'approved')
-                        <span class="badge bg-success rounded-pill px-3 py-2">
-                            <i class="fa fa-check"></i> Approved
-                        </span>
-
-                    @elseif($ad->status == 'rejected')
-                        <span class="badge bg-danger rounded-pill px-3 py-2">
-                            <i class="fa fa-times"></i> Rejected
-                        </span>
-
+                    @if($ad->status=='approved')
+                        <span class="status approved">Approved</span>
+                    @elseif($ad->status=='rejected')
+                        <span class="status rejected">Rejected</span>
                     @else
-                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
-                            <i class="fa fa-clock"></i> Pending
-                        </span>
+                        <span class="status pending">Pending</span>
                     @endif
                 </td>
 
                 <td>
-                    <a href="/admin/ads/{{ $ad->ad_id }}" class="btn btn-sm btn-purple">
-                        View
+                    <a href="/admin/ads/{{ $ad->ad_id }}" class="btn">
+                        <i class="fa-solid fa-eye"></i> View
                     </a>
                 </td>
+
             </tr>
 
             @endforeach
 
             </tbody>
-
         </table>
 
     </div>
