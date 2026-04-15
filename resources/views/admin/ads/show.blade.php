@@ -523,39 +523,65 @@ h1,h2,h3{
             </div>
         </div>
 
-        <div class="card full">
-            <div>
-                <div class="card-title"><i class="fa-solid fa-circle-info"></i> Additional Information <button type="button" onclick="startEdit(this)" class="edit-btn"><i class="fa-solid fa-pen"></i></button></div>
+        <!-- SAME CODE ABOVE (UNCHANGED) -->
 
-                <div class="label">Description</div>
-                <div class="value">
-                    <span class="display-value">{{ $ad->ad_description }}</span>
-                    <textarea class="edit-value" style="display:none;" data-field="ad_description">{{ $ad->ad_description }}</textarea>
-                </div>
+<div class="card full">
+    <div>
+        <div class="card-title">
+            <i class="fa-solid fa-circle-info"></i> Additional Information 
+            <button type="button" onclick="startEdit(this)" class="edit-btn">
+                <i class="fa-solid fa-pen"></i>
+            </button>
+        </div>
 
-                <div class="edit-section">
-                    <div class="edit-buttons">
-                        <button type="button" class="btn-save" onclick="saveAllChanges()">Update</button>
-                        <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
-                    </div>
-                </div>
-            </div>
+        <div class="label">Description</div>
+        <div class="value">
+            <span class="display-value">{{ $ad->ad_description }}</span>
+            <textarea class="edit-value" style="display:none;" data-field="ad_description">
+                {{ $ad->ad_description }}
+            </textarea>
+        </div>
 
-            <div class="image-box">
-                @php
-                    $extension = pathinfo($ad->ad_media, PATHINFO_EXTENSION);
-                    $videoExtensions = ['mp4', 'webm', 'ogg', 'mov'];
-                    $isVideo = in_array(strtolower($extension), $videoExtensions);
-                @endphp
-                @if($isVideo)
-                    <video width="100%" height="100%" controls style="object-fit: cover;">
-                        <source src="{{ asset('storage/'.$ad->ad_media) }}" type="video/{{ strtolower($extension) == 'mov' ? 'quicktime' : strtolower($extension) }}">
-                    </video>
-                @else
-                    <img src="{{ asset('storage/'.$ad->ad_media) }}">
-                @endif
+        <div class="edit-section">
+            <div class="edit-buttons">
+                <button type="button" class="btn-save" onclick="saveAllChanges()">Update</button>
+                <button type="button" class="btn-cancel" onclick="cancelEdit()">Cancel</button>
             </div>
         </div>
+    </div>
+
+    <!-- ✅ UPDATED MULTIPLE MEDIA SUPPORT -->
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        @php
+            // Support both array (API) and comma-separated (DB)
+            $mediaFiles = is_array($ad->ad_media) ? $ad->ad_media : explode(',', $ad->ad_media);
+            $videoExtensions = ['mp4', 'webm', 'ogg', 'mov'];
+        @endphp
+
+        @foreach($mediaFiles as $media)
+            @php
+                // If DB path → convert to URL
+                $mediaUrl = str_contains($media, 'http') ? $media : asset('storage/'.$media);
+
+                $extension = pathinfo($mediaUrl, PATHINFO_EXTENSION);
+                $isVideo = in_array(strtolower($extension), $videoExtensions);
+            @endphp
+
+            <div class="image-box">
+                @if($isVideo)
+                    <video width="100%" height="100%" controls style="object-fit: cover;">
+                        <source src="{{ $mediaUrl }}" 
+                                type="video/{{ strtolower($extension) == 'mov' ? 'quicktime' : strtolower($extension) }}">
+                    </video>
+                @else
+                    <img src="{{ $mediaUrl }}">
+                @endif
+            </div>
+        @endforeach
+    </div>
+</div>
+
+<!-- SAME CODE BELOW (UNCHANGED) -->
 
     </div>
 

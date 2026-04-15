@@ -9,61 +9,84 @@ class AdController extends Controller
 {
     // CREATE
     public function store(Request $request)
-{
-    try {
-        // Manually map fields (IMPORTANT for form-data)
-        $data = [
-            'device_id' => $request->input('device_id'),
-            'device_os' => $request->input('device_os'),
-            'master_category' => $request->input('master_category'),
-            'ad_subcategory' => $request->input('ad_subcategory'),
-            'business_name' => $request->input('business_name'),
-            'ad_description' => $request->input('ad_description'),
-            'mobile' => $request->input('mobile'),
-            'location' => $request->input('location'),
-            'city' => $request->input('city'),
-            'ad_range' => $request->input('ad_range'),
-            'add_duration' => $request->input('add_duration'),
-            'status' => $request->input('status', 'pending'),
-            'ad_steal_deal' => $request->input('ad_steal_deal', false),
-            'ad_boost_poster' => $request->input('ad_boost_poster'),
-        ];
+    {
+        try {
+            $data = [
+                'device_id' => $request->input('device_id'),
+                'device_os' => $request->input('device_os'),
+                'master_category' => $request->input('master_category'),
+                'ad_subcategory' => $request->input('ad_subcategory'),
+                'business_name' => $request->input('business_name'),
+                'ad_description' => $request->input('ad_description'),
+                'mobile' => $request->input('mobile'),
+                'location' => $request->input('location'),
+                'city' => $request->input('city'),
+                'ad_range' => $request->input('ad_range'),
+                'add_duration' => $request->input('add_duration'),
+                'status' => $request->input('status', 'pending'),
+                'ad_steal_deal' => $request->input('ad_steal_deal', false),
+                'ad_boost_poster' => $request->input('ad_boost_poster'),
+            ];
 
-        // FILE UPLOAD
-        if ($request->hasFile('ad_media')) {
-            $file = $request->file('ad_media');
+            // MULTIPLE FILE UPLOAD
+            if ($request->hasFile('ad_media')) {
 
-            if ($file->isValid()) {
-                $path = $file->store('ads', 'public');
-                $data['ad_media'] = $path;
+                $files = $request->file('ad_media');
+                $files = is_array($files) ? $files : [$files];
+
+                $paths = [];
+
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $paths[] = $file->store('ads', 'public');
+                    }
+                }
+
+                if (empty($paths)) {
+                    return response()->json(['error' => 'No valid files uploaded'], 400);
+                }
+
+                // Store as comma-separated
+                $data['ad_media'] = implode(',', $paths);
+
             } else {
-                return response()->json(['error' => 'Invalid file'], 400);
+                return response()->json(['error' => 'File not received'], 400);
             }
-        } else {
-            return response()->json(['error' => 'File not received'], 400);
+
+            $ad = Ad::create($data);
+
+            // Convert to URL array for response
+            $ad->ad_media = $this->formatMediaUrls($ad->ad_media);
+
+            return response()->json($ad, 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $ad = Ad::create($data);
-
-        return response()->json($ad, 201);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
     // READ ALL
     public function index()
     {
-        return response()->json(Ad::all());
+        $ads = Ad::all();
+
+        foreach ($ads as $ad) {
+            $ad->ad_media = $this->formatMediaUrls($ad->ad_media);
+        }
+
+        return response()->json($ads);
     }
 
     // READ SINGLE
     public function show($id)
     {
-        return response()->json(Ad::findOrFail($id));
+        $ad = Ad::findOrFail($id);
+
+        $ad->ad_media = $this->formatMediaUrls($ad->ad_media);
+
+        return response()->json($ad);
     }
 
     // UPDATE
@@ -73,13 +96,29 @@ class AdController extends Controller
 
         $data = $request->all();
 
+        // Handle multiple file upload in update also
         if ($request->hasFile('ad_media')) {
-            $file = $request->file('ad_media');
-            $path = $file->store('ads', 'public');
-            $data['ad_media'] = $path;
+
+            $files = $request->file('ad_media');
+            $files = is_array($files) ? $files : [$files];
+
+            $paths = [];
+
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $paths[] = $file->store('ads', 'public');
+                }
+            }
+
+            if (!empty($paths)) {
+                $data['ad_media'] = implode(',', $paths);
+            }
         }
 
         $ad->update($data);
+
+        // Format response
+        $ad->ad_media = $this->formatMediaUrls($ad->ad_media);
 
         return response()->json($ad);
     }
@@ -91,5 +130,19 @@ class AdController extends Controller
         $ad->delete();
 
         return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    // 🔥 HELPER FUNCTION (Reusable)
+    private function formatMediaUrls($media)
+    {
+        if (!$media) {
+            return [];
+        }
+
+        $paths = explode(',', $media);
+
+        return array_map(function ($path) {
+            return asset('storage/' . $path);
+        }, $paths);
     }
 }
