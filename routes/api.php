@@ -5,6 +5,10 @@ use App\Http\Controllers\AdController;
 use App\Http\Controllers\Api\JobController;
 
 Route::post('/job-price', [JobController::class, 'getPrice']);
+Route::get('/adfeed', [AdController::class, 'listBasicAds']);
+Route::get('/adfeed/{id}', [AdController::class, 'getAdById']);
+Route::get('/jobfeed', [JobController::class, 'jobFeed']);
+Route::get('/jobfeed/{id}', [JobController::class, 'getJobById']);
 
 Route::prefix('ads')->group(function () {
     Route::post('/', [AdController::class, 'store']);
@@ -12,6 +16,7 @@ Route::prefix('ads')->group(function () {
     Route::get('/{id}', [AdController::class, 'show']);
     Route::post('/{id}', [AdController::class, 'update']);
     Route::delete('/{id}', [AdController::class, 'destroy']);
+
 });
 
 Route::post('/jobs', [JobController::class, 'store']);
