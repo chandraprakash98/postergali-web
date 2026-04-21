@@ -113,6 +113,7 @@ class JobController extends Controller
     {
         $jobs = \App\Models\Job::select(
             'job_id',
+            'temp_id',
             'biz_name',
             'title',
             'salary',
