@@ -108,7 +108,8 @@ public function index(Request $request)
             'longitude',
             'status',
             'view_count',
-            'created_at'
+            'created_at',
+            'expires_at',
         ])->findOrFail($id);
 
         $job->increment('view_count');
