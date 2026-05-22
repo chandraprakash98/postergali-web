@@ -8,9 +8,18 @@ use App\Models\Job;
 
 class JobController extends Controller
 {
-    public function index()
-    {
-        return Job::select([
+
+public function index(Request $request)
+{
+    $request->validate([
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+    ]);
+
+    $userLat = $request->latitude;
+    $userLng = $request->longitude;
+
+    $jobs = Job::select([
             'id',
             'temp_id',
             'business_name',
@@ -22,11 +31,47 @@ class JobController extends Controller
             'longitude',
             'status',
             'view_count',
-            'created_at'
+            'created_at',
+            'expires_at',
         ])
-        ->latest()
+        ->selectRaw("
+            ROUND(
+                (
+                    6371 * acos(
+                        cos(radians(?))
+                        * cos(radians(latitude))
+                        * cos(radians(longitude) - radians(?))
+                        + sin(radians(?))
+                        * sin(radians(latitude))
+                    )
+                ), 2
+            ) AS distance
+        ", [$userLat, $userLng, $userLat])
+
+        ->orderBy('distance', 'asc')
         ->get();
-    }
+
+    return response()->json($jobs);
+}
+    // public function index()
+    // {
+    //     return Job::select([
+    //         'id',
+    //         'temp_id',
+    //         'business_name',
+    //         'job_role',
+    //         'job_type',
+    //         'salary',
+    //         'city',
+    //         'latitude',
+    //         'longitude',
+    //         'status',
+    //         'view_count',
+    //         'created_at'
+    //     ])
+    //     ->latest()
+    //     ->get();
+    // }
 
     public function store(Request $request)
     {
