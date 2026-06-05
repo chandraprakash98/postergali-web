@@ -65,7 +65,7 @@ class AdminAuthController extends Controller
         }
 
         $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
-        $plan = Plan::find($model->plan_id);
+        $plan = Plan::find($model->plan_id) ?: $model->plan;
 
         return view('admin.ad-details', [
             'type' => $type,

@@ -439,9 +439,9 @@
                         </div>
                         <div class="card-body">
                             <strong>Selected Plan</strong>
-                            <span>{{ $plan?->plan_title ?? $ad->plan_id }}</span>
+                            <span>{{ $plan?->plan_title ?? ($ad->plan_id ? 'Plan #' . $ad->plan_id : 'N/A') }}</span>
                             <strong>Ad Duration</strong>
-                            <span>{{ $plan?->duration ?? '1 day' }}</span>
+                            <span>{{ $plan?->duration ?? ($ad->plan_id ? 'Plan ID ' . $ad->plan_id : 'N/A') }}</span>
                         </div>
                     </div>
 
