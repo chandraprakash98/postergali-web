@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Plan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -48,13 +49,69 @@ class AdminAuthController extends Controller
         $stats = $this->getStats();
         $allAds = $this->getAllAds();
 
-        return view('admin.dashboard', compact('stats', 'allAds'));
+        return view('admin.dashboard', ['active' => 'all', 'allAds' => $allAds, 'stats' => $stats]);
     }
 
     public function allAds()
     {
         $allAds = $this->getAllAds();
         return view('admin.dashboard', ['active' => 'all', 'allAds' => $allAds, 'stats' => $this->getStats()]);
+    }
+
+    public function showAd(string $type, int $id)
+    {
+        if (!in_array($type, ['job', 'offer'])) {
+            abort(404);
+        }
+
+        $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
+        $plan = Plan::find($model->plan_id);
+
+        return view('admin.ad-details', [
+            'type' => $type,
+            'ad' => $model,
+            'plan' => $plan,
+        ]);
+    }
+
+    public function updateAdStatus(Request $request, string $type, int $id)
+    {
+        if (!in_array($type, ['job', 'offer'])) {
+            abort(404);
+        }
+
+        $data = $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'comment' => 'nullable|string|max:255',
+            'subcategory' => 'nullable|string|max:100',
+        ]);
+
+        $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
+
+        $model->status = $data['status'];
+        if (isset($data['subcategory'])) {
+            $model->subcategory = $data['subcategory'];
+        }
+        if ($type === 'job') {
+            $model->status_comment = $data['comment'];
+        } else {
+            $model->status_note = $data['comment'];
+        }
+        $model->reviewed_by = Auth::user()->name;
+
+        $planDuration = Plan::find($model->plan_id)?->duration ?? '1 day';
+        if ($data['status'] === 'approved') {
+            $model->approved_at = $model->approved_at ?: now();
+            $model->expires_at = $this->calculateExpiryFromDuration($model->approved_at, $planDuration);
+        } else {
+            $model->approved_at = null;
+            $model->expires_at = null;
+        }
+
+        $model->save();
+
+        return redirect()->route('admin.ad.show', ['type' => $type, 'id' => $id])
+            ->with('success', 'Ad status updated successfully.');
     }
 
     public function pendingAds()
@@ -192,6 +249,35 @@ class AdminAuthController extends Controller
             'live' => Job::where('status', 'approved')->count() + Offer::where('status', 'approved')->count(),
             'expired' => Job::where('status', 'rejected')->count() + Offer::where('status', 'rejected')->count(),
         ];
+    }
+
+    private function calculateExpiryFromDuration($approvedAt, string $duration)
+    {
+        $approvedAt = $approvedAt instanceof \Carbon\Carbon ? $approvedAt : Carbon::parse($approvedAt);
+        $value = trim(strtolower($duration));
+
+        if (preg_match('/^(\d+)\s*(day|days|d)$/', $value, $matches)) {
+            return $approvedAt->copy()->addDays((int) $matches[1]);
+        }
+        if (preg_match('/^(\d+)\s*(week|weeks|w)$/', $value, $matches)) {
+            return $approvedAt->copy()->addWeeks((int) $matches[1]);
+        }
+        if (preg_match('/^(\d+)\s*(month|months|m)$/', $value, $matches)) {
+            return $approvedAt->copy()->addMonths((int) $matches[1]);
+        }
+        if (preg_match('/^(\d+)\s*(year|years|y)$/', $value, $matches)) {
+            return $approvedAt->copy()->addYears((int) $matches[1]);
+        }
+        if (is_numeric($value)) {
+            return $approvedAt->copy()->addDays((int) $value);
+        }
+
+        $numericValue = (int) filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+        if ($numericValue > 0) {
+            return $approvedAt->copy()->addDays($numericValue);
+        }
+
+        return $approvedAt->copy()->addDay();
     }
 
     public function logout()

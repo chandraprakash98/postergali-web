@@ -17,4 +17,11 @@ class Job extends Model
         'view_count','reviewed_by',
         'boost_hours','plan_id'
     ];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'expires_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 }

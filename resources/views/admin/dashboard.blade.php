@@ -456,7 +456,7 @@
                                             </td>
                                             <td>{{ $ad['date'] }}</td>
                                             <td>
-                                                <button class="view-btn">👁️ View</button>
+                                                <a href="{{ route('admin.ad.show', ['type' => strtolower($ad['type']), 'id' => $ad['model_id']]) }}" class="view-btn">👁️ View</a>
                                             </td>
                                         </tr>
                                     @endforeach
