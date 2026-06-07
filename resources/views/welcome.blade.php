@@ -26,8 +26,8 @@ body{
 /* ================= NAVBAR ================= */
 
 .navbar{
-    max-width:1200px;
-    margin:auto;
+    background:#FCFAE1;
+    max-width:1400px;
     height:75px;
     display:flex;
     justify-content:space-between;
@@ -63,15 +63,18 @@ body{
 
 .hero{
     text-align:center;
+    background:#FFFCE5;
 }
 
 .tag{
     display:inline-block;
-    background:#e2e2e2;
+    background:#E88F2A;
     padding:8px 14px;
     margin-top:10px;
     margin-bottom:15px;
     font-size:13px;
+    color:black;
+    font-weight:500;
     transform:rotate(-2deg);
 }
 
@@ -79,9 +82,15 @@ body{
     font-size:42px;
     line-height:1;
     font-weight:900;
-    letter-spacing:-2px;
-}
+    letter-spacing:0.5px;
+    color:#F7952A;
 
+    text-shadow:
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000;
+}
 .hero p{
     font-size:13px;
     max-width:650px;
@@ -98,31 +107,82 @@ body{
     margin:90px auto 0;
 }
 
+
 .poster{
-    position:absolute;
-    background:#ddd;
-    border-radius:6px;
+     transform:rotate(-2deg);
+    position: absolute;
+    background-image: url('/images/image.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 2px;
 }
+
+.posterm{
+     transform:rotate(-4deg);
+    position: absolute;
+    background-image: url('/images/image2.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 2px;
+}
+
+.postern{
+     transform:rotate(-8deg);
+    position: absolute;
+    background-image: url('/images/image3.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 1px;
+}
+.postero{
+     transform:rotate(-2deg);
+    position: absolute;
+    background-image: url('/images/image1.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 2px;
+}
+
 
 .poster1{
    width:150px;
-    height:150px;
-    left:160px;
+    height:240px;
+    left:180px;
     top:130px;
+    opacity:.85;
+}
+
+.poster0{
+   width:150px;
+    height:240px;
+    left:5px;
+    top:5px;
     opacity:.85;
 }
 
 .poster2{
     width:150px;
-    height:150px;
+    height:240px;
     left:350px;
     top:20px;
     z-index:2;
 }
 
+.posterlast{
+    width:150px;
+    height:240px;
+    right:5px;
+ 
+    top:130px;
+    opacity:.85;
+}
 .poster3{
     width:150px;
-    height:150px;
+    height:240px;
     right:350px;
     top:70px;
     z-index:2;
@@ -130,9 +190,9 @@ body{
 
 .poster4{
     width:150px;
-    height:150px;
-    right:150px;
-    top:1px;
+    height:240px;
+    right:175px;
+    top:0px;
     opacity:.85;
 }
 
@@ -1065,12 +1125,14 @@ body{
     <h1>Your Street, your posters<br>now on your phone</h1>
 
     <p>
-        Whether it's hiring, a promotion, or any event — with PosterGali, your message reaches straight to the walls of your city
+        Whether it's hiring, a promotion, or any event — with PosterGali, <br>your message reaches straight to the walls of your city
     </p>
 
     <div class="phone-section">
+        <div class="posterm poster0"></div>
         <div class="poster poster1"></div>
-        <div class="poster poster2"></div>
+        <div class="postern poster2"></div>
+        <div class="posterm posterlast"></div>
 
         <div class="phone">
             <div class="phone-top">
@@ -1078,9 +1140,11 @@ body{
             </div>
             <div class="screen"></div>
         </div>
-
-        <div class="poster poster3"></div>
-        <div class="poster poster4"></div>
+        
+         <div class="postero poster3"></div>
+         <div class="postern poster4"></div>
+        <div class="poster poster5"></div>
+        <div class="poster poster6"></div>
     </div>
 </section>
 
