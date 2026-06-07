@@ -25,6 +25,38 @@ class OfferController extends Controller
     ->get();
 }
 
+    public function search(Request $request)
+    {
+        $request->validate([
+            'device_id' => 'required|string',
+            'mobile_number' => 'sometimes|string',
+            'phone_number' => 'sometimes|string',
+        ]);
+
+        $deviceId = $request->input('device_id');
+        $mobileNumber = $request->input('mobile_number') ?? $request->input('phone_number');
+
+        $query = Offer::select([
+                'id',
+                'business_name',
+                'offer_details',
+                'offer_type',
+                'city',
+                'latitude',
+                'longitude',
+                'status',
+                'view_count',
+                'temp_id'
+            ])
+            ->where('device_id', $deviceId);
+
+        if ($mobileNumber) {
+            $query->orWhere('mobile_number', $mobileNumber);
+        }
+
+        return response()->json($query->get());
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

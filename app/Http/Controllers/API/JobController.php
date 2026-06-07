@@ -53,6 +53,41 @@ public function index(Request $request)
 
     return response()->json($jobs);
 }
+
+public function search(Request $request)
+{
+    $request->validate([
+        'device_id' => 'required|string',
+        'mobile_number' => 'sometimes|string',
+        'phone_number' => 'sometimes|string',
+    ]);
+
+    $deviceId = $request->input('device_id');
+    $mobileNumber = $request->input('mobile_number') ?? $request->input('phone_number');
+
+    $query = Job::select([
+            'id',
+            'temp_id',
+            'business_name',
+            'job_role',
+            'job_type',
+            'salary',
+            'city',
+            'latitude',
+            'longitude',
+            'status',
+            'view_count',
+            'created_at',
+            'expires_at',
+        ])
+        ->where('device_id', $deviceId);
+
+    if ($mobileNumber) {
+        $query->orWhere('phone_number', $mobileNumber);
+    }
+
+    return response()->json($query->get());
+}
     // public function index()
     // {
     //     return Job::select([
