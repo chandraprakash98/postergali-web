@@ -116,7 +116,21 @@ class SampleDataSeeder extends Seeder
         ];
 
         foreach ($jobData as $data) {
+            $data['device_id'] = 'sample-device-';
+            $data['master_category'] = 'JOB';
+            $data['sub_category'] = 'General';
+$data['latitude'] = '28.8889';
+$data['longitude'] = '77.2088';
+$data['plan_id'] = 1; // Assuming the Basic plan has ID 1
+$data['expiry_date'] = now()->addDays(30); // Set expiry date based on plan duration
+$data['created_at'] = now();
+$data['updated_at'] = now();
+$data['status'] = 'pending'; // Set default status to pending
+$data['mobile_number'] = $data['phone_number']; // Set mobile_number same as phone_number
+
+
             Job::firstOrCreate(
+
                 ['business_name' => $data['business_name'], 'city' => $data['city']],
                 $data
             );
