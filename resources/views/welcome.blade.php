@@ -236,13 +236,14 @@ body{
 
 .feature-strip{
     height:65px;
-    background:#fff;
+    background:#C4351D;
     display:flex;
     justify-content:center;
     align-items:center;
     gap:45px;
     font-size:13px;
     font-weight:700;
+    color:#fff;
     border-top:1px solid #ececec;
     border-bottom:1px solid #ececec;
 }
@@ -250,7 +251,7 @@ body{
 /* ================= APP SECTION ================= */
 
 .app-section{
-    background:#d9d9d9;
+    background:#F7AF25;
     padding:80px 6%;
     display:flex;
     justify-content:space-between;
@@ -265,15 +266,16 @@ body{
 
 .app-badge{
     display:inline-block;
-    background:#bcbcbc;
+    background:red;
     padding:10px 18px;
     transform:rotate(-2deg);
     font-size:13px;
+    color:#fff;
     margin-bottom:20px;
 }
 
 .app-text h2{
-    font-size:54px;
+    font-size:45px;
     font-weight:900;
     line-height:1.05;
     margin-bottom:20px;
@@ -443,8 +445,10 @@ body{
     letter-spacing:-1.5px;
 }
 
-.pg-card{
-    background:#d2d2d2;
+
+
+.pg-cardm{
+    background:#F0B13A;
     border-radius:14px;
 	height:260px; /* fixed equal height */
     min-height:230px;
@@ -463,6 +467,75 @@ body{
 
     transition:.25s;
 }
+
+
+
+
+
+.pg-cardn{
+    background:#F7AF25;
+    border-radius:14px;
+	height:260px; /* fixed equal height */
+    min-height:230px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:28px 35px;
+
+    margin-bottom:26px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    transition:.25s;
+}
+
+.pg-cardo{
+    background:#F7AF25;
+    border-radius:14px;
+	height:260px; /* fixed equal height */
+    min-height:230px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:28px 35px;
+
+    margin-bottom:26px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    transition:.25s;
+}
+
+
+.pg-cardp{
+    background:#F7AF25;
+    border-radius:14px;
+	height:260px; /* fixed equal height */
+    min-height:230px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:28px 35px;
+
+    margin-bottom:26px;
+
+    position:relative;
+
+    overflow:hidden;
+
+    transition:.25s;
+}
+
 
 .pg-card:hover{
    
@@ -499,14 +572,41 @@ body{
 
 .pg-posters{
     position:relative;
-    width:330px;
-    height:160px;
+    width:520px;
+    height:180px;
+}
+
+.poster-img{
+    position:absolute;
+    width:120px;
+    height:140px;
+    object-fit:cover;
+    border-radius:2px;
+    box-shadow:0 15px 30px rgba(0,0,0,.18);
+}
+
+.poster-img1{
+    left:0;
+    top: 5px;;
+    transform:rotate(-8deg);
+}
+
+.poster-img2{
+    left:145px;
+    top:0;
+    transform:rotate(6deg);
+}
+
+.poster-img3{
+    left:290px;
+    top:6px;
+    transform:rotate(-4deg);
 }
 
 .mini-poster{
     position:absolute;
     width:120px;
-    height:150px;
+    height:180px;
 
     color:#fff;
     font-size:28px;
@@ -520,7 +620,7 @@ body{
 }
 
 .red{
-    background:#d73732;
+    background:#CB4E3D;
     left:10px;
     top:10px;
     transform:rotate(-8deg);
@@ -597,7 +697,7 @@ body{
         font-size:28px;
     }
 
-    .pg-card{
+    .pg-cardm,pg-cardn,pg-cardo,pg-cardp{
         flex-direction:column;
         text-align:left;
         min-height:auto;
@@ -1150,7 +1250,7 @@ body{
 
 <!-- FEATURE STRIP -->
 <div class="feature-strip">
-    <div>₹19 ONLY</div>
+    <div>From ₹19 ONLY</div>
     <div>LOCAL REACH</div>
     <div>INSTANT LIVE</div>
     <div>SMART TARGETING</div>
@@ -1216,26 +1316,25 @@ body{
     </div>
 
     <!-- CARD 1 -->
-    <div class="pg-card tilt-right">
+    <div class="pg-cardm tilt-right">
         <div class="pg-content">
             <h3>Hyperlocal<br>Digital<br>Noticeboard</h3>
 
             <p>
-                Reach your local community instantly.<br>
-                No printing. No waiting.<br>
-                Neighbourhood level visibility.
+                India’s hyperlocal poster platform<br>
+Reach people who live, work, and shop nearby <br>
+No agency fees, no middlemen <br>
             </p>
         </div>
-
-        <div class="pg-posters">
-            <div class="mini-poster red">SALE</div>
-            <div class="mini-poster yellow">FLAT</div>
-            <div class="mini-poster blue">HIRING</div>
-        </div>
+    <div class="pg-posters">
+        <img src="/images/image1.png" class="mini-poster poster-img poster-img1" alt="Poster">
+        <img src="/images/image2.png" class="mini-poster poster-img poster-img2" alt="Poster">
+        <img src="/images/image3.png" class="mini-poster poster-img poster-img3" alt="Poster">
+    </div>
     </div>
 
     <!-- CARD 2 -->
-    <div class="pg-card tilt-left">
+    <div class="pg-cardn tilt-left">
 
         <div class="pg-content">
             <h3>Instant<br>Community<br>Connection</h3>
@@ -1257,7 +1356,7 @@ body{
     </div>
 
     <!-- CARD 3 -->
-    <div class="pg-card tilt-right">
+    <div class="pg-cardo tilt-right">
 
         <div class="pg-content">
             <h3>Smart<br>Targeting</h3>
@@ -1273,7 +1372,7 @@ body{
     </div>
 
     <!-- CARD 4 -->
-    <div class="pg-card tilt-left">
+    <div class="pg-cardp tilt-left">
 
         <div class="pg-content">
             <h3>Easy &<br>Affordable</h3>
@@ -1294,7 +1393,7 @@ body{
     </div>
 
     <!-- CARD 5 -->
-    <div class="pg-card tilt-right">
+    <div class="pg-cardp tilt-right">
 
         <div class="pg-content">
             <h3>Trust &<br>Verification</h3>
