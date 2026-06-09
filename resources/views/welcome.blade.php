@@ -775,25 +775,70 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    gap:10px;
+    gap:0;
     margin-bottom:90px;
+    position:relative;
 }
 
 .process-column{
     display:flex;
     flex-direction:column;
     gap:18px;
+    position:relative;
+    z-index:1;
+}
+
+.process-column:first-child{
+    margin-right:-90px;
+}
+
+.process-center{
+    position:relative;
+    z-index:2;
+    margin:0 10px;
+}
+
+.process-column:last-child{
+    margin-left:-50px;
+}
+
+.process-column:first-child .process-card:first-child{
+    margin-top:4px;
+     margin-left:42px;
+}
+
+.process-column:first-child .process-cardm{
+    margin-top:4px;
+    margin-left:12px;
+}
+
+.process-column:first-child .process-card:last-child{
+    margin-top:6px;
+}
+
+.process-column:last-child .process-cardm{
+    margin-top:12px;
+}
+
+.process-column:last-child .process-card:last-child{
+    margin-top:42px;
+}
+
+.process-card,
+.process-cardm{
+    position:relative;
+    z-index:1;
 }
 
 .process-card{
-    width:220px;
+    width:240px;
     background: #a4dcb3;
     border-radius:14px;
     padding:18px;
 }
 
 .process-cardm{
-    width:220px;
+    width:240px;
     background: #eccd6a;
     border-radius:14px;
     padding:18px;
@@ -1464,9 +1509,8 @@ No agency fees, no middlemen <br>
 
             </div>
 
-            <div >
+            <div class="process-center">
                 <img src="/images/whypost.png" alt="" style="width: 270px;; height: 270px; object-fit:cover;">
-        
             </div>
 
             <div class="process-column">
@@ -1474,16 +1518,15 @@ No agency fees, no middlemen <br>
                 <div class="process-cardm">
                     <h4>Build your poster</h4>
                     <p>
-                        Answer quick questions and let
-                        AI create your poster.
+                       Build your poster
+Answer quick questions business name, role, salary, or offer details — and let the chatbot create your poster.
                     </p>
                 </div>
 
                 <div class="process-card">
                     <h4>Verify & preview</h4>
                     <p>
-                        Review your poster and confirm
-                        before it goes live.
+                       Complete a quick OTP check, review your poster, and confirm the details.
                     </p>
                 </div>
 
