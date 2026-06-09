@@ -5,9 +5,137 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hero Section</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
 <style>
+
+    @font-face {
+        font-family: 'BernardMT';
+        src: url('/fonts/Times New Roman Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'GaramondRegular';
+        src: url('/fonts/Garamond - Garamond - Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'ImpactFont';
+        src: url('/fonts/impact.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'KumarOne';
+        src: url('/fonts/KumarOne-Regular.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'LemonMilkBold';
+        src: url('/fonts/LEMONMILK-Bold.otf') format('opentype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'MonteStella';
+        src: url('/fonts/MonteStella_Trial_Rg.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'QasiraFont';
+        src: url('/fonts/Qasira.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'QuintessentialFont';
+        src: url('/fonts/Quintessential-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'TimesNewRomanLocal';
+        src: url('/fonts/Times New Roman Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    body{
+        font-family:'GaramondRegular', 'TimesNewRomanLocal', serif;
+        background:#f5f5f5;
+        overflow-x:hidden;
+    }
+
+    .logo,
+    .footer-logo {
+        font-family:'ImpactFont', sans-serif;
+    }
+
+    .hero h1,
+    .why-head h2,
+    .how-header h2,
+    .faq-top h2 {
+        font-family:'BernardMT', serif;
+    }
+
+    .tag,
+    .app-badge,
+    .process-cardm h4 {
+        font-family:'QasiraFont', sans-serif;
+    }
+
+    .feature-strip,
+    .footer-links a,
+    .socials a {
+        font-family:'MonteStella', sans-serif;
+    }
+
+    .process-card h4,
+    .pg-content h3 {
+        font-family:'KumarOne', cursive;
+    }
+
+    .nav-links a,
+    .btn,
+    .store a,
+    .talk-btn,
+    .footer-links a {
+        font-family:'LemonMilkBold', sans-serif;
+    }
+
+    .process-card p,
+    .faq-top p,
+    .faq-content,
+    .contact-left p,
+    .app-text p {
+        font-family:'QuintessentialFont', serif;
+    }
+
+    .faq-item summary,
+    .process-column .process-cardm p,
+    .process-column .process-card p {
+        font-family:'TimesNewRomanLocal', serif;
+    }
+
 
 /* ================= GLOBAL ================= */
 
@@ -15,12 +143,6 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-}
-
-body{
-    font-family:'Inter',sans-serif;
-    background:#f5f5f5;
-    overflow-x:hidden;
 }
 
 /* ================= NAVBAR ================= */
