@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Plan;
+use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +43,28 @@ class AdminAuthController extends Controller
         Auth::login($user, $request->boolean('remember'));
 
         return redirect()->route('admin.dashboard')->with('success', 'Welcome back!');
+    }
+
+    public function storeNotification(Request $request)
+    {
+        $data = $request->validate([
+            'device_id' => 'nullable|string|max:255',
+            'fcm_tocken' => 'nullable|string|max:255',
+            'mobile' => 'nullable|string|max:20',
+        ]);
+
+        if (empty($data['device_id']) && empty($data['fcm_tocken']) && empty($data['mobile'])) {
+            return response()->json([
+                'message' => 'Please provide at least one of device_id, fcm_tocken, or mobile.',
+            ], 422);
+        }
+
+        $notification = Notification::create($data);
+
+        return response()->json([
+            'message' => 'Notification record stored successfully.',
+            'notification' => $notification,
+        ], 201);
     }
 
     public function dashboard()

@@ -10,6 +10,7 @@ Route::prefix('v1')->group(function () {
     Route::get('offers/search', [OfferController::class, 'search']);
     Route::get('jobs/search', [JobController::class, 'search']);
     Route::apiResource('jobs', JobController::class);
+    Route::post('notifications', [AdminAuthController::class, 'storeNotification']);
 });
 
 Route::prefix('v1')->group(function () {
