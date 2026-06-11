@@ -146,7 +146,20 @@ class AdminAuthController extends Controller
                 $factory = (new Factory())->withServiceAccount($serviceAccountPath);
                 $messaging = $factory->createMessaging();
 
-                $fcmToken = 'cs_1oGuqTAW6FzkzDE9fm5:APA91bH4LmItA5zXB7u33yjvravB0WA40JuFhOWhAr2qVHY9vQN4ckaynnQ09he8RydtMsS4xm1r8HnxotXCg6BJQoUQ1Hff4tFYRixd4qVRiKK_M7HLUXo';
+
+                $deviceId = $model->device_id;
+                $notificationRecord = Notification::where('device_id', $deviceId)
+                ->latest()
+                ->first();
+
+                 if (!$notificationRecord || empty($notificationRecord->fcm_tocken)) {
+                    \Log::warning('FCM token not found for device_id: ' . $deviceId);
+                    return;
+                }
+
+                $fcmToken = $notificationRecord->fcm_tocken;
+
+                //  $fcmToken = 'cs_1oGuqTAW6FzkzDE9fm5:APA91bH4LmItA5zXB7u33yjvravB0WA40JuFhOWhAr2qVHY9vQN4ckaynnQ09he8RydtMsS4xm1r8HnxotXCg6BJQoUQ1Hff4tFYRixd4qVRiKK_M7HLUXo';
 
                 $title = $data['status'] === 'approved' ? 'Ad Approved' : 'Ad Rejected';
                 $body = $data['status'] === 'approved' ? 'Your ad has been approved.' : ('Your ad was rejected. ' . ($data['comment'] ?? ''));
