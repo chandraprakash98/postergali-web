@@ -11,6 +11,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FcmNotification;
 
 class AdminAuthController extends Controller
 {
@@ -103,38 +106,77 @@ class AdminAuthController extends Controller
             abort(404);
         }
 
-        $data = $request->validate([
-            'status' => 'required|in:approved,rejected',
-            'comment' => 'nullable|string|max:255',
-            'subcategory' => 'nullable|string|max:100',
-        ]);
+        $action = $request->input('action', 'status');
 
-        $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
+        if ($action === 'status') {
+            $data = $request->validate([
+                'status' => 'required|in:approved,rejected',
+                'comment' => 'nullable|string|max:255',
+                'subcategory' => 'nullable|string|max:100',
+            ]);
 
-        $model->status = $data['status'];
-        if (isset($data['subcategory'])) {
-            $model->subcategory = $data['subcategory'];
-        }
-        if ($type === 'job') {
-            $model->status_comment = $data['comment'];
+            $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
+
+            $model->status = $data['status'];
+            if (isset($data['subcategory'])) {
+                $model->subcategory = $data['subcategory'];
+            }
+            if ($type === 'job') {
+                $model->status_comment = $data['comment'];
+            } else {
+                $model->status_note = $data['comment'];
+            }
+            $model->reviewed_by = Auth::user()->name;
+
+            $planDuration = Plan::find($model->plan_id)?->duration ?? '1 day';
+            if ($data['status'] === 'approved') {
+                $model->approved_at = $model->approved_at ?: now();
+                $model->expires_at = $this->calculateExpiryFromDuration($model->approved_at, $planDuration);
+            } else {
+                $model->approved_at = null;
+                $model->expires_at = null;
+            }
+
+            $model->save();
+
+            // Send FCM using service account (hardcoded token placeholder)
+            try {
+                $firebaseCredentials = env('FIREBASE_CREDENTIALS', 'storage/app/firebase/firebase-service-account.json');
+                $serviceAccountPath = base_path($firebaseCredentials);
+                $factory = (new Factory())->withServiceAccount($serviceAccountPath);
+                $messaging = $factory->createMessaging();
+
+                $fcmToken = 'cs_1oGuqTAW6FzkzDE9fm5:APA91bH4LmItA5zXB7u33yjvravB0WA40JuFhOWhAr2qVHY9vQN4ckaynnQ09he8RydtMsS4xm1r8HnxotXCg6BJQoUQ1Hff4tFYRixd4qVRiKK_M7HLUXo';
+
+                $title = $data['status'] === 'approved' ? 'Ad Approved' : 'Ad Rejected';
+                $body = $data['status'] === 'approved' ? 'Your ad has been approved.' : ('Your ad was rejected. ' . ($data['comment'] ?? ''));
+
+                $message = CloudMessage::withTarget('token', $fcmToken)
+                    ->withNotification(FcmNotification::create($title, $body))
+                    ->withData([
+                        'ad_id' => (string) $model->id,
+                        'type' => $type,
+                        'status' => $data['status'],
+                    ]);
+
+                $messaging->send($message);
+            } catch (\Throwable $e) {
+                \Log::error('FCM send failed: ' . $e->getMessage());
+            }
         } else {
-            $model->status_note = $data['comment'];
+            // subcategory-only update (no notifications)
+            $data = $request->validate([
+                'subcategory' => 'nullable|string|max:100',
+            ]);
+
+            $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
+            if (isset($data['subcategory'])) {
+                $model->subcategory = $data['subcategory'];
+                $model->save();
+            }
         }
-        $model->reviewed_by = Auth::user()->name;
 
-        $planDuration = Plan::find($model->plan_id)?->duration ?? '1 day';
-        if ($data['status'] === 'approved') {
-            $model->approved_at = $model->approved_at ?: now();
-            $model->expires_at = $this->calculateExpiryFromDuration($model->approved_at, $planDuration);
-        } else {
-            $model->approved_at = null;
-            $model->expires_at = null;
-        }
-
-        $model->save();
-
-        return redirect()->route('admin.ad.show', ['type' => $type, 'id' => $id])
-            ->with('success', 'Ad status updated successfully.');
+        return redirect()->route('admin.ad.show', ['type' => $type, 'id' => $id])->with('success', 'Ad updated successfully.');
     }
 
     public function pendingAds()

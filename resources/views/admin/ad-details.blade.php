@@ -470,7 +470,7 @@
                             </div>
                             <div class="card-body">
                                 <strong>Sub Category</strong>
-                                <select name="subcategory" form="details-form" onchange="document.getElementById('details-form').submit()" style="width:100%; padding:12px 14px; border:1px solid #d1d5db; border-radius:12px; margin-bottom:16px; font-size:14px;">
+                                <select name="subcategory" form="details-form" onchange="document.getElementById('details-action').value='subcategory'; document.getElementById('details-form').submit()" style="width:100%; padding:12px 14px; border:1px solid #d1d5db; border-radius:12px; margin-bottom:16px; font-size:14px;">
                                     <option value="">Select sub category...</option>
                                     @foreach(['Shop/Office/School Staff','Delivery & Logistics','Food, Healthcare & Hospitality','Services, Labor, & Daily Wages'] as $option)
                                         <option value="{{ $option }}" {{ $ad->subcategory === $option ? 'selected' : '' }}>{{ $option }}</option>
@@ -495,7 +495,7 @@
                             </div>
                             <div class="card-body">
                                 <strong>Sub Category</strong>
-                                <select name="subcategory" form="details-form" onchange="document.getElementById('details-form').submit()" style="width:100%; padding:12px 14px; border:1px solid #d1d5db; border-radius:12px; margin-bottom:16px; font-size:14px;">
+                                <select name="subcategory" form="details-form" onchange="document.getElementById('details-action').value='subcategory'; document.getElementById('details-form').submit()" style="width:100%; padding:12px 14px; border:1px solid #d1d5db; border-radius:12px; margin-bottom:16px; font-size:14px;">
                                     <option value="">Select sub category...</option>
                                     @foreach(['Local Shop Promotion','Jobs in Local Business','Local Service','Home Based Business','Academic/Hobby/Sports Classes','Street Vendors'] as $option)
                                         <option value="{{ $option }}" {{ $ad->subcategory === $option ? 'selected' : '' }}>{{ $option }}</option>
@@ -550,6 +550,7 @@
 
                     <div class="card status-card">
                         <form id="details-form" action="{{ route('admin.ad.status', ['type' => $type, 'id' => $ad->id]) }}" method="POST">
+                            <input type="hidden" name="action" id="details-action" value="">
                             @csrf
                             <div class="card-header">
                                 <div class="card-icon">📝</div>
@@ -580,7 +581,7 @@
                                 </div>
 
                                 <div class="form-footer">
-                                    <button type="submit" class="button-primary">Confirm</button>
+                                    <button type="submit" class="button-primary" onclick="document.getElementById('details-action').value='status'">Confirm</button>
                                 </div>
                             </div>
                         </form>
