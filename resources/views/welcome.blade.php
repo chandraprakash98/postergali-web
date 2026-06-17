@@ -1,1870 +1,488 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hero Section</title>
+  <head>
 
-<style>
+    <style>
+        *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    @font-face {
-        font-family: 'BernardMT';
-        src: url('/fonts/Times New Roman Regular.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
+html{
+    font-size: 62.5%; /* 1rem = 10px */
+}
+
+body{
+    font-family: "Lato", sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+    color: #777;
+    
+}
+
+.main-title{
+    text-align: center;
+    margin-top: 4rem;
+    margin-bottom: 8rem;
+    text-shadow: 
+    1px 0px 1px #ccc, 0px 1px 1px #eee, 
+    2px 1px 1px #ccc, 1px 2px 1px #eee,
+    3px 2px 1px #ccc, 2px 3px 1px #eee,
+    4px 3px 1px #ccc, 3px 4px 1px #eee,
+    5px 4px 1px #ccc, 4px 5px 1px #eee,
+    6px 5px 1px #ccc, 5px 6px 1px #eee,
+    7px 6px 1px #ccc;
+}
+
+.main-title h1{
+    font-size: 7rem;
+    text-transform: uppercase;
+    font-weight: 800;
+    color: #555;
+}
+
+.main-title h2{
+    font-size: 4rem;
+    font-weight: 300;
+    text-transform: uppercase;
+}
+
+.svg-img{
+   display: block;
+   margin: auto;
+}
+
+svg{
+    display: block;
+   margin: auto;
+}
+
+#clock{
+    animation: clockHand 5s infinite linear;
+    
+    
+    transform-box: fill-box;
+    transform-origin: bottom;
+}
+
+#leftTree, #righTree{
+    animation: tree 2s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: bottom;
+}
+
+#man{
+    animation: manBody 1s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: bottom;
+}
+
+#pc-circle{
+    fill: #6ace66;
+    stroke-width: 4;
+    animation: change-light 4s linear infinite alternate;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 35px;
+    line-height: 35px;
+    background-color: #f5f5f5;
+    font-size: 1.3rem;
+}
+
+@keyframes clockHand{
+    from{
+        transform: rotateZ(0deg);
     }
-
-    @font-face {
-        font-family: 'GaramondRegular';
-        src: url('/fonts/Garamond - Garamond - Regular.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
+    from{
+        transform: rotateZ(-360deg);
     }
+}
 
-    @font-face {
-        font-family: 'ImpactFont';
-        src: url('/fonts/impact.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
+@keyframes manBody{
+    from{
+        transform: rotateX(0deg);
     }
-
-    @font-face {
-        font-family: 'KumarOne';
-        src: url('/fonts/KumarOne-Regular.otf') format('opentype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
+    to{
+        transform: rotateX(10deg);
     }
+}
 
-    @font-face {
-        font-family: 'LemonMilkBold';
-        src: url('/fonts/LEMONMILK-Bold.otf') format('opentype');
+@keyframes tree{
+    from{
+        transform: rotateZ(10deg);
+    }
+    to{
+        transform: rotateZ(-20deg);
+    }
+}
+
+@keyframes change-light {
+    0% {
+        stroke: #cd61f8;
+      }
+      25% {
+        stroke: #6ace66;
+      }
+      75% {
+        stroke: #2995c0;
+      }
+      100% {
+        stroke: #e92949;
+      }
+  }
+
+  /* Media Queries */
+
+  @media (min-width: 640px){
+    .main-title h1{
+        font-size: 5rem;
+        text-transform: uppercase;
         font-weight: 700;
-        font-style: normal;
-        font-display: swap;
+        color: #555;
     }
-
-    @font-face {
-        font-family: 'MonteStella';
-        src: url('/fonts/MonteStella_Trial_Rg.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
+    
+    .main-title h2{
+        font-size: 3rem;
+        font-weight: 300;
+        text-transform: uppercase;
     }
-
-    @font-face {
-        font-family: 'QasiraFont';
-        src: url('/fonts/Qasira.otf') format('opentype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
+    
+     
     }
-
-    @font-face {
-        font-family: 'QuintessentialFont';
-        src: url('/fonts/Quintessential-Regular.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-    }
-
-    @font-face {
-        font-family: 'TimesNewRomanLocal';
-        src: url('/fonts/Times New Roman Regular.ttf') format('truetype');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-    }
-
-    body{
-        font-family:'GaramondRegular', 'TimesNewRomanLocal', serif;
-        background:#f5f5f5;
-        overflow-x:hidden;
-    }
-
-    .logo,
-    .footer-logo {
-        font-family:'ImpactFont', sans-serif;
-    }
-
-    .hero h1,
-    .why-head h2,
-    .how-header h2,
-    .faq-top h2 {
-        font-family:'BernardMT', serif;
-    }
-
-    .tag,
-    .app-badge,
-    .process-cardm h4 {
-        font-family:'QasiraFont', sans-serif;
-    }
-
-    .feature-strip,
-    .footer-links a,
-    .socials a {
-        font-family:'MonteStella', sans-serif;
-    }
-
-    .process-card h4,
-    .pg-content h3 {
-        font-family:'KumarOne', cursive;
-    }
-
-    .nav-links a,
-    .btn,
-    .store a,
-    .talk-btn,
-    .footer-links a {
-        font-family:'LemonMilkBold', sans-serif;
-    }
-
-    .process-card p,
-    .faq-top p,
-    .faq-content,
-    .contact-left p,
-    .app-text p {
-        font-family:'QuintessentialFont', serif;
-    }
-
-    .faq-item summary,
-    .process-column .process-cardm p,
-    .process-column .process-card p {
-        font-family:'TimesNewRomanLocal', serif;
-    }
-
-
-/* ================= GLOBAL ================= */
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
-/* ================= NAVBAR ================= */
-
-.navbar{
-    background:#FCFAE1;
-    max-width:1400px;
-    height:75px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:0 20px;
-}
-
-.logo{
-    font-size:22px;
-    font-weight:800;
-}
-
-.nav-links{
-    display:flex;
-    gap:30px;
-}
-
-.nav-links a{
-    text-decoration:none;
-    color:#111;
-    font-size:14px;
-}
-
-.btn{
-    background:#111;
-    color:#fff;
-    border:none;
-    padding:10px 18px;
-    border-radius:999px;
-}
-
-/* ================= HERO ================= */
-
-.hero{
-    text-align:center;
-    background:#FFFCE5;
-}
-
-.tag{
-    display:inline-block;
-    background:#E88F2A;
-    padding:8px 14px;
-    margin-top:10px;
-    margin-bottom:15px;
-    font-size:13px;
-    color:black;
-    font-weight:500;
-    transform:rotate(-2deg);
-}
-
-.hero h1{
-    font-size:42px;
-    line-height:1;
-    font-weight:900;
-    letter-spacing:0.5px;
-    color:#F7952A;
-
-    text-shadow:
-        -1px -1px 0 #000,
-         1px -1px 0 #000,
-        -1px  1px 0 #000,
-         1px  1px 0 #000;
-}
-.hero p{
-    font-size:13px;
-    max-width:650px;
-    margin:15px auto 0;
-    color:#444;
-}
-
-/* ================= PHONE SECTION ================= */
-
-.phone-section{
-    position:relative;
-    height:380px;
-    max-width:1200px;
-    margin:90px auto 0;
-}
-
-
-.poster{
-     transform:rotate(-2deg);
-    position: absolute;
-    background-image: url('/images/imag1.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: 2px;
-}
-
-.posterm{
-     transform:rotate(-4deg);
-    position: absolute;
-    background-image: url('/images/image2.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: 2px;
-}
-
-.postern{
-     transform:rotate(-8deg);
-    position: absolute;
-    background-image: url('/images/image3.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: 1px;
-}
-.postero{
-     transform:rotate(-2deg);
-    position: absolute;
-    background-image: url('/images/image1.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: 2px;
-}
-
-
-.poster1{
-   width:150px;
-    height:240px;
-    left:180px;
-    top:130px;
-    opacity:.85;
-}
-
-.poster0{
-   width:150px;
-    height:240px;
-    left:5px;
-    top:5px;
-    opacity:.85;
-}
-
-.poster2{
-    width:150px;
-    height:240px;
-    left:350px;
-    top:20px;
-    z-index:2;
-}
-
-.posterlast{
-    width:150px;
-    height:240px;
-    right:5px;
- 
-    top:130px;
-    opacity:.85;
-}
-.poster3{
-    width:150px;
-    height:240px;
-    right:350px;
-    top:70px;
-    z-index:2;
-}
-
-.poster4{
-    width:150px;
-    height:240px;
-    right:175px;
-    top:0px;
-    opacity:.85;
-}
-
-.phone{
-    position:absolute;
-    left:50%;
-    bottom:20px;
-    transform:translateX(-50%);
-    width:220px;
-    height:420px;
-    background:#fff;
-    border-radius:32px;
-    z-index:10;
-    box-shadow:0 10px 20px rgba(0,0,0,.08),
-               0 20px 50px rgba(0,0,0,.12);
-}
-
-.phone-top{
-    height:32px;
-    background:#08111d;
-    border-radius:32px 32px 0 0;
-    position:relative;
-}
-
-.notch{
-    width:95px;
-    height:22px;
-    background:#fff;
-    position:absolute;
-    left:50%;
-    transform:translateX(-50%);
-    border-radius:0 0 15px 15px;
-}
-
-.screen{
-    height:calc(100% - 32px);
-    background:#fff;
-}
-
-/* ================= FEATURE STRIP ================= */
-
-.feature-strip{
-    height:65px;
-    background:#C4351D;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:45px;
-    font-size:13px;
-    font-weight:700;
-    color:#fff;
-    border-top:1px solid #ececec;
-    border-bottom:1px solid #ececec;
-}
-
-/* ================= APP SECTION ================= */
-
-.app-section{
-    background:#F7AF25;
-    padding:80px 6%;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:60px;
-}
-
-/* TEXT */
-.app-text{
-    flex:1;
-}
-
-.app-badge{
-    display:inline-block;
-    background:red;
-    padding:10px 18px;
-    transform:rotate(-2deg);
-    font-size:13px;
-    color:#fff;
-    margin-bottom:20px;
-}
-
-.app-text h2{
-    font-size:45px;
-    font-weight:900;
-    line-height:1.05;
-    margin-bottom:20px;
-}
-
-.app-text p{
-    font-size:18px;
-    color:#333;
-    max-width:500px;
-}
-
-/* ================= MOCK CARDS ================= */
-
-.app-preview{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:25px;
-
-    perspective:1000px;
-}
-
-.mock-row{
-    display:flex;
-    justify-content:center;
-    gap:25px;
-}
-
-.mock{
-    width:200px;
-    height:250px;
-    background:#fff;
-    border-radius:18px;
-    box-shadow:0 10px 30px rgba(0,0,0,.12);
-    transition:0.3s ease;
-}
-
-/* LEFT tilt */
-.mock-left{
-    transform: rotateX(12deg) rotateZ(-8deg);
-}
-
-/* RIGHT tilt */
-.mock-right{
-    transform: rotateX(12deg) rotateZ(8deg);
-}
-
-/* hover */
-.mock:hover{
-    transform: rotateX(0deg) rotateZ(0deg) scale(1.05);
-}
-
-/* ================= STORE BUTTONS (BELOW MOCKS) ================= */
-
-.store{
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
-    justify-content:center;
-}
-
-.store a{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    background:#fff;
-    padding:14px 18px;
-    border-radius:14px;
-    text-decoration:none;
-    color:#000;
-    min-width:240px;
-    box-shadow:0 10px 20px rgba(0,0,0,.08);
-}
-
-.store small{
-    display:block;
-    font-size:11px;
-}
-
-.store strong{
-    font-size:16px;
-}
-
-/* ================= MOBILE ================= */
-
-@media(max-width:900px){
-
-.hero h1{font-size:38px;}
-
-.phone{
-    width:190px;
-    height:360px;
-}
-
-.poster1,.poster4{display:none;}
-
-.poster2{
-    width:130px;
-    height:130px;
-    left:15px;
-    top:110px;
-}
-
-.poster3{
-    width:130px;
-    height:130px;
-    right:15px;
-    top:140px;
-}
-
-.nav-links{display:none;}
-
-.feature-strip{
-    flex-wrap:wrap;
-    gap:15px;
-    height:auto;
-    padding:15px;
-}
-
-.app-section{
-    flex-direction:column;
-    text-align:center;
-}
-
-.app-text h2{
-    font-size:36px;
-}
-
-.app-text p{
-    margin:auto;
-}
-
-.mock{
-    width:160px;
-    height:300px;
-}
-
-}
-
-/* =======================================================
-   WHY POSTERGALI CARDS
-======================================================= */
-
-.why-postergali{
-    max-width:1050px;
-    margin:50px auto;
-    padding:0 10px;
-}
-
-.why-head{
-    text-align:center;
-    margin-bottom:40px;
-}
-
-.why-head small{
-    display:block;
-    font-size:13px;
-    font-weight:700;
-    margin-bottom:8px;
-}
-
-.why-head h2{
-    font-size:42px;
-    line-height:1;
-    font-weight:900;
-    letter-spacing:-1.5px;
-}
-
-
-
-.pg-cardm{
-    background:#F0B13A;
-    border-radius:14px;
-	height:260px; /* fixed equal height */
-    min-height:230px;
-
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
-    padding:28px 35px;
-
-    margin-bottom:26px;
-
-    position:relative;
-
-    overflow:hidden;
-
-    transition:.25s;
-}
-
-
-
-
-
-.pg-cardn{
-    background:red;
-    border-radius:14px;
-	height:260px; /* fixed equal height */
-    min-height:230px;
-
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
-    padding:28px 35px;
-
-    margin-bottom:26px;
-
-    position:relative;
-
-    overflow:hidden;
-
-    transition:.25s;
-}
-
-.pg-cardo{
-    background:#F0B13A;
-    border-radius:14px;
-	height:260px; /* fixed equal height */
-    min-height:230px;
-
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
-    padding:28px 35px;
-
-    margin-bottom:26px;
-
-    position:relative;
-
-    overflow:hidden;
-
-    transition:.25s;
-}
-
-
-.pg-cardp{
-    background:red;
-    border-radius:14px;
-	height:260px; /* fixed equal height */
-    min-height:230px;
-
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
-    padding:28px 35px;
-
-    margin-bottom:26px;
-
-    position:relative;
-
-    overflow:hidden;
-
-    transition:.25s;
-}
-
-
-.pg-card:hover{
-   
-}
-
-.tilt-right{
-    transform:rotate(-1.11deg);
-}
-
-.tilt-left{
-    transform:rotate(1.11deg);
-}
-
-.pg-content{
-    max-width:420px;
-    z-index:2;
-}
-
-.pg-content h3{
-    font-size:36px;
-    line-height:.95;
-    font-weight:900;
-    color:#111;
-    margin-bottom:16px;
-}
-
-.pg-content p{
-    font-size:12px;
-    line-height:1.5;
-    color:#333;
-}
-
-/* ===== Posters ===== */
-
-.pg-posters{
-    position:relative;
-    width:520px;
-    height:180px;
-}
-
-.poster-img{
-    position:absolute;
-    width:120px;
-    height:140px;
-    object-fit:cover;
-    border-radius:2px;
-    box-shadow:0 15px 30px rgba(0,0,0,.18);
-}
-
-.poster-img1{
-    left:0;
-    top: 5px;;
-    transform:rotate(-8deg);
-}
-
-.poster-img2{
-    left:145px;
-    top:0;
-    transform:rotate(6deg);
-}
-
-.poster-img3{
-    left:290px;
-    top:6px;
-    transform:rotate(-4deg);
-}
-
-.mini-poster{
-    position:absolute;
-    width:120px;
-    height:180px;
-
-    color:#fff;
-    font-size:28px;
-    font-weight:900;
-
-    display:flex;
-    justify-content:center;
-    align-items:center;
-
-    box-shadow:0 15px 30px rgba(0,0,0,.18);
-}
-
-.red{
-    background:#CB4E3D;
-    left:10px;
-    top:10px;
-    transform:rotate(-8deg);
-}
-
-.yellow{
-    background:#ffbf00;
-    left:95px;
-    top:0;
-    transform:rotate(6deg);
-    color:#111;
-}
-
-.blue{
-    background:#2962ff;
-    right:0;
-    top:12px;
-    transform:rotate(-4deg);
-}
-
-/* ===== Phone frame ===== */
-
-.phone-frame{
-    width:180px;
-    height:220px;
-
-    background:#fff;
-
-    border-radius:26px;
-
-    position:relative;
-
-    margin-right:25px;
-
-    box-shadow:0 20px 40px rgba(0,0,0,.12);
-}
-
-.phone-frame::before{
-    content:'';
-
-    position:absolute;
-
-    width:70px;
-    height:16px;
-
-    background:#111;
-
-    top:10px;
-    left:50%;
-
-    transform:translateX(-50%);
-
-    border-radius:20px;
-}
-
-/* ===== Hand phone image ===== */
-
-.pg-phone-wrap{
-    width:280px;
-    display:flex;
-    justify-content:center;
-}
-
-.hand-phone{
-    width:250px;
-    object-fit:contain;
-}
-
-/* ===== Mobile ===== */
-
-@media(max-width:900px){
-
-    .why-head h2{
-        font-size:28px;
-    }
-
-    .pg-cardm,pg-cardn,pg-cardo,pg-cardp{
-        flex-direction:column;
-        text-align:left;
-        min-height:auto;
-        gap:25px;
-    }
-
-    .pg-content{
-        max-width:100%;
-    }
-
-    .pg-content h3{
-        font-size:34px;
-    }
-
-    .pg-posters{
-        width:100%;
-        height:180px;
-    }
-
-    .phone-frame{
-        width:140px;
-        height:180px;
-        margin-right:0;
-    }
-
-    .hand-phone{
-        width:180px;
-    }
-}
-
-
-/* ==========================================
-   HOW IT WORKS + FAQ SECTION
-========================================== */
-
-.how-faq{
-    background:#FFFCE5;
-    padding:30px 20px 80px;
-}
-
-.how-wrap{
-    max-width:1100px;
-    margin:auto;
-}
-
-/* Heading */
-
-.how-header{
-    text-align:center;
-    margin-bottom:50px;
-}
-
-.how-header small{
-    display:block;
-    font-size:14px;
-    font-weight:700;
-    margin-bottom:10px;
-}
-
-.how-header h2{
-    font-size:44px;
-    line-height:1;
-    font-weight:900;
-    margin-bottom:12px;
-}
-
-.how-header p{
-    font-size:13px;
-    color:#555;
-}
-
-/* Process Layout */
-
-.process{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:0;
-    margin-bottom:90px;
-    position:relative;
-}
-
-.process-column{
-    display:flex;
-    flex-direction:column;
-    gap:18px;
-    position:relative;
-    z-index:1;
-}
-
-.process-column:first-child{
-    margin-right:-90px;
-}
-
-.process-center{
-    position:relative;
-    z-index:2;
-    margin:0 10px;
-}
-
-.process-column:last-child{
-    margin-left:-50px;
-}
-
-.process-column:first-child .process-card:first-child{
-    margin-top:4px;
-     margin-left:42px;
-}
-
-.process-column:first-child .process-cardm{
-    margin-top:4px;
-    margin-left:12px;
-}
-
-.process-column:first-child .process-card:last-child{
-    margin-top:6px;
-}
-
-.process-column:last-child .process-cardm{
-    margin-top:12px;
-}
-
-.process-column:last-child .process-card:last-child{
-    margin-top:42px;
-}
-
-.process-card,
-.process-cardm{
-    position:relative;
-    z-index:1;
-}
-
-.process-card{
-    width:240px;
-    background: #a4dcb3;
-    border-radius:14px;
-    padding:18px;
-}
-
-.process-cardm{
-    width:240px;
-    background: #eccd6a;
-    border-radius:14px;
-    padding:18px;
-}
-
-
-
-.process-card h4{
-    font-size:18px;
-    font-weight:800;
-    margin-bottom:8px;
-}
-
-.process-card p{
-    font-size:12px;
-    line-height:1.5;
-    color:#444;
-}
-
-/* Phone */
-
-.process-phone{
-    width:230px;
-    height:300px;
-    background:#fff;
-    border-radius:35px;
-    position:relative;
-    box-shadow:0 15px 40px rgba(0,0,0,.12);
-}
-
-.process-phone::before{
-    content:'';
-    position:absolute;
-    width:95px;
-    height:20px;
-    background:#111;
-    border-radius:20px;
-    left:50%;
-    top:12px;
-    transform:translateX(-50%);
-}
-
-/* FAQ Header */
-
-.faq-top{
-    text-align:center;
-    margin-bottom:40px;
-}
-
-.faq-top small{
-    display:block;
-    font-weight:700;
-    margin-bottom:10px;
-}
-
-.faq-top h2{
-    font-size:42px;
-    font-weight:900;
-    margin-bottom:12px;
-}
-
-.faq-top p{
-    font-size:13px;
-    line-height:1.6;
-    color:#444;
-}
-
-.talk-btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    margin-top:18px;
-    background:#9c9c9c;
-    color:#fff;
-    text-decoration:none;
-    padding:12px 30px;
-    border-radius:999px;
-    font-weight:700;
-}
-
-/* FAQ */
-
-.faq-list{
-    max-width:1000px;
-    margin:auto;
-}
-
-.faq-item{
-    border-bottom:1px solid #bfbfbf;
-}
-
-.faq-item summary{
-    list-style:none;
-    cursor:pointer;
-    padding:18px 0;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-size:14px;
-    font-weight:600;
-}
-
-.faq-item summary::-webkit-details-marker{
-    display:none;
-}
-
-.faq-item summary::after{
-    content:"+";
-    font-size:18px;
-}
-
-.faq-item[open] summary::after{
-    content:"−";
-}
-
-.faq-content{
-    padding-bottom:18px;
-    color:#555;
-    font-size:13px;
-    line-height:1.6;
-}
-
-@media(max-width:900px){
-
-    .process{
-        flex-direction:column;
-    }
-
-    .process-card{
-        width:100%;
-        max-width:320px;
-    }
-
-    .process-phone{
-        width:200px;
-        height:270px;
-    }
-
-    .how-header h2,
-    .faq-top h2{
-        font-size:30px;
-    }
-}
-
-
-
-/* ==========================================
-   CONTACT + FOOTER
-========================================== */
-
-.contact-footer{
-    background:white;
-    margin-top:80px;
-}
-
-.contact-section{
-    max-width:1150px;
-    margin:auto;
-    padding:80px 20px 60px;
-}
-
-.contact-heading{
-    text-align:center;
-    margin-bottom:45px;
-}
-
-.contact-heading small{
-    display:block;
-    font-size:14px;
-    font-weight:700;
-    margin-bottom:10px;
-}
-
-.contact-heading h2{
-    font-size:52px;
-    line-height:1.05;
-    font-weight:900;
-}
-
-.contact-box{
-    background:#bcbcbc;
-    border-radius:16px;
-    padding:30px;
-    display:flex;
-    gap:40px;
-}
-
-.contact-left{
-    width:320px;
-}
-
-.contact-left h3{
-    font-size:30px;
-    font-weight:900;
-    margin-bottom:10px;
-}
-
-.contact-left p{
-    color:#333;
-    font-size:14px;
-    line-height:1.6;
-    margin-bottom:30px;
-}
-
-.contact-info{
-    display:flex;
-    align-items:center;
-    gap:15px;
-    background:#cfcfcf;
-    border-radius:12px;
-    padding:14px;
-    margin-bottom:15px;
-}
-
-.contact-icon{
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
-}
-
-.contact-info span{
-    font-size:14px;
-    line-height:1.6;
-}
-
-.contact-form{
-    flex:1;
-}
-
-.form-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:18px;
-}
-
-.form-group{
-    display:flex;
-    flex-direction:column;
-}
-
-.form-group label{
-    font-size:12px;
-    font-weight:700;
-    margin-bottom:8px;
-}
-
-.form-group input,
-.form-group textarea{
-    border:none;
-    background:#e7e7e7;
-    border-radius:10px;
-    padding:14px;
-    font-family:inherit;
-}
-
-.full{
-    grid-column:1/-1;
-}
-
-.form-group textarea{
-    height:120px;
-    resize:none;
-}
-
-/* FOOTER */
-
-.pg-footer{
-    border-top:1px solid rgba(0,0,0,.08);
-    padding:60px 20px 25px;
-}
-
-.footer-main{
-    max-width:1150px;
-    margin:auto;
-    display:flex;
-    justify-content:space-between;
-    gap:40px;
-}
-
-.footer-left{
-    max-width:320px;
-}
-
-.footer-logo{
-    font-size:42px;
-    font-weight:900;
-    line-height:.9;
-    margin-bottom:20px;
-}
-
-.footer-left p{
-    color:#333;
-    line-height:1.7;
-    margin-bottom:25px;
-}
-
-.social-title{
-    font-weight:800;
-    margin-bottom:15px;
-}
-
-.socials{
-    display:flex;
-    gap:12px;
-}
-
-.socials a{
-    width:42px;
-    height:42px;
-    border-radius:50%;
-    border:2px solid #111;
-    text-decoration:none;
-    color:#111;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:700;
-}
-
-.footer-right{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:25px;
-}
-
-.footer-posters{
-    display:flex;
-    gap:20px;
-}
-
-.footer-poster{
-    width:140px;
-    height:180px;
-    background:#efefef;
-    border-radius:4px;
-}
-
-.store-buttons{
-    display:flex;
-    gap:15px;
-    flex-wrap:wrap;
-}
-
-.store-btn{
-    background:#fff;
-    padding:14px 20px;
-    border-radius:12px;
-    text-decoration:none;
-    color:#111;
-    font-weight:700;
-}
-
-.footer-bottom{
-    max-width:1150px;
-    margin:40px auto 0;
-    padding-top:20px;
-    border-top:1px solid rgba(0,0,0,.08);
-    display:flex;
-    justify-content:space-between;
-    font-size:12px;
-}
-
-.footer-links{
-    display:flex;
-    gap:25px;
-}
-
-.footer-links a{
-    text-decoration:none;
-    color:#111;
-}
-
-@media(max-width:900px){
-
-    .contact-heading h2{
-        font-size:34px;
-    }
-
-    .contact-box{
-        flex-direction:column;
-    }
-
-    .contact-left{
-        width:100%;
-    }
-
-    .form-grid{
-        grid-template-columns:1fr;
-    }
-
-    .footer-main{
-        flex-direction:column;
-        text-align:center;
-    }
-
-    .footer-right{
-        align-items:center;
-    }
-
-    .footer-bottom{
-        flex-direction:column;
-        gap:15px;
-        text-align:center;
-    }
-}
-
-</style>
-</head>
-
-<body style="background: #FFFCE5;">
-
-<nav class="navbar">
-    <div class="logo">POSTERGALI</div>
-
-    <div class="nav-links">
-        <a href="#">Home</a>
-        <a href="#">Features</a>
-        <a href="#">FAQ</a>
-        <a href="#">Contact</a>
-    </div>
-
-    <button class="btn">Download App</button>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-
-    <div class="tag">India ka Poster Bazaar</div>
-
-    <h1>Your Street, your posters<br>now on your phone</h1>
-
-    <p>
-        Whether it's hiring, a promotion, or any event — with PosterGali, <br>your message reaches straight to the walls of your city
-    </p>
-
-    <div class="phone-section">
-        <div class="posterm poster0"></div>
-        <div class="poster poster1"></div>
-        <div class="postern poster2"></div>
-        <div class="posterm posterlast"></div>
-
-        <div class="phone">
-            <div class="phone-top">
-                <div class="notch"></div>
-            </div>
-            <div class="screen"></div>
-        </div>
+     
+    @media (min-width: 768px){
+        .main-title h1{
+            font-size: 6rem;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #555;
+        }
         
-         <div class="postero poster3"></div>
-         <div class="postern poster4"></div>
-        <div class="poster poster5"></div>
-        <div class="poster poster6"></div>
+        .main-title h2{
+            font-size: 4rem;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+    
+     
+    }
+     
+    @media (min-width: 1024px){
+     
+        .main-title h1{
+            font-size: 7rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            color: #555;
+        }
+        
+        .main-title h2{
+            font-size: 5rem;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+     
+    }
+     
+    @media (min-width: 1200px){
+     
+        .main-title h1{
+            font-size: 8rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            color: #555;
+        }
+        
+        .main-title h2{
+            font-size: 5rem;
+            font-weight: 300;
+            text-transform: uppercase;
+        }
+
+        .main-title{
+            text-align: center;
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+        
+     
+    }
+    </style>
+
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <!-- Bootstrap -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Lato:400,900&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material ui icons - google web fonts -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-10 main-title">
+          <h1>Website</h1>
+          <h2>under construction</h2>
+        </div>
+      </div>
+      <div class="row align-items-center">
+        <div class="col-sm-10 col-md-6 col-lg-6 svg-img p-5">
+          <svg
+            viewBox="0 0 834 690"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g id="undraw_dev_productivity_umsq 1" clip-path="url(#clip0)">
+              <g id="man">
+                <path
+                  id="Vector"
+                  d="M435.922 191.941C476.534 191.941 509.458 159.018 509.458 118.405C509.458 77.7923 476.534 44.869 435.922 44.869C395.309 44.869 362.385 77.7923 362.385 118.405C362.385 159.018 395.309 191.941 435.922 191.941Z"
+                  fill="#A0616A"
+                />
+                <path
+                  id="Vector_2"
+                  d="M381.036 155.173C381.036 155.173 394.891 259.616 373.576 271.339C352.261 283.062 500.399 284.128 500.399 284.128C500.399 284.128 467.361 193.54 482.281 165.831L381.036 155.173Z"
+                  fill="#A0616A"
+                />
+                <path
+                  id="Vector_3"
+                  d="M608.57 284.656L596.25 340.756L570.2 459.446L569.42 465.946L560.43 541.196L554.45 591.186L550.44 624.766C526.06 637.296 508.39 645.946 508.39 645.946C508.39 645.946 506.87 638.326 504.42 628.576C487.31 633.706 455.65 642.216 428.82 643.916C438.59 654.806 443.08 665.036 436.99 672.586C418.61 695.346 342.73 647.666 316.19 629.886C315.572 634.143 315.338 638.447 315.49 642.746L295.18 627.126L297.19 591.186L300.58 530.376L304.84 454.116C303.497 450.851 302.371 447.5 301.47 444.086C295.25 421.966 287.7 377.796 281.91 340.756C277.25 310.946 273.75 285.756 273.01 280.396C272.91 279.696 272.86 279.336 272.86 279.336L385.29 229.656C393.28 248.186 430.59 253.756 430.59 253.756C461.5 251.626 485.73 235.326 485.73 235.326L608.57 284.656Z"
+                  fill="#D0CDE1"
+                />
+                <path
+                  id="Vector_4"
+                  d="M374.746 48.8468L360.997 43.3423C360.997 43.3423 389.746 11.6915 429.744 14.4439L418.494 2.05865C418.494 2.05865 445.993 -8.95021 470.992 19.9482C484.134 35.1394 499.339 52.996 508.817 73.1112H523.542L517.396 86.643L538.906 100.175L516.828 97.7442C518.144 105.154 518.346 112.719 517.428 120.189C516.48 127.661 512.667 134.473 506.793 139.187C506.793 139.187 489.741 103.891 489.741 98.387V112.148C489.741 112.148 475.992 99.7631 475.992 91.5065L468.492 101.139L464.742 86.0019L418.494 101.139L425.994 88.7543L397.245 92.8826L408.495 77.7452C408.495 77.7452 375.997 95.6348 374.746 110.772C373.497 125.909 363.984 140.253 363.984 140.253C363.984 140.253 338.498 69.4885 374.746 48.8468Z"
+                  fill="#2F2E41"
+                />
+                <g id="rightHand">
+                  <path
+                    id="Vector_5"
+                    d="M516.92 624.636C516.92 624.636 512.16 626.266 504.42 628.576C487.31 633.706 455.65 642.216 428.82 643.916C405.72 645.396 386.2 641.836 382.63 626.766C381.1 620.286 383.27 614.956 388 610.576C402.12 597.486 439 592.796 468.25 591.186C476.51 590.736 484.15 590.526 490.51 590.446C501.31 590.306 508.39 590.526 508.39 590.526L508.56 591.186L516.92 624.636Z"
+                    fill="#A0616A"
+                  />
+                  <path
+                    id="Vector_6"
+                    d="M688.5 542.566C681.01 550.686 662.45 562.916 639.95 576.156C631.58 581.076 622.67 586.146 613.58 591.186C591.89 603.216 569.18 615.136 550.44 624.766C526.06 637.296 508.39 645.946 508.39 645.946C508.39 645.946 506.87 638.326 504.42 628.576C501.14 615.526 496.2 598.656 491.05 591.186C490.87 590.926 490.69 590.686 490.51 590.446C489.01 588.476 487.5 587.326 486.01 587.326L560.43 541.196L592.59 521.256L569.42 465.946L540.36 396.566L557.9 340.756L575.53 284.656H608.57C608.57 284.656 619.51 308.536 633.5 341.836C635.59 346.816 637.75 352.006 639.95 357.366C668.73 427.366 704.61 525.116 688.5 542.566Z"
+                    fill="#D0CDE1"
+                  />
+                </g>
+                <g id="leftHand">
+                  <path
+                    id="Vector_7"
+                    d="M436.99 672.586C418.61 695.346 342.73 647.666 316.19 629.886C310.41 626.016 306.97 623.566 306.97 623.566L331.25 591.186L338.94 580.936C338.94 580.936 345.82 584.586 355.99 590.526C356.36 590.746 356.73 590.966 357.11 591.186C365.88 596.336 376.89 603.066 388 610.576C403.33 620.946 418.83 632.776 428.82 643.916C438.59 654.806 443.08 665.036 436.99 672.586Z"
+                    fill="#A0616A"
+                  />
+                  <path
+                    id="Vector_8"
+                    d="M355.99 590.526C353.276 590.516 350.567 590.736 347.89 591.186C324.9 595.136 318.12 615.946 316.19 629.886C315.572 634.143 315.338 638.447 315.49 642.746L295.18 627.126L287.78 621.436C269.97 615.226 254.1 604.196 240.34 591.186C228.403 579.7 217.695 567.001 208.39 553.296C199.122 539.788 190.86 525.616 183.67 510.896C181.664 506.788 180.586 502.29 180.512 497.719C180.437 493.148 181.369 488.617 183.24 484.446L208.39 428.396L245.15 346.476C245.42 344.526 245.717 342.619 246.04 340.756C253.33 298.956 272.86 280.396 272.86 280.396H287.78L297.76 340.756L310.16 415.746L301.47 444.086L281.39 509.536L300.58 530.376L355.99 590.526Z"
+                    fill="#D0CDE1"
+                  />
+                </g>
+                <path
+                  id="Vector_9"
+                  d="M372.877 415.806L385.631 430.687C390.37 429.783 395.319 428.721 400.416 427.529L396.752 415.806L405.71 426.256C459.707 412.976 526.637 387.155 526.637 387.155C526.637 387.155 454.38 392.453 400.428 380.666C376.558 375.451 351.998 387.284 342.202 409.669C336.509 422.679 337.403 433.952 357.596 433.952C364.419 433.835 371.224 433.195 377.949 432.037L372.877 415.806Z"
+                  fill="#6C63FF"
+                />
+              </g>
+              <g id="allOther">
+                <path
+                  id="Vector_10"
+                  d="M663.65 660.386V666.456C663.654 668.122 663.345 669.774 662.74 671.326C662.472 672.018 662.147 672.687 661.77 673.326C660.579 675.327 658.887 676.983 656.863 678.133C654.838 679.283 652.549 679.887 650.22 679.886H203.67C201.342 679.887 199.053 679.283 197.028 678.133C195.003 676.983 193.312 675.327 192.12 673.326C191.743 672.687 191.419 672.018 191.15 671.326C190.546 669.774 190.237 668.122 190.24 666.456V660.386C190.24 658.622 190.587 656.876 191.262 655.246C191.936 653.616 192.926 652.136 194.173 650.889C195.42 649.641 196.901 648.652 198.53 647.977C200.16 647.303 201.907 646.956 203.67 646.956H229.41V644.126C229.41 644.053 229.425 643.98 229.453 643.912C229.481 643.844 229.522 643.782 229.574 643.73C229.626 643.678 229.688 643.637 229.756 643.608C229.824 643.58 229.897 643.566 229.97 643.566H243.4C243.474 643.566 243.547 643.58 243.615 643.608C243.683 643.637 243.745 643.678 243.797 643.73C243.849 643.782 243.89 643.844 243.918 643.912C243.946 643.98 243.96 644.053 243.96 644.126V646.956H252.35V644.126C252.35 644.053 252.365 643.98 252.393 643.912C252.421 643.844 252.462 643.782 252.514 643.73C252.566 643.678 252.628 643.637 252.696 643.608C252.764 643.58 252.837 643.566 252.91 643.566H266.34C266.414 643.566 266.487 643.58 266.555 643.608C266.623 643.637 266.684 643.678 266.736 643.73C266.789 643.782 266.83 643.844 266.858 643.912C266.886 643.98 266.9 644.053 266.9 644.126V646.956H275.3V644.126C275.3 644.053 275.315 643.98 275.343 643.912C275.371 643.844 275.412 643.782 275.464 643.73C275.516 643.678 275.578 643.637 275.646 643.608C275.714 643.58 275.787 643.566 275.86 643.566H289.29C289.364 643.566 289.437 643.58 289.505 643.608C289.573 643.637 289.634 643.678 289.687 643.73C289.739 643.782 289.78 643.844 289.808 643.912C289.836 643.98 289.85 644.053 289.85 644.126V646.956H298.24V644.126C298.24 644.053 298.255 643.98 298.283 643.912C298.311 643.844 298.352 643.782 298.404 643.73C298.456 643.678 298.518 643.637 298.586 643.608C298.654 643.58 298.727 643.566 298.8 643.566H312.23C312.304 643.566 312.377 643.58 312.445 643.608C312.513 643.637 312.574 643.678 312.626 643.73C312.679 643.782 312.72 643.844 312.748 643.912C312.776 643.98 312.79 644.053 312.79 644.126V646.956H321.18V644.126C321.18 644.053 321.195 643.98 321.223 643.912C321.251 643.844 321.292 643.782 321.344 643.73C321.396 643.678 321.458 643.637 321.526 643.608C321.594 643.58 321.667 643.566 321.74 643.566H335.17C335.244 643.566 335.317 643.58 335.385 643.608C335.453 643.637 335.514 643.678 335.566 643.73C335.619 643.782 335.66 643.844 335.688 643.912C335.716 643.98 335.73 644.053 335.73 644.126V646.956H344.13V644.126C344.13 644.053 344.145 643.98 344.173 643.912C344.201 643.844 344.242 643.782 344.294 643.73C344.346 643.678 344.408 643.637 344.476 643.608C344.544 643.58 344.617 643.566 344.69 643.566H358.12C358.194 643.566 358.267 643.58 358.335 643.608C358.403 643.637 358.464 643.678 358.516 643.73C358.569 643.782 358.61 643.844 358.638 643.912C358.666 643.98 358.68 644.053 358.68 644.126V646.956H367.07V644.126C367.07 644.053 367.085 643.98 367.113 643.912C367.141 643.844 367.182 643.782 367.234 643.73C367.286 643.678 367.348 643.637 367.416 643.608C367.484 643.58 367.557 643.566 367.63 643.566H472.83C472.904 643.566 472.977 643.58 473.045 643.608C473.113 643.637 473.174 643.678 473.227 643.73C473.279 643.782 473.32 643.844 473.348 643.912C473.376 643.98 473.39 644.053 473.39 644.126V646.956H481.79V644.126C481.79 644.053 481.805 643.98 481.833 643.912C481.861 643.844 481.902 643.782 481.954 643.73C482.006 643.678 482.068 643.637 482.136 643.608C482.204 643.58 482.277 643.566 482.35 643.566H495.78C495.928 643.568 496.07 643.627 496.175 643.732C496.279 643.836 496.339 643.978 496.34 644.126V646.956H504.73V644.126C504.73 644.053 504.745 643.98 504.773 643.912C504.801 643.844 504.842 643.782 504.894 643.73C504.946 643.678 505.008 643.637 505.076 643.608C505.144 643.58 505.217 643.566 505.29 643.566H518.72C518.794 643.566 518.867 643.58 518.935 643.608C519.003 643.637 519.065 643.678 519.117 643.73C519.169 643.782 519.21 643.844 519.238 643.912C519.266 643.98 519.28 644.053 519.28 644.126V646.956H527.67V644.126C527.67 644.053 527.685 643.98 527.713 643.912C527.741 643.844 527.782 643.782 527.834 643.73C527.886 643.678 527.948 643.637 528.016 643.608C528.084 643.58 528.157 643.566 528.23 643.566H541.66C541.734 643.566 541.807 643.58 541.875 643.608C541.943 643.637 542.005 643.678 542.057 643.73C542.109 643.782 542.15 643.844 542.178 643.912C542.206 643.98 542.22 644.053 542.22 644.126V646.956H550.62V644.126C550.62 644.053 550.635 643.98 550.663 643.912C550.691 643.844 550.732 643.782 550.784 643.73C550.836 643.678 550.898 643.637 550.966 643.608C551.034 643.58 551.107 643.566 551.18 643.566H564.61C564.757 643.568 564.898 643.628 565.001 643.733C565.104 643.838 565.161 643.979 565.16 644.126V646.956H573.56V644.126C573.56 644.053 573.575 643.98 573.603 643.912C573.631 643.844 573.672 643.782 573.724 643.73C573.776 643.678 573.838 643.637 573.906 643.608C573.974 643.58 574.047 643.566 574.12 643.566H587.55C587.624 643.566 587.697 643.58 587.765 643.608C587.833 643.637 587.895 643.678 587.947 643.73C587.999 643.782 588.04 643.844 588.068 643.912C588.096 643.98 588.111 644.053 588.11 644.126V646.956H596.5V644.126C596.5 644.053 596.515 643.98 596.543 643.912C596.571 643.844 596.612 643.782 596.664 643.73C596.716 643.678 596.778 643.637 596.846 643.608C596.914 643.58 596.987 643.566 597.06 643.566H610.49C610.564 643.566 610.637 643.58 610.705 643.608C610.773 643.637 610.835 643.678 610.887 643.73C610.939 643.782 610.98 643.844 611.008 643.912C611.036 643.98 611.051 644.053 611.05 644.126V646.956H650.22C651.984 646.956 653.731 647.303 655.36 647.977C656.99 648.652 658.471 649.641 659.718 650.889C660.965 652.136 661.954 653.616 662.629 655.246C663.304 656.876 663.651 658.622 663.65 660.386Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_11"
+                  d="M833.5 671.326H60.5002V673.326H833.5V671.326Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_12"
+                  d="M627.695 404.757H461.252V401.326H385.78V404.757H218.651C215.665 404.757 212.801 405.943 210.69 408.054C208.579 410.166 207.392 413.029 207.392 416.015V643.927C207.392 646.913 208.578 649.776 210.69 651.888C212.801 653.999 215.665 655.185 218.651 655.185H627.695C630.68 655.185 633.544 653.999 635.656 651.888C637.767 649.776 638.953 646.913 638.953 643.927V416.015C638.953 414.537 638.662 413.073 638.096 411.707C637.53 410.341 636.701 409.1 635.656 408.054C634.61 407.009 633.369 406.179 632.003 405.614C630.637 405.048 629.173 404.757 627.695 404.757Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_13"
+                  d="M108.446 661.223H80.446V689.223H108.446V661.223Z"
+                  fill="#D0CDE1"
+                />
+                <path
+                  id="Vector_14"
+                  d="M91.45 639.223V673.223H125.45V639.223H91.45ZM123.97 671.743H92.92V640.703H123.97V671.743Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_15"
+                  d="M756.446 661.223H728.446V689.223H756.446V661.223Z"
+                  fill="#D0CDE1"
+                />
+                <path
+                  id="Vector_16"
+                  d="M739.45 639.223V673.223H773.45V639.223H739.45ZM771.97 671.743H740.92V640.703H771.97V671.743Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_17"
+                  d="M94.5801 230.113C138.399 230.113 173.921 194.591 173.921 150.773C173.921 106.954 138.399 71.4324 94.5801 71.4324C50.7616 71.4324 15.2396 106.954 15.2396 150.773C15.2396 194.591 50.7616 230.113 94.5801 230.113Z"
+                  fill="#6C63FF"
+                />
+                <path
+                  id="Vector_18"
+                  d="M122.229 56.49C115.045 55.5764 107.775 55.5764 100.591 56.49C84.5863 58.5914 69.5206 65.2399 57.1812 75.6466C44.8419 86.0533 35.747 99.7814 30.9756 115.202C28.8056 122.229 27.5767 129.514 27.3211 136.864C27.2851 137.886 27.261 138.92 27.261 139.954C27.2833 162.265 36.1561 183.655 51.9323 199.431C67.7084 215.208 89.0991 224.08 111.41 224.103C113.201 224.103 114.992 224.043 116.759 223.934C120.908 223.674 125.03 223.103 129.093 222.227C148.495 218.055 165.798 207.161 177.947 191.468C190.096 175.776 196.308 156.295 195.487 136.467C194.666 116.638 186.864 97.7381 173.459 83.104C160.054 68.4699 141.909 59.0436 122.229 56.49H122.229ZM137.748 217.347H137.736C130.959 219.659 123.905 221.062 116.759 221.518C114.992 221.638 113.201 221.698 111.41 221.698C89.7379 221.672 68.9613 213.051 53.6369 197.727C38.3126 182.402 29.6917 161.626 29.6652 139.954C29.6652 138.92 29.6892 137.886 29.7253 136.864C30.5517 115.744 39.5159 95.7617 54.7414 81.1009C69.9669 66.4401 90.2733 58.2371 111.41 58.209C130.776 58.2101 149.513 65.0866 164.283 77.6132C179.052 90.1399 188.895 107.503 192.057 126.61C195.22 145.716 191.496 165.325 181.55 181.942C171.604 198.559 156.082 211.106 137.748 217.347H137.748Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_19"
+                  d="M112.612 63.0175H110.208V79.8473H112.612V63.0175Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_20"
+                  d="M57.8578 84.7016L56.1577 86.4017L68.0582 98.3021L69.7582 96.6021L57.8578 84.7016Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_21"
+                  d="M34.4738 138.752V141.156H51.3035V138.752H34.4738Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_22"
+                  d="M56.1577 193.506L57.8578 195.206L69.7582 183.305L68.0582 181.605L56.1577 193.506Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_23"
+                  d="M153.061 96.602L154.762 98.3021L166.662 86.4016L164.962 84.7016L153.061 96.602Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_24"
+                  d="M171.516 138.752V141.156H188.346V138.752H171.516Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_25"
+                  d="M154.762 181.605L153.061 183.305L164.962 195.206L166.662 193.506L154.762 181.605Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_26"
+                  d="M112.612 200.06H110.208V216.89H112.612V200.06Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_27"
+                  d="M122.229 35.3686H100.591V57.0069H122.229V35.3686Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_28"
+                  d="M111.41 38.975C127.344 38.975 140.261 34.4002 140.261 28.7569C140.261 23.1136 127.344 18.5388 111.41 18.5388C95.4759 18.5388 82.5588 23.1136 82.5588 28.7569C82.5588 34.4002 95.4759 38.975 111.41 38.975Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_29"
+                  d="M226 220.44H0V222.844H226V220.44Z"
+                  fill="#3F3D56"
+                />
+              </g>
+              <g id="clock">
+                <path
+                  id="Vector_30"
+                  d="M115.016 94.2729H107.803V135.145H115.016V94.2729Z"
+                  fill="#3F3D56"
+                />
+                <path
+                  id="Vector_31"
+                  d="M115.016 135.145C113.976 134.365 112.71 133.943 111.41 133.943C110.109 133.943 108.844 134.365 107.803 135.145C107.091 135.686 106.505 136.375 106.084 137.165C105.552 138.181 105.322 139.329 105.421 140.473C105.52 141.616 105.944 142.707 106.643 143.617C107.343 144.527 108.288 145.218 109.368 145.608C110.447 145.998 111.616 146.07 112.735 145.817C113.855 145.564 114.878 144.996 115.685 144.179C116.492 143.363 117.048 142.333 117.288 141.211C117.528 140.088 117.441 138.921 117.039 137.846C116.636 136.771 115.934 135.834 115.016 135.145H115.016ZM111.41 143.56C110.454 143.557 109.539 143.176 108.863 142.501C108.187 141.825 107.806 140.909 107.803 139.954C107.808 139.224 108.03 138.513 108.441 137.91C108.793 137.4 109.271 136.989 109.828 136.718C110.385 136.447 111.003 136.324 111.622 136.361C112.241 136.398 112.84 136.595 113.361 136.931C113.881 137.267 114.306 137.732 114.595 138.281C114.883 138.83 115.025 139.444 115.007 140.063C114.988 140.683 114.811 141.288 114.49 141.818C114.17 142.349 113.718 142.788 113.179 143.093C112.639 143.399 112.03 143.559 111.41 143.56V143.56Z"
+                  fill="#3F3D56"
+                />
+              </g>
+              <g id="leftTree">
+                <path
+                  id="Vector_32"
+                  d="M150.594 599.754C151.527 631.704 132.859 643.413 109.43 644.097C108.886 644.113 108.345 644.123 107.805 644.126C106.719 644.135 105.643 644.117 104.577 644.072C83.3891 643.193 66.6173 631.945 65.7495 602.232C64.8515 571.482 103.018 531.529 105.882 528.574L105.887 528.571C105.996 528.458 106.052 528.402 106.052 528.402C106.052 528.402 149.661 567.807 150.594 599.754Z"
+                  fill="#D0CDE1"
+                />
+                <path
+                  id="Vector_33"
+                  d="M107.744 639.255L122.626 617.124L107.774 641.636L107.805 644.126C106.719 644.135 105.643 644.117 104.577 644.072L105.316 612.06L105.295 611.813L105.323 611.766L105.393 608.741L89.0953 585.078L105.374 606.477L105.432 607.116L105.989 582.93L91.9123 558.397L106.029 578.681L105.882 528.574L105.882 528.407L105.887 528.571L106.822 568.062L119.651 552.021L106.864 571.464L107.144 593.098L118.949 571.984L107.187 596.279L107.343 608.309L124.512 578.897L107.395 612.505L107.744 639.255Z"
+                  fill="#3F3D56"
+                />
+              </g>
+              <g id="righTree">
+                <path
+                  id="Vector_34"
+                  d="M798.594 599.754C799.527 631.704 780.859 643.413 757.43 644.097C756.886 644.113 756.345 644.123 755.805 644.126C754.719 644.135 753.643 644.117 752.577 644.072C731.389 643.193 714.617 631.945 713.75 602.232C712.852 571.482 751.018 531.529 753.882 528.574L753.887 528.571C753.996 528.458 754.052 528.402 754.052 528.402C754.052 528.402 797.661 567.807 798.594 599.754Z"
+                  fill="#D0CDE1"
+                />
+                <path
+                  id="Vector_35"
+                  d="M755.744 639.255L770.626 617.124L755.774 641.636L755.805 644.126C754.719 644.135 753.643 644.117 752.577 644.072L753.316 612.06L753.295 611.813L753.323 611.766L753.393 608.741L737.095 585.078L753.374 606.477L753.432 607.116L753.989 582.93L739.912 558.397L754.029 578.681L753.882 528.574L753.882 528.407L753.887 528.571L754.822 568.062L767.651 552.021L754.864 571.464L755.144 593.098L766.949 571.984L755.187 596.279L755.343 608.309L772.512 578.897L755.395 612.505L755.744 639.255Z"
+                  fill="#3F3D56"
+                />
+              </g>
+              <g id="pc-circle">
+                <path
+                  id="Vector_36"
+                  d="M422.5 512.326C436.307 512.326 447.5 501.133 447.5 487.326C447.5 473.519 436.307 462.326 422.5 462.326C408.693 462.326 397.5 473.519 397.5 487.326C397.5 501.133 408.693 512.326 422.5 512.326Z"
+                  fill="#3F3D56"
+                />
+              </g>
+            </g>
+            <defs>
+              <clipPath id="clip0">
+                <rect width="833.5" height="689.223" fill="white" />
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
+      </div>
+     
     </div>
-</section>
-
-<!-- FEATURE STRIP -->
-<div class="feature-strip">
-    <div>From ₹19 ONLY</div>
-    <div>LOCAL REACH</div>
-    <div>INSTANT LIVE</div>
-    <div>SMART TARGETING</div>
-    <div>VERIFIED</div>
-</div>
-
-<!-- APP SECTION -->
-<section class="app-section">
-
-    <div class="app-text">
-        <div class="app-badge">DOWNLOAD NOW — KEEP IT HANDY!</div>
-
-        <h2>
-            Your very own Poster Bazaar Available on Android & iOS
-        </h2>
-
-        <p>
-            Get it free today, design your first poster in minutes and
-            watch your business grow like never before!
-        </p>
-    </div>
-
-    <div class="app-preview">
-
-        <!-- MOCKS -->
-        <div class="mock-row">
-            <div class="mock mock-left"></div>
-            <div class="mock mock-right"></div>
+      <footer class="footer">
+        <div class="container text-center">
+          <span>your-website-name.com</span>
         </div>
-
-        <!-- STORE BUTTONS BELOW -->
-        <div class="store">
-
-            <a href="#">
-                <div>▶</div>
-                <div>
-                    <small>GET IT ON</small>
-                    <strong>Google Play</strong>
-                </div>
-            </a>
-
-            <a href="#">
-                <div></div>
-                <div>
-                    <small>DOWNLOAD ON THE</small>
-                    <strong>App Store</strong>
-                </div>
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ================= WHY POSTERGALI CARDS ================= -->
-
-<section class="why-postergali">
-
-    <div class="why-head">
-        <small>What is PosterGali?</small>
-        <h2>Your neighbourhood street<br>gone digital</h2>
-    </div>
-
-    <!-- CARD 1 -->
-    <div class="pg-cardm tilt-right">
-        <div class="pg-content">
-            <h3>Hyperlocal<br>Digital<br>Noticeboard</h3>
-
-            <p>
-                India’s hyperlocal poster platform<br>
-Reach people who live, work, and shop nearby <br>
-No agency fees, no middlemen <br>
-            </p>
-        </div>
-    <div class="pg-posters">
-        <img src="/images/image1.png" class="mini-poster poster-img poster-img1" alt="Poster">
-        <img src="/images/image2.png" class="mini-poster poster-img poster-img2" alt="Poster">
-        <img src="/images/image3.png" class="mini-poster poster-img poster-img3" alt="Poster">
-    </div>
-    </div>
-
-    <!-- CARD 2 -->
-    <div class="pg-cardn tilt-left">
-
-        <div class="pg-content">
-            <h3>Instant<br>Community<br>Connection</h3>
-
-            <p>
-                Promote offers and events.<br>
-                Reach nearby customers.<br>
-                Engage your neighbourhood.
-            </p>
-        </div>
-
-        <div class="pg-phone-wrap">
-
-            <img
-             src="/images/phonehand.png"
-              alt=""
-              class="hand-phone">
-        </div>
-
-    </div>
-
-    <!-- CARD 3 -->
-    <div class="pg-cardo tilt-right">
-
-        <div class="pg-content">
-            <h3>Smart<br>Targeting</h3>
-
-            <p>
-                Choose specific areas and PIN codes.<br>
-                Show only where it matters.
-            </p>
-        </div>
-
-        <div class="phone-frame"></div>
-
-    </div>
-
-    <!-- CARD 4 -->
-    <div class="pg-cardp tilt-left">
-
-        <div class="pg-content">
-            <h3>Easy &<br>Affordable</h3>
-
-            <p>
-                Go live under ₹19.<br>
-                No flex boards or printing costs.
-            </p>
-        </div>
-
-        <div class="pg-phone-wrap">
-            <img
-              src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500"
-              alt=""
-              class="hand-phone">
-        </div>
-
-    </div>
-
-    <!-- CARD 5 -->
-    <div class="pg-cardp tilt-right">
-
-        <div class="pg-content">
-            <h3>Trust &<br>Verification</h3>
-
-            <p>
-                Every poster verified.<br>
-                Safe visibility for local users.
-            </p>
-        </div>
-
-        <div class="phone-frame"></div>
-
-    </div>
-
-</section>
-
-<!-- ==========================================
-     HOW IT WORKS + FAQ
-========================================== -->
-
-<section class="how-faq">
-
-    <div class="how-wrap">
-
-        <div class="how-header">
-            <small>How it works?</small>
-            <h2>Getting Started With<br>PosterGali</h2>
-            <p>Follow These Simple Steps To Publish Your Poster In Minutes</p>
-        </div>
-
-        <div class="process">
-
-            <div class="process-column">
-
-                <div class="process-card">
-                    <h4>Define your goal</h4>
-                    <p>
-                        Choose whether you want to hire talent
-                        or promote an offer.
-                    </p>
-                </div>
-
-                <div class="process-cardm">
-                    <h4>Set your reach</h4>
-                    <p>
-                        Select coverage from 1 km to 25 km,
-                        or expand city-wide.
-                    </p>
-                </div>
-
-                <div class="process-card">
-                    <h4>Publish instantly</h4>
-                    <p>
-                        Go live in your neighbourhood
-                        within minutes.
-                    </p>
-                </div>
-
-            </div>
-
-            <div class="process-center">
-                <img src="/images/whypost.png" alt="" style="width: 270px;; height: 270px; object-fit:cover;">
-            </div>
-
-            <div class="process-column">
-
-                <div class="process-cardm">
-                    <h4>Build your poster</h4>
-                    <p>
-                       Build your poster
-Answer quick questions business name, role, salary, or offer details — and let the chatbot create your poster.
-                    </p>
-                </div>
-
-                <div class="process-card">
-                    <h4>Verify & preview</h4>
-                    <p>
-                       Complete a quick OTP check, review your poster, and confirm the details.
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="faq-top">
-            <small>Got questions?</small>
-
-            <h2>We've Got Answers</h2>
-
-            <p>
-                Can't Find What You're Looking For?
-                Drop Us A WhatsApp Or Email.<br>
-                We Reply Within 24 Hours On Working Days.
-            </p>
-
-            <a href="#" class="talk-btn">
-                Talk to us →
-            </a>
-        </div>
-
-        <div class="faq-list">
-
-            <details class="faq-item">
-                <summary>How much does it cost to post on PosterGali?</summary>
-                <div class="faq-content">
-                    Plans start from ₹19 depending on reach and visibility.
-                </div>
-            </details>
-
-            <details class="faq-item">
-                <summary>Do I need any design skills to make a poster?</summary>
-                <div class="faq-content">
-                    No. PosterGali automatically generates posters using AI.
-                </div>
-            </details>
-
-            <details class="faq-item">
-                <summary>How quickly my poster goes live after I post it?</summary>
-                <div class="faq-content">
-                    Most posters become visible within minutes after approval.
-                </div>
-            </details>
-
-            <details class="faq-item">
-                <summary>Can I edit my poster when it's been published?</summary>
-                <div class="faq-content">
-                    Yes, you can update and republish your poster anytime.
-                </div>
-            </details>
-
-            <details class="faq-item">
-                <summary>What kind of posters can I post?</summary>
-                <div class="faq-content">
-                    Hiring, promotions, events, services, announcements and more.
-                </div>
-            </details>
-
-            <details class="faq-item">
-                <summary>Which payment methods do you accept?</summary>
-                <div class="faq-content">
-                    UPI, Debit Cards, Credit Cards and Net Banking.
-                </div>
-            </details>
-
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ==========================================
-     CONTACT + FOOTER
-========================================== -->
-
-<section class="contact-footer">
-
-    <div class="contact-section">
-
-        <div class="contact-heading">
-            <small>Connect with PosterGali</small>
-            <h2>Let's Talk About Growing<br>Your Local Reach Today</h2>
-        </div>
-
-        <div class="contact-box">
-
-            <div class="contact-left">
-
-                <h3>Get in touch</h3>
-
-                <p>
-                    We're here to help your business
-                    connect locally.
-                </p>
-
-                <div class="contact-info">
-                    <div class="contact-icon">☎</div>
-                    <span>
-                        +91 74839201654<br>
-                        +91 83559120375
-                    </span>
-                </div>
-
-                <div class="contact-info">
-                    <div class="contact-icon">✉</div>
-                    <span>askpostergali@gmail.com</span>
-                </div>
-
-            </div>
-
-            <form class="contact-form">
-
-                <div class="form-grid">
-
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" placeholder="Type your name">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" placeholder="Type your name">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" placeholder="Type your email">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" placeholder="Type your phone number">
-                    </div>
-
-                    <div class="form-group full">
-                        <label>Message</label>
-                        <textarea placeholder="Type your message"></textarea>
-                    </div>
-
-                </div>
-
-            </form>
-
-        </div>
-
-    </div>
-
-    <!-- FOOTER -->
-
-    <footer class="pg-footer">
-
-        <div class="footer-main">
-
-            <div class="footer-left">
-
-                <div class="footer-logo">
-                    POSTER<br>GALI
-                </div>
-
-                <p>
-                    India's hyperlocal poster platform.
-                    Start with your street. Reach your
-                    whole city.
-                </p>
-
-                <div class="social-title">
-                    FOLLOW US
-                </div>
-
-                <div class="socials">
-                    <a href="#">f</a>
-                    <a href="#">ig</a>
-                </div>
-
-            </div>
-
-            <div class="footer-right">
-
-                <div class="footer-posters">
-                    <div class="footer-poster"></div>
-                    <div class="footer-poster"></div>
-                </div>
-
-                <div class="store-buttons">
-
-                    <a href="#" class="store-btn">
-                        Google Play Store
-                    </a>
-
-                    <a href="#" class="store-btn">
-                        Apple App Store
-                    </a>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="footer-bottom">
-
-            <div>
-                © 2026 Poster Gali. All Rights Reserved.
-            </div>
-
-            <div class="footer-links">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-            </div>
-
-        </div>
-
-    </footer>
-
-</section>
-</body>
+      </footer>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+      integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+      integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>

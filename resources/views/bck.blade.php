@@ -5,9 +5,137 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hero Section</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
 <style>
+
+    @font-face {
+        font-family: 'BernardMT';
+        src: url('/fonts/Times New Roman Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'GaramondRegular';
+        src: url('/fonts/Garamond - Garamond - Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'ImpactFont';
+        src: url('/fonts/impact.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'KumarOne';
+        src: url('/fonts/KumarOne-Regular.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'LemonMilkBold';
+        src: url('/fonts/LEMONMILK-Bold.otf') format('opentype');
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'MonteStella';
+        src: url('/fonts/MonteStella_Trial_Rg.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'QasiraFont';
+        src: url('/fonts/Qasira.otf') format('opentype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'QuintessentialFont';
+        src: url('/fonts/Quintessential-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    @font-face {
+        font-family: 'TimesNewRomanLocal';
+        src: url('/fonts/Times New Roman Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    body{
+        font-family:'GaramondRegular', 'TimesNewRomanLocal', serif;
+        background:#f5f5f5;
+        overflow-x:hidden;
+    }
+
+    .logo,
+    .footer-logo {
+        font-family:'ImpactFont', sans-serif;
+    }
+
+    .hero h1,
+    .why-head h2,
+    .how-header h2,
+    .faq-top h2 {
+        font-family:'BernardMT', serif;
+    }
+
+    .tag,
+    .app-badge,
+    .process-cardm h4 {
+        font-family:'QasiraFont', sans-serif;
+    }
+
+    .feature-strip,
+    .footer-links a,
+    .socials a {
+        font-family:'MonteStella', sans-serif;
+    }
+
+    .process-card h4,
+    .pg-content h3 {
+        font-family:'KumarOne', cursive;
+    }
+
+    .nav-links a,
+    .btn,
+    .store a,
+    .talk-btn,
+    .footer-links a {
+        font-family:'LemonMilkBold', sans-serif;
+    }
+
+    .process-card p,
+    .faq-top p,
+    .faq-content,
+    .contact-left p,
+    .app-text p {
+        font-family:'QuintessentialFont', serif;
+    }
+
+    .faq-item summary,
+    .process-column .process-cardm p,
+    .process-column .process-card p {
+        font-family:'TimesNewRomanLocal', serif;
+    }
+
 
 /* ================= GLOBAL ================= */
 
@@ -15,12 +143,6 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-}
-
-body{
-    font-family:'Inter',sans-serif;
-    background:#f5f5f5;
-    overflow-x:hidden;
 }
 
 /* ================= NAVBAR ================= */
@@ -111,7 +233,7 @@ body{
 .poster{
      transform:rotate(-2deg);
     position: absolute;
-    background-image: url('/images/image.png');
+    background-image: url('/images/imag1.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -423,7 +545,7 @@ body{
 .why-postergali{
     max-width:1050px;
     margin:50px auto;
-    padding:0 20px;
+    padding:0 10px;
 }
 
 .why-head{
@@ -473,7 +595,7 @@ body{
 
 
 .pg-cardn{
-    background:#F7AF25;
+    background:red;
     border-radius:14px;
 	height:260px; /* fixed equal height */
     min-height:230px;
@@ -494,7 +616,7 @@ body{
 }
 
 .pg-cardo{
-    background:#F7AF25;
+    background:#F0B13A;
     border-radius:14px;
 	height:260px; /* fixed equal height */
     min-height:230px;
@@ -516,7 +638,7 @@ body{
 
 
 .pg-cardp{
-    background:#F7AF25;
+    background:red;
     border-radius:14px;
 	height:260px; /* fixed equal height */
     min-height:230px;
@@ -734,8 +856,8 @@ body{
 ========================================== */
 
 .how-faq{
-    background:#f5f5f5;
-    padding:90px 20px 80px;
+    background:#FFFCE5;
+    padding:30px 20px 80px;
 }
 
 .how-wrap{
@@ -775,22 +897,76 @@ body{
     display:flex;
     justify-content:center;
     align-items:center;
-    gap:30px;
+    gap:0;
     margin-bottom:90px;
+    position:relative;
 }
 
 .process-column{
     display:flex;
     flex-direction:column;
     gap:18px;
+    position:relative;
+    z-index:1;
+}
+
+.process-column:first-child{
+    margin-right:-90px;
+}
+
+.process-center{
+    position:relative;
+    z-index:2;
+    margin:0 10px;
+}
+
+.process-column:last-child{
+    margin-left:-50px;
+}
+
+.process-column:first-child .process-card:first-child{
+    margin-top:4px;
+     margin-left:42px;
+}
+
+.process-column:first-child .process-cardm{
+    margin-top:4px;
+    margin-left:12px;
+}
+
+.process-column:first-child .process-card:last-child{
+    margin-top:6px;
+}
+
+.process-column:last-child .process-cardm{
+    margin-top:12px;
+}
+
+.process-column:last-child .process-card:last-child{
+    margin-top:42px;
+}
+
+.process-card,
+.process-cardm{
+    position:relative;
+    z-index:1;
 }
 
 .process-card{
-    width:220px;
-    background:#d9d9d9;
+    width:240px;
+    background: #a4dcb3;
     border-radius:14px;
     padding:18px;
 }
+
+.process-cardm{
+    width:240px;
+    background: #eccd6a;
+    border-radius:14px;
+    padding:18px;
+}
+
+
 
 .process-card h4{
     font-size:18px;
@@ -1202,7 +1378,7 @@ body{
 </style>
 </head>
 
-<body>
+<body style="background: #FFFCE5;">
 
 <nav class="navbar">
     <div class="logo">POSTERGALI</div>
@@ -1347,8 +1523,9 @@ No agency fees, no middlemen <br>
         </div>
 
         <div class="pg-phone-wrap">
+
             <img
-              src="https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500"
+             src="/images/phonehand.png"
               alt=""
               class="hand-phone">
         </div>
@@ -1436,7 +1613,7 @@ No agency fees, no middlemen <br>
                     </p>
                 </div>
 
-                <div class="process-card">
+                <div class="process-cardm">
                     <h4>Set your reach</h4>
                     <p>
                         Select coverage from 1 km to 25 km,
@@ -1454,23 +1631,24 @@ No agency fees, no middlemen <br>
 
             </div>
 
-            <div class="process-phone"></div>
+            <div class="process-center">
+                <img src="/images/whypost.png" alt="" style="width: 270px;; height: 270px; object-fit:cover;">
+            </div>
 
             <div class="process-column">
 
-                <div class="process-card">
+                <div class="process-cardm">
                     <h4>Build your poster</h4>
                     <p>
-                        Answer quick questions and let
-                        AI create your poster.
+                       Build your poster
+Answer quick questions business name, role, salary, or offer details — and let the chatbot create your poster.
                     </p>
                 </div>
 
                 <div class="process-card">
                     <h4>Verify & preview</h4>
                     <p>
-                        Review your poster and confirm
-                        before it goes live.
+                       Complete a quick OTP check, review your poster, and confirm the details.
                     </p>
                 </div>
 
