@@ -66,6 +66,7 @@ class OfferController extends Controller
             'master_category' => 'required',
             'business_name' => 'required',
             'offer_details' => 'required',
+            'offer_type' => 'required',
             'mobile_number' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',

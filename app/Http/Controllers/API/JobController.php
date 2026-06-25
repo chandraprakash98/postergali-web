@@ -118,6 +118,8 @@ public function search(Request $request)
             'master_category' => 'required',
             'business_name' => 'required',
             'job_role' => 'required',
+            'job_type' => 'required',
+            'salary' => 'required',
             'phone_number' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
