@@ -7,60 +7,127 @@ use App\Models\Offer;
 
 class OfferController extends Controller
 {
-   public function index()
-{
-    return Offer::select([
-        'id',
-        'business_name',
-        'offer_details',
-        'offer_type',
-        'city',
-        'latitude',
-        'longitude',
-        'status',
-        'view_count',
-        'temp_id'
-    ])
-    ->latest()
-    ->get();
-}
-
-    public function search(Request $request)
+    /**
+     * Get all offers within a specified radius of user location
+     * 
+     * @route GET /api/v1/offers
+     * @param latitude (required): User's latitude
+     * @param longitude (required): User's longitude
+     * @param radius (optional): Search radius in km (default: 5)
+     * @param per_page (optional): Results per page (default: 50, max: 200)
+     * @param page (optional): Page number (default: 1)
+     */
+    public function index(Request $request)
     {
-        $request->validate([
-            'device_id' => 'required|string',
-            'mobile_number' => 'sometimes|string',
-            'phone_number' => 'sometimes|string',
+        $validated = $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'radius' => 'sometimes|numeric|min:0.1|max:50',
+            'per_page' => 'sometimes|integer|min:1|max:200',
+            'page' => 'sometimes|integer|min:1',
         ]);
 
-        $deviceId = $request->input('device_id');
-        $mobileNumber = $request->input('mobile_number') ?? $request->input('phone_number');
+        $userLat = $validated['latitude'];
+        $userLng = $validated['longitude'];
+        $radius = $validated['radius'] ?? 5; // Default 5 km
+        $perPage = min($validated['per_page'] ?? 50, 200); // Max 200 per page
 
-        $query = Offer::select([
-                'id',
-                'business_name',
-                'offer_details',
-                'offer_type',
-                'city',
-                'latitude',
-                'longitude',
-                'status',
-                'view_count',
-                'temp_id'
-            ])
-            ->where('device_id', $deviceId);
+        try {
+            $offers = Offer::nearby($userLat, $userLng, $radius)
+                ->active()
+                ->paginate($perPage);
 
-        if ($mobileNumber) {
-            $query->orWhere('mobile_number', $mobileNumber);
+            return response()->json([
+                'success' => true,
+                'data' => $offers->items(),
+                'pagination' => [
+                    'total' => $offers->total(),
+                    'per_page' => $offers->perPage(),
+                    'current_page' => $offers->currentPage(),
+                    'last_page' => $offers->lastPage(),
+                    'from' => $offers->firstItem(),
+                    'to' => $offers->lastItem(),
+                ],
+                'radius_km' => $radius,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching nearby offers',
+                'error' => $e->getMessage()
+            ], 500);
         }
+    }
 
-        return response()->json($query->get());
+    /**
+     * Search offers by device_id or mobile_number
+     * Also supports location-based search if latitude/longitude provided
+     */
+    public function search(Request $request)
+    {
+        $validated = $request->validate([
+            'device_id' => 'required_without_all:latitude,longitude|string',
+            'latitude' => 'sometimes|numeric|between:-90,90',
+            'longitude' => 'sometimes|numeric|between:-180,180',
+            'radius' => 'sometimes|numeric|min:0.1|max:50',
+            'mobile_number' => 'sometimes|string',
+            'phone_number' => 'sometimes|string',
+            'per_page' => 'sometimes|integer|min:1|max:200',
+            'page' => 'sometimes|integer|min:1',
+        ]);
+
+        $deviceId = $validated['device_id'] ?? null;
+        $mobile = $validated['mobile_number'] ?? $validated['phone_number'] ?? null;
+        $latitude = $validated['latitude'] ?? null;
+        $longitude = $validated['longitude'] ?? null;
+        $radius = $validated['radius'] ?? 5;
+        $perPage = min($validated['per_page'] ?? 50, 200);
+
+        try {
+            $query = Offer::withCommonFields();
+
+            // Location-based search
+            if ($latitude && $longitude) {
+                $query = $query->nearby($latitude, $longitude, $radius);
+            }
+
+            // Device/Mobile based search
+            if ($deviceId || $mobile) {
+                $query->where(function ($q) use ($deviceId, $mobile) {
+                    if ($deviceId) {
+                        $q->where('device_id', $deviceId);
+                    }
+                    if ($mobile) {
+                        $q->orWhere('mobile_number', $mobile);
+                    }
+                });
+            }
+
+            $offers = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $offers->items(),
+                'pagination' => [
+                    'total' => $offers->total(),
+                    'per_page' => $offers->perPage(),
+                    'current_page' => $offers->currentPage(),
+                    'last_page' => $offers->lastPage(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error searching offers',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'temp_id' => 'nullable|string', // 👈 ADD THIS
+            'temp_id' => 'nullable|string',
             'device_id' => 'required',
             'device_os' => 'required',
             'master_category' => 'required',
@@ -68,8 +135,8 @@ class OfferController extends Controller
             'offer_details' => 'required',
             'offer_type' => 'required',
             'mobile_number' => 'required',
-            'latitude' => 'required',
-            'longitude' => 'required',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
             'city' => 'required',
             'plan_id' => 'required',
         ]);
