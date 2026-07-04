@@ -139,30 +139,25 @@ class AdminAuthController extends Controller
 
             $model->save();
 
-            // Send FCM using service account (hardcoded token placeholder)
+            // Send FCM Notification using device_id as FCM token
             try {
                 $firebaseCredentials = env('FIREBASE_CREDENTIALS', 'storage/app/firebase/firebase-service-account.json');
                 $serviceAccountPath = base_path($firebaseCredentials);
                 $factory = (new Factory())->withServiceAccount($serviceAccountPath);
                 $messaging = $factory->createMessaging();
 
+                // Use device_id directly as FCM token
+                $fcmToken = $model->device_id;
 
-                $deviceId = $model->device_id;
-                $notificationRecord = Notification::where('device_id', $deviceId)
-                ->latest()
-                ->first();
-
-                 if (!$notificationRecord || empty($notificationRecord->fcm_tocken)) {
-                    \Log::warning('FCM token not found for device_id: ' . $deviceId);
+                if (empty($fcmToken)) {
+                    \Log::warning('Device ID not found for model ID: ' . $model->id);
                     return;
                 }
 
-                $fcmToken = $notificationRecord->fcm_tocken;
-
-                //  $fcmToken = 'cs_1oGuqTAW6FzkzDE9fm5:APA91bH4LmItA5zXB7u33yjvravB0WA40JuFhOWhAr2qVHY9vQN4ckaynnQ09he8RydtMsS4xm1r8HnxotXCg6BJQoUQ1Hff4tFYRixd4qVRiKK_M7HLUXo';
-
-                $title = $data['status'] === 'approved' ? 'Ad Approved' : 'Ad Rejected';
-                $body = $data['status'] === 'approved' ? 'Your ad has been approved.' : ('Your ad was rejected. ' . ($data['comment'] ?? ''));
+                $title = $data['status'] === 'approved' ? 'Ad Approved ✓' : 'Ad Rejected ✕';
+                $body = $data['status'] === 'approved' 
+                    ? 'Your ad has been approved and is now live!' 
+                    : ('Your ad was rejected. ' . ($data['comment'] ?? 'Contact support for details.'));
 
                 $message = CloudMessage::withTarget('token', $fcmToken)
                     ->withNotification(FcmNotification::create($title, $body))
@@ -170,11 +165,14 @@ class AdminAuthController extends Controller
                         'ad_id' => (string) $model->id,
                         'type' => $type,
                         'status' => $data['status'],
+                        'timestamp' => now()->toIso8601String(),
                     ]);
 
                 $messaging->send($message);
+                
+                \Log::info('FCM notification sent successfully for device_id: ' . $fcmToken);
             } catch (\Throwable $e) {
-                \Log::error('FCM send failed: ' . $e->getMessage());
+                \Log::error('FCM send failed for device_id ' . ($model->device_id ?? 'unknown') . ': ' . $e->getMessage());
             }
         } else {
             // subcategory-only update (no notifications)
@@ -200,8 +198,8 @@ class AdminAuthController extends Controller
             'phone' => $job->phone_number,
             'city' => $job->city,
             'status' => 'Pending Verification',
-            'date' => $job->created_at->format('M d, Y'),
-            'created_at' => $job->created_at,
+            'date' => $job->created_at ? $job->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $job->created_at ?? now(),
             'type' => 'Job',
             'model_id' => $job->id,
         ]);
@@ -212,8 +210,8 @@ class AdminAuthController extends Controller
             'phone' => $offer->mobile_number,
             'city' => $offer->city,
             'status' => 'Pending Verification',
-            'date' => $offer->created_at->format('M d, Y'),
-            'created_at' => $offer->created_at,
+            'date' => $offer->created_at ? $offer->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $offer->created_at ?? now(),
             'type' => 'Offer',
             'model_id' => $offer->id,
         ]);
@@ -231,8 +229,8 @@ class AdminAuthController extends Controller
             'phone' => $job->phone_number,
             'city' => $job->city,
             'status' => 'Live',
-            'date' => $job->created_at->format('M d, Y'),
-            'created_at' => $job->created_at,
+            'date' => $job->created_at ? $job->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $job->created_at ?? now(),
             'type' => 'Job',
             'model_id' => $job->id,
         ]);
@@ -243,8 +241,8 @@ class AdminAuthController extends Controller
             'phone' => $offer->mobile_number,
             'city' => $offer->city,
             'status' => 'Live',
-            'date' => $offer->created_at->format('M d, Y'),
-            'created_at' => $offer->created_at,
+            'date' => $offer->created_at ? $offer->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $offer->created_at ?? now(),
             'type' => 'Offer',
             'model_id' => $offer->id,
         ]);
@@ -262,8 +260,8 @@ class AdminAuthController extends Controller
             'phone' => $job->phone_number,
             'city' => $job->city,
             'status' => 'Rejected',
-            'date' => $job->created_at->format('M d, Y'),
-            'created_at' => $job->created_at,
+            'date' => $job->created_at ? $job->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $job->created_at ?? now(),
             'type' => 'Job',
             'model_id' => $job->id,
         ]);
@@ -274,8 +272,8 @@ class AdminAuthController extends Controller
             'phone' => $offer->mobile_number,
             'city' => $offer->city,
             'status' => 'Rejected',
-            'date' => $offer->created_at->format('M d, Y'),
-            'created_at' => $offer->created_at,
+            'date' => $offer->created_at ? $offer->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $offer->created_at ?? now(),
             'type' => 'Offer',
             'model_id' => $offer->id,
         ]);
@@ -299,8 +297,8 @@ class AdminAuthController extends Controller
             'phone' => $job->phone_number,
             'city' => $job->city,
             'status' => ucfirst($job->status),
-            'date' => $job->created_at->format('M d, Y'),
-            'created_at' => $job->created_at,
+            'date' => $job->created_at ? $job->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $job->created_at ?? now(),
             'type' => 'Job',
             'model_id' => $job->id,
         ]);
@@ -311,8 +309,8 @@ class AdminAuthController extends Controller
             'phone' => $offer->mobile_number,
             'city' => $offer->city,
             'status' => ucfirst($offer->status),
-            'date' => $offer->created_at->format('M d, Y'),
-            'created_at' => $offer->created_at,
+            'date' => $offer->created_at ? $offer->created_at->format('M d, Y') : 'N/A',
+            'created_at' => $offer->created_at ?? now(),
             'type' => 'Offer',
             'model_id' => $offer->id,
         ]);

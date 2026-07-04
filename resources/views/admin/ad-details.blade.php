@@ -325,6 +325,56 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Full Page Loading Overlay */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-text {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -454,7 +504,7 @@
                         </div>
                         <div class="card-body">
                             <strong>Date Posted</strong>
-                            <span>{{ $ad->created_at->format('d F Y, h:i A') }}</span>
+                            <span>{{ $ad->created_at?->format('d F Y, h:i A') ?? 'N/A' }}</span>
                             <strong>Ad Expires By</strong>
                             <span>{{ $ad->expires_at?->format('d F Y, h:i A') ?? 'N/A' }}</span>
                         </div>
@@ -581,7 +631,7 @@
                                 </div>
 
                                 <div class="form-footer">
-                                    <button type="submit" class="button-primary" onclick="document.getElementById('details-action').value='status'">Confirm</button>
+                                    <button type="submit" class="button-primary" onclick="showLoading(event)">Confirm</button>
                                 </div>
                             </div>
                         </form>
@@ -590,5 +640,25 @@
             </div>
         </div>
     </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Processing your request...</div>
+        </div>
+    </div>
+
+    <script>
+        function showLoading(event) {
+            // Show the loading overlay
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.add('active');
+            
+            // Set the action value and submit the form
+            document.getElementById('details-action').value = 'status';
+            document.getElementById('details-form').submit();
+        }
+    </script>
 </body>
 </html>
