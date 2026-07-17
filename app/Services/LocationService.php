@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class LocationService
 {
@@ -45,6 +46,19 @@ class LocationService
         string $latColumn = 'latitude',
         string $lonColumn = 'longitude'
     ): Builder {
+        $connection = $query->getQuery()->getConnection();
+        $driver = $connection->getDriverName();
+
+        if (!in_array($driver, ['mysql', 'mariadb'], true)) {
+            $bounds = self::getBoundingBox($latitude, $longitude, $radiusKm);
+
+            return $query
+                ->whereBetween($latColumn, [$bounds['minLat'], $bounds['maxLat']])
+                ->whereBetween($lonColumn, [$bounds['minLon'], $bounds['maxLon']])
+                ->selectRaw('0 AS distance')
+                ->orderBy('distance', 'asc');
+        }
+
         $table = $query->getModel()->getTable();
         $latCol = $table . '.' . $latColumn;
         $lonCol = $table . '.' . $lonColumn;
