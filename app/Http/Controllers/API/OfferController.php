@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Offer;
 
 class OfferController extends Controller
@@ -25,17 +26,29 @@ class OfferController extends Controller
             'radius' => 'sometimes|numeric|min:0.1|max:50',
             'per_page' => 'sometimes|integer|min:1|max:200',
             'page' => 'sometimes|integer|min:1',
+            'sub_categories' => 'sometimes',
+            'sub_category' => 'sometimes|string',
+            'is_expiry' => 'sometimes|string',
         ]);
 
         $userLat = $validated['latitude'];
         $userLng = $validated['longitude'];
         $radius = $validated['radius'] ?? 5; // Default 5 km
         $perPage = min($validated['per_page'] ?? 50, 200); // Max 200 per page
+        $subCategories = $this->normalizeSubCategories($request);
+        $expiryWindow = $this->normalizeExpiryWindow($request->input('is_expiry'));
 
         try {
-            $offers = Offer::nearby($userLat, $userLng, $radius)
-                ->active()
-                ->paginate($perPage);
+            $query = Offer::nearby($userLat, $userLng, $radius)->active();
+
+            $this->applySubCategoryFilter($query, $subCategories);
+
+            if ($expiryWindow) {
+                $query->whereNotNull('expires_at')
+                    ->whereBetween('expires_at', [$expiryWindow['from'], $expiryWindow['to']]);
+            }
+
+            $offers = $query->paginate($perPage);
 
             return response()->json([
                 'success' => true,
@@ -74,6 +87,9 @@ class OfferController extends Controller
             'phone_number' => 'sometimes|string',
             'per_page' => 'sometimes|integer|min:1|max:200',
             'page' => 'sometimes|integer|min:1',
+            'sub_categories' => 'sometimes',
+            'sub_category' => 'sometimes|string',
+            'is_expiry' => 'sometimes|string',
         ]);
 
         $deviceId = $validated['device_id'] ?? null;
@@ -82,6 +98,8 @@ class OfferController extends Controller
         $longitude = $validated['longitude'] ?? null;
         $radius = $validated['radius'] ?? 5;
         $perPage = min($validated['per_page'] ?? 50, 200);
+        $subCategories = $this->normalizeSubCategories($request);
+        $expiryWindow = $this->normalizeExpiryWindow($request->input('is_expiry'));
 
         try {
             $query = Offer::withCommonFields();
@@ -89,6 +107,13 @@ class OfferController extends Controller
             // Location-based search
             if ($latitude && $longitude) {
                 $query = $query->nearby($latitude, $longitude, $radius);
+            }
+
+            $this->applySubCategoryFilter($query, $subCategories);
+
+            if ($expiryWindow) {
+                $query->whereNotNull('expires_at')
+                    ->whereBetween('expires_at', [$expiryWindow['from'], $expiryWindow['to']]);
             }
 
             // Device/Mobile based search
@@ -122,6 +147,94 @@ class OfferController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    protected function normalizeSubCategories(Request $request): array
+    {
+        $raw = $request->input('sub_categories', $request->input('sub_category'));
+
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+
+        if (is_array($raw)) {
+            return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $raw)));
+        }
+
+        $parts = preg_split('/[,\s]+/', (string) $raw) ?: [];
+
+        return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $parts)));
+    }
+
+    protected function applySubCategoryFilter($query, array $subCategories): void
+    {
+        if (empty($subCategories)) {
+            return;
+        }
+
+        $query->where(function ($q) use ($subCategories) {
+            foreach ($subCategories as $subcategory) {
+                $normalized = strtolower(trim((string) $subcategory));
+
+                if ($normalized === '') {
+                    continue;
+                }
+
+                $q->orWhere(DB::raw('LOWER(subcategory)'), 'like', '%' . $normalized . '%');
+            }
+        });
+    }
+
+    protected function normalizeExpiryWindow(?string $value): ?array
+    {
+        if (!$value) {
+            return null;
+        }
+
+        $normalized = strtolower(trim($value));
+        $normalized = preg_replace('/[\s\-_]+/', '_', $normalized);
+        $dayMap = [
+            'within_a_day' => 1,
+            'withinaday' => 1,
+            'within_1_day' => 1,
+            'within1day' => 1,
+            'within_3_days' => 3,
+            'within3days' => 3,
+            'within3_days' => 3,
+            'within_3_day' => 3,
+            'within3day' => 3,
+            'within_a_week' => 7,
+            'withinaweek' => 7,
+            'within_week' => 7,
+            'within1week' => 7,
+        ];
+
+        if (isset($dayMap[$normalized])) {
+            return [
+                'from' => now(),
+                'to' => now()->addDays($dayMap[$normalized]),
+            ];
+        }
+
+        if (preg_match('/^within(?:\s+|_)?(?:a|an)?(?:\s+|_)?(\d+)?(?:\s+|_)?(day|days|week|weeks)?$/', $normalized, $matches)) {
+            $amount = (int) ($matches[1] ?? 1);
+            $unit = $matches[2] ?? 'day';
+
+            if ($unit === 'week' || $unit === 'weeks') {
+                $days = 7 * $amount;
+            } else {
+                $days = $amount;
+            }
+
+            if ($days > 0) {
+                return [
+                    'from' => now(),
+                    'to' => now()->addDays($days),
+                ];
+            }
+        }
+
+        return null;
     }
 
     public function store(Request $request)

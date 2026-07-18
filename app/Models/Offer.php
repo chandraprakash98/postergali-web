@@ -8,10 +8,11 @@ use App\Services\LocationService;
 class Offer extends Model
 {
     protected $fillable = [
-    'temp_id',   // 👈 MUST BE HERE
+    'temp_id',
     'device_id',
     'device_os',
     'master_category',
+    'subcategory',
     'business_name',
     'offer_details',
     'offer_type',
@@ -22,6 +23,8 @@ class Offer extends Model
     'city',
     'status',
     'view_count',
+    'approved_at',
+    'expires_at',
     'plan_id'
 ];
 

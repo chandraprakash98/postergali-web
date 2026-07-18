@@ -31,6 +31,9 @@ class JobController extends Controller
             'sub_categories' => 'sometimes',
             'sub_category' => 'sometimes|string',
             'is_expiry' => 'sometimes|string',
+            'job_type' => 'sometimes|string',
+            'job_types' => 'sometimes',
+            'salary' => 'sometimes|numeric|min:0',
         ]);
 
         $userLat = $validated['latitude'];
@@ -39,11 +42,21 @@ class JobController extends Controller
         $perPage = min($validated['per_page'] ?? 50, 200); // Max 200 per page
         $subCategories = $this->normalizeSubCategories($request);
         $expiryWindow = $this->normalizeExpiryWindow($request->input('is_expiry'));
+        $jobTypes = $this->normalizeJobTypes($request);
+        $salaryRange = $this->normalizeSalaryRange($request);
 
         try {
             $query = Job::nearby($userLat, $userLng, $radius)->active();
 
             $this->applySubCategoryFilter($query, $subCategories);
+
+            if (!empty($jobTypes)) {
+                $this->applyJobTypeFilter($query, $jobTypes);
+            }
+
+            if ($salaryRange) {
+                $this->applySalaryFilter($query, $salaryRange);
+            }
 
             if ($expiryWindow) {
                 $query->whereNotNull('expires_at')
@@ -92,6 +105,9 @@ class JobController extends Controller
             'sub_categories' => 'sometimes',
             'sub_category' => 'sometimes|string',
             'is_expiry' => 'sometimes|string',
+            'job_type' => 'sometimes|string',
+            'job_types' => 'sometimes',
+            'salary' => 'sometimes|numeric|min:0',
         ]);
 
         $deviceId = $validated['device_id'] ?? null;
@@ -102,6 +118,8 @@ class JobController extends Controller
         $perPage = min($validated['per_page'] ?? 50, 200);
         $subCategories = $this->normalizeSubCategories($request);
         $expiryWindow = $this->normalizeExpiryWindow($request->input('is_expiry'));
+        $jobTypes = $this->normalizeJobTypes($request);
+        $salaryRange = $this->normalizeSalaryRange($request);
 
         try {
             $query = Job::withCommonFields()->active();
@@ -113,6 +131,14 @@ class JobController extends Controller
 
             // Subcategory filtering
             $this->applySubCategoryFilter($query, $subCategories);
+
+            if (!empty($jobTypes)) {
+                $this->applyJobTypeFilter($query, $jobTypes);
+            }
+
+            if ($salaryRange) {
+                $this->applySalaryFilter($query, $salaryRange);
+            }
 
             // Expiry window filtering
             if ($expiryWindow) {
@@ -187,6 +213,59 @@ class JobController extends Controller
                 $q->orWhere(DB::raw('LOWER(subcategory)'), 'like', '%' . $normalized . '%');
             }
         });
+    }
+
+    protected function normalizeJobTypes(Request $request): array
+    {
+        $raw = $request->input('job_types', $request->input('job_type'));
+
+        if ($raw === null || $raw === '') {
+            return [];
+        }
+
+        if (is_array($raw)) {
+            return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $raw)));
+        }
+
+        $parts = preg_split('/[,\s]+/', (string) $raw) ?: [];
+
+        return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $parts)));
+    }
+
+    protected function normalizeSalaryRange(Request $request): ?array
+    {
+        $salary = $request->input('salary');
+
+        if ($salary === null || $salary === '') {
+            return null;
+        }
+
+        return [
+            'min' => (float) $salary,
+            'max' => null,
+        ];
+    }
+
+    protected function applyJobTypeFilter($query, array $jobTypes): void
+    {
+        $query->where(function ($q) use ($jobTypes) {
+            foreach ($jobTypes as $jobType) {
+                $normalized = strtolower(trim((string) $jobType));
+
+                if ($normalized === '') {
+                    continue;
+                }
+
+                $q->orWhere(DB::raw('LOWER(job_type)'), 'like', '%' . $normalized . '%');
+            }
+        });
+    }
+
+    protected function applySalaryFilter($query, array $salaryRange): void
+    {
+        if (isset($salaryRange['min']) && $salaryRange['min'] !== null) {
+            $query->where('salary', '>=', $salaryRange['min']);
+        }
     }
 
     protected function normalizeExpiryWindow(?string $value): ?array
