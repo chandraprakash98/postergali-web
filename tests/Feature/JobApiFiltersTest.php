@@ -65,9 +65,29 @@ class JobApiFiltersTest extends TestCase
 
     public function test_jobs_index_can_filter_by_job_type_and_salary_range(): void
     {
+        $otherJob = Job::create([
+            'temp_id' => 'temp-fulltime-low',
+            'device_id' => 'device-fulltime-low',
+            'device_os' => 'ios',
+            'master_category' => 'Services',
+            'subcategory' => 'electrical',
+            'business_name' => 'Low Paying Job',
+            'job_role' => 'Electrician',
+            'job_type' => 'full_time',
+            'salary' => 50000,
+            'phone_number' => '333333333',
+            'latitude' => 24.4605,
+            'longitude' => 54.3705,
+            'city' => 'Abu Dhabi',
+            'approved_at' => now(),
+            'expires_at' => now()->addDays(5),
+            'status' => 'approved',
+            'plan_id' => 'plan-1',
+        ]);
+
         Job::create([
-            'temp_id' => 'temp-fulltime',
-            'device_id' => 'device-fulltime',
+            'temp_id' => 'temp-fulltime-high',
+            'device_id' => 'device-fulltime-high',
             'device_os' => 'android',
             'master_category' => 'Services',
             'subcategory' => 'plumbing',
@@ -85,31 +105,12 @@ class JobApiFiltersTest extends TestCase
             'plan_id' => 'plan-1',
         ]);
 
-        $otherJob = Job::create([
-            'temp_id' => 'temp-parttime',
-            'device_id' => 'device-parttime',
-            'device_os' => 'ios',
-            'master_category' => 'Services',
-            'subcategory' => 'electrical',
-            'business_name' => 'Low Paying Job',
-            'job_role' => 'Electrician',
-            'job_type' => 'part_time',
-            'salary' => 50000,
-            'phone_number' => '333333333',
-            'latitude' => 24.4605,
-            'longitude' => 54.3705,
-            'city' => 'Abu Dhabi',
-            'approved_at' => now(),
-            'expires_at' => now()->addDays(5),
-            'status' => 'approved',
-            'plan_id' => 'plan-1',
-        ]);
-
-        $response = $this->getJson('/api/v1/jobs?latitude=24.4600&longitude=54.3700&radius=5&job_type=full_time&salary_min=100000&salary_max=200000');
+        $response = $this->getJson('/api/v1/jobs?latitude=24.4600&longitude=54.3700&radius=5&job_type=full_time&salary=100000');
 
         $response->assertOk();
         $response->assertJsonCount(1, 'data');
-        $response->assertJsonMissing(['id' => $otherJob->id]);
+        $response->assertJsonPath('data.0.id', $otherJob->id);
+        $response->assertJsonMissing(['id' => 150000]);
     }
 
     public function test_jobs_index_can_filter_by_subcategories_and_expiry_window(): void

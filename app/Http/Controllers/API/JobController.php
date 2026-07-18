@@ -241,8 +241,7 @@ class JobController extends Controller
         }
 
         return [
-            'min' => (float) $salary,
-            'max' => null,
+            'max' => (float) $salary,
         ];
     }
 
@@ -263,8 +262,8 @@ class JobController extends Controller
 
     protected function applySalaryFilter($query, array $salaryRange): void
     {
-        if (isset($salaryRange['min']) && $salaryRange['min'] !== null) {
-            $query->where('salary', '>=', $salaryRange['min']);
+        if (isset($salaryRange['max']) && $salaryRange['max'] !== null) {
+            $query->where('salary', '<=', $salaryRange['max']);
         }
     }
 
