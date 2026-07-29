@@ -229,6 +229,13 @@
     margin:90px auto 0;
 }
 
+.poster,
+.posterm,
+.postern,
+.postero{
+    box-shadow: 0 14px 28px rgba(0,0,0,.18), 0 4px 10px rgba(0,0,0,.12);
+    filter: drop-shadow(0 12px 22px rgba(0,0,0,.22));
+}
 
 .poster{
      transform:rotate(-2deg);
@@ -248,6 +255,8 @@
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 2px;
+    box-shadow: 0 12px 24px rgba(0,0,0,.18), 0 3px 8px rgba(0,0,0,.10);
+    filter: drop-shadow(0 10px 16px rgba(0,0,0,.20));
 }
 
 .postern{
@@ -258,6 +267,8 @@
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 1px;
+    box-shadow: 0 12px 24px rgba(0,0,0,.18), 0 3px 8px rgba(0,0,0,.10);
+    filter: drop-shadow(0 10px 16px rgba(0,0,0,.20));
 }
 .postero{
      transform:rotate(-2deg);
@@ -267,6 +278,8 @@
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 2px;
+    box-shadow: 0 12px 24px rgba(0,0,0,.18), 0 3px 8px rgba(0,0,0,.10);
+    filter: drop-shadow(0 10px 16px rgba(0,0,0,.20));
 }
 
 
@@ -325,11 +338,21 @@
     transform:translateX(-50%);
     width:220px;
     height:420px;
-    background:#fff;
-    border-radius:32px;
+    background:transparent;
+    border-radius:0;
     z-index:10;
-    box-shadow:0 10px 20px rgba(0,0,0,.08),
-               0 20px 50px rgba(0,0,0,.12);
+    box-shadow:none;
+    overflow:hidden;
+}
+
+.hero-phone-image{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    border-radius:0;
+    box-shadow: 0 16px 40px rgba(0,0,0,.18);
+    filter: drop-shadow(0 14px 24px rgba(0,0,0,.20));
 }
 
 .phone-top{
@@ -1411,10 +1434,7 @@
         <div class="posterm posterlast"></div>
 
         <div class="phone">
-            <div class="phone-top">
-                <div class="notch"></div>
-            </div>
-            <div class="screen"></div>
+            <img src="/images/image.png" alt="PosterGali app preview" class="hero-phone-image">
         </div>
         
          <div class="postero poster3"></div>
