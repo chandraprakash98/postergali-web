@@ -147,6 +147,63 @@
 
 /* ================= NAVBAR ================= */
 
+/* ===================================================
+   COMPANY TOP BAR
+=================================================== */
+
+.company-top-bar{
+    width:100%;
+    background:#C4351D;
+    color:#fff;
+    border-bottom:2px solid rgba(255,255,255,.15);
+}
+
+.company-top-container{
+    max-width:1400px;
+    margin:auto;
+    padding:14px 20px;
+    text-align:center;
+}
+
+.company-line{
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:.3px;
+}
+
+.company-line strong{
+    color:#FFF5C2;
+}
+
+.company-subline{
+    margin-top:6px;
+    font-size:13px;
+    color:rgba(255,255,255,.95);
+    line-height:1.6;
+}
+
+.company-subline strong{
+    color:#FFF5C2;
+}
+
+@media(max-width:768px){
+
+.company-top-container{
+    padding:12px 15px;
+}
+
+.company-line{
+    font-size:15px;
+    line-height:1.5;
+}
+
+.company-subline{
+    font-size:12px;
+    line-height:1.5;
+}
+
+}
+
 .navbar{
     background:#FCFAE1;
     max-width:1400px;
@@ -1403,6 +1460,22 @@
 
 <body style="background: #FFFCE5;">
 
+<div class="company-top-bar">
+    <div class="company-top-container">
+
+        <div class="company-line">
+            <strong>PosterGali</strong> is a product of
+            <strong>Unitygrid Private Limited</strong>
+        </div>
+
+        <div class="company-subline">
+            PosterGali is owned, operated and developed by
+            <strong>Unitygrid Private Limited</strong>,
+            an Indian technology company.
+        </div>
+
+    </div>
+</div>
 <nav class="navbar">
     <div class="logo">POSTERGALI</div>
 
@@ -1410,6 +1483,7 @@
         <a href="#">Home</a>
         <a href="#">Features</a>
         <a href="#">FAQ</a>
+        <a href="#">Company</a>
         <a href="#">Contact</a>
     </div>
 
@@ -1742,6 +1816,21 @@ Answer quick questions business name, role, salary, or offer details — and let
 
 </section>
 
+
+<section class="company-section" style="background:#FCFAE1;padding:80px 20px;">
+<div style="max-width:1100px;margin:auto;background:#fff;border-radius:18px;padding:40px;box-shadow:0 8px 30px rgba(0,0,0,.08);">
+<h2 style="color:#C4351D;">PosterGali is a product of Unitygrid Private Limited</h2>
+<p>PosterGali is owned, operated, and developed by <b>Unitygrid Private Limited</b>, an Indian technology company.</p>
+<hr>
+<p><b>Company Name:</b> Unitygrid Private Limited</p>
+<p><b>Registered Address:</b> R-202, Roseland Residency, Gate No 4, Pimple Saudagar
+Sangavi, Pune – 411027, Maharashtra, India</p>
+<p><b>Email:</b> contact@postergali.com</p>
+<p><b>GST:</b> AA271025021761M</p>
+<p><b>CIN:</b> U63122PN2025PTC246827</p>
+</div></section>
+
+
 <!-- ==========================================
      CONTACT + FOOTER
 ========================================== -->
@@ -1769,14 +1858,14 @@ Answer quick questions business name, role, salary, or offer details — and let
                 <div class="contact-info">
                     <div class="contact-icon">☎</div>
                     <span>
-                        +91 74839201654<br>
-                        +91 83559120375
+                        +91 81496 24125<br>
+                        +91 956 021 3952
                     </span>
                 </div>
 
                 <div class="contact-info">
                     <div class="contact-icon">✉</div>
-                    <span>askpostergali@gmail.com</span>
+                    <span>contact@postergali.com</span>
                 </div>
 
             </div>
@@ -1873,7 +1962,7 @@ Answer quick questions business name, role, salary, or offer details — and let
         <div class="footer-bottom">
 
             <div>
-                © 2026 Poster Gali. All Rights Reserved.
+                © 2025 Unitygrid Private Limited. All Rights Reserved.<br>PosterGali is a product of Unitygrid Private Limited.
             </div>
 
             <div class="footer-links">
