@@ -5,7 +5,10 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use App\Models\CustomerCredit;
 use App\Models\Job;
+use App\Models\Payment;
 use App\Services\LocationService;
 
 class JobController extends Controller
@@ -321,23 +324,81 @@ class JobController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'temp_id' => 'required|string',
-            'device_id' => 'required',
-            'device_os' => 'required',
-            'master_category' => 'required',
-            'business_name' => 'required',
-            'job_role' => 'required',
-            'job_type' => 'required',
-            'salary' => 'required',
-            'phone_number' => 'required',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-            'city' => 'required',
-            'plan_id' => 'required',
-        ]);
+        DB::beginTransaction();
 
-        return Job::create($data);
+        try {
+            $data = $request->validate([
+                'temp_id' => 'required|string',
+                'device_id' => 'required',
+                'device_os' => 'required',
+                'master_category' => 'required',
+                'business_name' => 'required',
+                'job_role' => 'required',
+                'job_type' => 'required',
+                'salary' => 'nullable|numeric|min:0',
+                'amount' => 'nullable|numeric|min:0',
+                'phone_number' => 'required',
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+                'city' => 'required',
+                'plan_id' => 'required',
+                'transaction_id' => 'nullable|string',
+                'credit_mode' => ['nullable', 'string', 'in:full_upi,semi,full_credit'],
+                'customer_id' => ['nullable', 'string', 'exists:customers,customer_id'],
+            ]);
+
+            if (!empty($data['amount']) && empty($data['salary'])) {
+                $data['salary'] = $data['amount'];
+            }
+
+            $job = Job::create($data);
+
+            if (!empty($data['transaction_id'])) {
+                Payment::create([
+                    'transaction_id' => $data['transaction_id'],
+                    'job_or_offer_id' => $job->id,
+                    'item_type' => 'job',
+                    'credit_mode' => $data['credit_mode'] ?? 'full_upi',
+                    'amount' => $data['amount'] ?? $data['salary'] ?? null,
+                ]);
+            }
+
+            if (!empty($data['customer_id']) && in_array($data['credit_mode'] ?? '', ['semi', 'full_credit'], true)) {
+                $amount = (float) ($data['amount'] ?? $data['salary'] ?? 0);
+                $deduction = $amount;
+                $credit = CustomerCredit::where('customer_id', $data['customer_id'])->first();
+
+                if (!$credit) {
+                    $credit = CustomerCredit::create([
+                        'customer_id' => $data['customer_id'],
+                        'balance' => 1000,
+                    ]);
+                }
+
+                $credit->balance = max(0, (float) $credit->balance - $deduction);
+                $credit->save();
+            }
+
+            DB::commit();
+
+            return $job;
+        } catch (ValidationException $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to create job.',
+                'error' => $e->getMessage(),
+            ], 400);
+        }
     }
 
     public function show($id)

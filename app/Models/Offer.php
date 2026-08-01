@@ -17,6 +17,7 @@ class Offer extends Model
     'offer_details',
     'offer_type',
     'media',
+    'amount',
     'mobile_number',
     'latitude',
     'longitude',

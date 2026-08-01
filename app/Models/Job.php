@@ -11,7 +11,7 @@ class Job extends Model
         'temp_id','device_id','device_os',
         'master_category','subcategory',
         'business_name','job_role','job_type',
-        'salary','phone_number',
+        'salary','amount','phone_number',
         'latitude','longitude','city',
         'approved_at','expires_at',
         'status','status_comment',

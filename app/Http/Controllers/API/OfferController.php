@@ -4,7 +4,10 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use App\Models\CustomerCredit;
 use App\Models\Offer;
+use App\Models\Payment;
 
 class OfferController extends Controller
 {
@@ -239,37 +242,91 @@ class OfferController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'temp_id' => 'nullable|string',
-            'device_id' => 'required',
-            'device_os' => 'required',
-            'master_category' => 'required',
-            'business_name' => 'required',
-            'offer_details' => 'required',
-            'offer_type' => 'required',
-            'mobile_number' => 'required',
-            'latitude' => 'required|numeric|between:-90,90',
-            'longitude' => 'required|numeric|between:-180,180',
-            'city' => 'required',
-            'plan_id' => 'required',
-        ]);
+        DB::beginTransaction();
 
-        // MEDIA HANDLING
-        $media = ['images' => [], 'video' => null];
+        try {
+            $data = $request->validate([
+                'temp_id' => 'nullable|string',
+                'device_id' => 'nullable|string',
+                'device_os' => 'nullable|string',
+                'master_category' => 'nullable|string',
+                'business_name' => 'nullable|string',
+                'offer_details' => 'nullable|string',
+                'offer_type' => 'nullable|string',
+                'amount' => 'nullable|numeric|min:0',
+                'mobile_number' => 'nullable|string',
+                'latitude' => 'nullable|numeric|between:-90,90',
+                'longitude' => 'nullable|numeric|between:-180,180',
+                'city' => 'nullable|string',
+                'plan_id' => 'nullable|string',
+                'transaction_id' => 'nullable|string',
+                'credit_mode' => ['nullable', 'string', 'in:full_upi,semi,full_credit'],
+                'customer_id' => ['nullable', 'string'],
+            ]);
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $img) {
-                $media['images'][] = $img->store('offers/images', 'public');
+            // MEDIA HANDLING
+            $media = ['images' => [], 'video' => null];
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $img) {
+                    $media['images'][] = $img->store('offers/images', 'public');
+                }
             }
+
+            if ($request->hasFile('video')) {
+                $media['video'] = $request->file('video')->store('offers/videos', 'public');
+            }
+
+            $data['media'] = $media;
+
+            $offer = Offer::create($data);
+
+            if (!empty($data['transaction_id'])) {
+                Payment::create([
+                    'transaction_id' => $data['transaction_id'],
+                    'job_or_offer_id' => $offer->id,
+                    'item_type' => 'offer',
+                    'credit_mode' => $data['credit_mode'] ?? 'full_upi',
+                    'amount' => $data['amount'] ?? null,
+                ]);
+            }
+
+            if (!empty($data['customer_id']) && in_array($data['credit_mode'] ?? '', ['semi', 'full_credit'], true)) {
+                $amount = (float) ($data['amount'] ?? 0);
+                $deduction = $amount;
+                $credit = CustomerCredit::where('customer_id', $data['customer_id'])->first();
+
+                if (!$credit) {
+                    $credit = CustomerCredit::create([
+                        'customer_id' => $data['customer_id'],
+                        'balance' => 1000,
+                    ]);
+                }
+
+                $credit->balance = max(0, (float) $credit->balance - $deduction);
+                $credit->save();
+            }
+
+            DB::commit();
+
+            return $offer;
+        } catch (ValidationException $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to create offer.',
+                'error' => $e->getMessage(),
+            ], 400);
         }
-
-        if ($request->hasFile('video')) {
-            $media['video'] = $request->file('video')->store('offers/videos', 'public');
-        }
-
-        $data['media'] = $media;
-
-        return Offer::create($data);
     }
 
     public function show($id)
