@@ -27,5 +27,8 @@ class DatabaseSeeder extends Seeder
         
         // Seed sample data
         $this->call(SampleDataSeeder::class);
+
+        // Seed customer records
+        $this->call(CustomerSeeder::class);
     }
 }
