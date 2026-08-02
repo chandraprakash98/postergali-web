@@ -9,6 +9,7 @@ class Customer extends Model
     protected $fillable = [
         'customer_id',
         'mobile',
+        'fcm',
     ];
 
     protected static function booted(): void

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
+use App\Models\CustomerCredit;
+use App\Models\Referral;
 use App\Models\User;
 use App\Models\Job;
 use App\Models\Offer;
@@ -138,6 +141,10 @@ class AdminAuthController extends Controller
             }
 
             $model->save();
+
+            if ($data['status'] === 'approved') {
+                $this->handleReferralCredit($model);
+            }
 
             // Send FCM Notification using device_id as FCM token
             try {
@@ -325,6 +332,50 @@ class AdminAuthController extends Controller
             'live' => Job::where('status', 'approved')->count() + Offer::where('status', 'approved')->count(),
             'expired' => Job::where('status', 'rejected')->count() + Offer::where('status', 'rejected')->count(),
         ];
+    }
+
+    private function handleReferralCredit($model): void
+    {
+        $phoneNumber = null;
+
+        if ($model instanceof Job) {
+            $phoneNumber = $model->phone_number;
+        } elseif ($model instanceof Offer) {
+            $phoneNumber = $model->mobile_number;
+        }
+
+        if (empty($phoneNumber)) {
+            return;
+        }
+
+        $normalizedPhone = preg_replace('/[^0-9]/', '', (string) $phoneNumber);
+        if ($normalizedPhone === '') {
+            return;
+        }
+
+        $referral = Referral::where('referral_mobile', $normalizedPhone)->first();
+        if (!$referral) {
+            return;
+        }
+
+        $referrerCustomer = Customer::where('mobile', preg_replace('/[^0-9]/', '', (string) $referral->referrer_mobile))->first();
+        if (!$referrerCustomer) {
+            return;
+        }
+
+        $credit = CustomerCredit::where('customer_id', $referrerCustomer->customer_id)->first();
+        if (!$credit) {
+            $credit = CustomerCredit::create([
+                'customer_id' => $referrerCustomer->customer_id,
+                'balance' => 0,
+            ]);
+        }
+
+        $credit->balance = (float) $credit->balance + 100;
+        $credit->save();
+
+        $referral->status = 'Success';
+        $referral->save();
     }
 
     private function calculateExpiryFromDuration($approvedAt, string $duration)

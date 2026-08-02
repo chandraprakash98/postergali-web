@@ -13,6 +13,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'mobile' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\-\s]{7,15}$/'],
+            'fcm' => ['nullable', 'string', 'max:255'],
         ]);
 
         $normalizedMobile = $this->normalizeMobile($validated['mobile']);
@@ -21,6 +22,7 @@ class CustomerController extends Controller
         if (!$customer) {
             $customer = Customer::create([
                 'mobile' => $normalizedMobile,
+                'fcm' => $validated['fcm'] ?? null,
             ]);
 
             CustomerCredit::create([
@@ -37,6 +39,11 @@ class CustomerController extends Controller
             ], 201);
         }
 
+        if (!empty($validated['fcm'])) {
+            $customer->fcm = $validated['fcm'];
+            $customer->save();
+        }
+
         $credit = CustomerCredit::where('customer_id', $customer->customer_id)->first();
 
         return response()->json([
@@ -45,6 +52,42 @@ class CustomerController extends Controller
             'customer_id' => $customer->customer_id,
             'mobile' => $customer->mobile,
             'balance' => $credit?->balance ?? 0,
+            'fcm' => $customer->fcm,
+        ]);
+    }
+
+    public function posterAds(Request $request)
+    {
+        $validated = $request->validate([
+            'mobile' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\-\s]{7,15}$/'],
+        ]);
+
+        $normalizedMobile = $this->normalizeMobile($validated['mobile']);
+        $customer = Customer::where('mobile', $normalizedMobile)->first();
+
+        if (!$customer) {
+            return response()->json([
+                'success' => true,
+                'message' => 'No customer found for this mobile number.',
+                'jobs' => [],
+                'offers' => [],
+            ]);
+        }
+
+        $jobs = \App\Models\Job::where('phone_number', $normalizedMobile)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $offers = \App\Models\Offer::where('mobile_number', $normalizedMobile)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'customer_id' => $customer->customer_id,
+            'mobile' => $customer->mobile,
+            'jobs' => $jobs,
+            'offers' => $offers,
         ]);
     }
 

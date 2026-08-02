@@ -16,6 +16,7 @@ Route::prefix('v1')->group(function () {
     Route::post('referrals', [ReferralController::class, 'store']);
     Route::get('referrals/check', [ReferralController::class, 'check']);
     Route::get('customers/check', [CustomerController::class, 'check']);
+    Route::get('customers/poster-ads', [CustomerController::class, 'posterAds']);
     Route::get('customers/{customerId}/balance', [CustomerController::class, 'balance']);
 });
 
