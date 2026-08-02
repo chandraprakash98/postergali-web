@@ -351,6 +351,8 @@ class JobController extends Controller
                 $data['salary'] = $data['amount'];
             }
 
+            $data['status'] = 'IN PROGRESS';
+
             $job = Job::create($data);
 
             if (!empty($data['transaction_id'])) {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\Referral;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,7 @@ class ReferralController extends Controller
                 'referrer_mobile' => $referrerMobile,
                 'referral_name' => $referralData['referral_name'],
                 'referral_mobile' => $this->normalizeMobile($referralData['referral_mobile']),
-                'status' => $referralData['status'] ?? ($validated['status'] ?? 'active'),
+                'status' => 'IN PROGRESS',
             ]);
         }
 
@@ -67,6 +68,9 @@ class ReferralController extends Controller
             ]);
         }
 
+        $referrerCustomer = Customer::where('mobile', $this->normalizeMobile($referral->referrer_mobile))->first();
+        $referrerCustomerId = $referrerCustomer?->customer_id;
+
         return response()->json([
             'success' => true,
             'found' => true,
@@ -75,6 +79,7 @@ class ReferralController extends Controller
             'referrer_name' => $referral->referrer_name,
             'referrer_mobile' => $referral->referrer_mobile,
             'status' => $referral->status,
+            'customer_id' => $referrerCustomerId,
         ]);
     }
 

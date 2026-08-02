@@ -46,6 +46,11 @@ class PaymentCreditFlowTest extends TestCase
 
         $response->assertStatus(201);
 
+        $this->assertDatabaseHas('jobs', [
+            'temp_id' => 'temp-job-1',
+            'status' => 'IN PROGRESS',
+        ]);
+
         $this->assertDatabaseHas('payments', [
             'transaction_id' => 'txn-001',
             'item_type' => 'job',

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -34,7 +35,7 @@ class ReferralApiTest extends TestCase
             'referrer_mobile' => '0501234567',
             'referral_name' => 'Alice',
             'referral_mobile' => '0501111111',
-            'status' => 'active',
+            'status' => 'IN PROGRESS',
         ]);
 
         $this->assertDatabaseHas('referrals', [
@@ -42,8 +43,30 @@ class ReferralApiTest extends TestCase
             'referrer_mobile' => '0501234567',
             'referral_name' => 'Bob',
             'referral_mobile' => '0502222222',
-            'status' => 'inactive',
+            'status' => 'IN PROGRESS',
         ]);
+    }
+
+    public function test_it_returns_referrer_customer_id_in_check_response(): void
+    {
+        $customer = Customer::create([
+            'mobile' => '0501234567',
+        ]);
+
+        $referral = \App\Models\Referral::create([
+            'referrer_name' => 'John Doe',
+            'referrer_mobile' => '0501234567',
+            'referral_name' => 'Alice',
+            'referral_mobile' => '0501111111',
+            'status' => 'IN PROGRESS',
+        ]);
+
+        $response = $this->getJson('/api/v1/referrals/check?mobile=' . $referral->referral_mobile);
+
+        $response->assertOk()
+            ->assertJsonPath('found', true)
+            ->assertJsonPath('customer_id', $customer->customer_id)
+            ->assertJsonPath('customerId', $customer->customer_id);
     }
 
     public function test_it_rejects_more_than_five_referrals_and_duplicate_mobiles(): void
