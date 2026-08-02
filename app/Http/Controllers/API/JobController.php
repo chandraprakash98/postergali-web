@@ -351,7 +351,7 @@ class JobController extends Controller
                 $data['salary'] = $data['amount'];
             }
 
-            $data['status'] = 'IN PROGRESS';
+            $data['status'] = 'pending';
 
             $job = Job::create($data);
 
