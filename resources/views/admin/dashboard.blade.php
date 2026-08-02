@@ -5,335 +5,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Postergali</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root{
+            --bg: #f4efe6;
+            --sidebar: #9b342b;
+            --accent: #e58b6a;
+            --panel: #fffdf8;
+            --muted: #79706b;
+            --success: #2f8f6b;
+            --danger: #d9534f;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+        body{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+            background: var(--bg);
+            color: var(--muted);
         }
 
-        .container {
-            display: flex;
-            min-height: 100vh;
-        }
+        .container{ display:flex; min-height:100vh; }
 
-        /* Sidebar */
-        .sidebar {
-            width: 220px;
-            background: white;
-            border-right: 1px solid #e0e0e0;
-            padding: 30px 20px;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-        }
+        .sidebar{ width:240px; background:var(--sidebar); color:#fff; padding:28px 22px; position:fixed; height:100vh; overflow-y:auto; }
+        .logo{ font-size:20px; font-weight:800; margin-bottom:30px; }
+        .logo .menu-icon{ background:#fff; color:var(--sidebar); padding:8px; border-radius:8px; display:inline-block; }
+        .menu-items{ display:flex; flex-direction:column; gap:14px; }
+        .menu-item{ color: rgba(255,255,255,0.95); text-decoration:none; padding:12px 14px; border-radius:10px; display:flex; gap:12px; align-items:center; font-weight:600; }
+        .menu-item:hover{ background: rgba(255,255,255,0.06); }
+        .menu-item.active{ background: rgba(255,255,255,0.12); }
 
-        .logo {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #333;
-        }
+        .main-content{ flex:1; margin-left:240px; }
+        .topbar{ padding:28px 40px; display:flex; justify-content:space-between; align-items:center; }
+        .topbar h1{ font-size:28px; color:#302b27; font-weight:800; }
+        .user-section{ display:flex; gap:16px; align-items:center; color:var(--muted); }
+        .logout-btn{ background: var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:20px; cursor:pointer; font-weight:700; }
 
-        .menu-items {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .content{ padding:30px 40px 80px; }
+        .page-title{ font-size:22px; color:#302b27; margin-bottom:6px; }
+        .page-subtitle{ color:#8b8179; margin-bottom:20px; }
 
-        .menu-item {
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: #666;
-            transition: all 0.3s;
-            font-size: 14px;
-            font-weight: 500;
-        }
+        .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:28px; }
+        .stat-card{ background:var(--panel); padding:20px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 6px 18px rgba(43,30,24,0.04); }
+        .stat-info h3{ color:#8b8179; font-size:12px; text-transform:uppercase; letter-spacing:1px; }
+        .stat-number{ font-size:26px; color:#2f2a26; font-weight:800; }
+        .stat-icon{ width:54px; height:54px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+        .stat-icon.pending{ background:#fff7e6; color:#b77400; }
+        .stat-icon.live{ background:#eaf7ef; color:var(--success); }
+        .stat-icon.expired{ background:#fdecea; color:var(--danger); }
 
-        .menu-item:hover {
-            background-color: #f5f5f5;
-            color: #333;
-        }
+        .table-section{ background: transparent; }
+        .table-header{ padding:12px 18px 18px 18px; display:flex; justify-content:space-between; align-items:center; }
+        .table-header h3{ font-size:16px; color:#2f2a26; font-weight:800; }
 
-        .menu-item.active {
-            background-color: #f0f0ff;
-            color: #667eea;
-        }
+        .type-toggle{ display:flex; align-items:center; gap:8px; }
+        .type-toggle .pill{ background: var(--panel); border-radius:999px; padding:6px; display:flex; gap:6px; align-items:center; }
+        .type-toggle button{ background:transparent; border:none; padding:8px 14px; border-radius:999px; cursor:pointer; font-weight:700; color:var(--muted); }
+        .type-toggle button.active{ background: var(--accent); color:#fff; }
 
-        .menu-icon {
-            font-size: 18px;
-        }
+        table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
+        thead th{ background: transparent; color:#9a8f86; text-align:left; padding:10px 18px; font-size:12px; font-weight:700; text-transform:uppercase; }
+        tbody tr{ background: var(--panel); border-radius:10px; display:table; width:100%; table-layout:fixed; box-shadow: 0 6px 12px rgba(43,30,24,0.03); }
+        td{ padding:14px 18px; vertical-align:middle; color:#4f463f; }
 
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 220px;
-        }
+        .status-badge{ padding:6px 12px; border-radius:999px; font-weight:700; font-size:12px; }
+        .status-pending{ background:#fff7e6; color:#b77400; }
+        .status-live{ background:#eaf7ef; color:var(--success); }
+        .status-expired{ background:#fdecea; color:var(--danger); }
 
-        .topbar {
-            background: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #e0e0e0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+        .view-btn{ background: var(--success); color:#fff; padding:8px 14px; border-radius:20px; text-decoration:none; font-weight:700; }
 
-        .topbar h1 {
-            font-size: 24px;
-            font-weight: 600;
-        }
+        .empty-state{ padding:40px 18px; text-align:center; color:#8b8179; display:none; }
 
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .logout-btn {
-            background-color: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background-color: #764ba2;
-        }
-
-        .content {
-            padding: 40px;
-        }
-
-        .page-title {
-            margin-bottom: 8px;
-            font-size: 28px;
-            font-weight: 600;
-        }
-
-        .page-subtitle {
-            color: #999;
-            font-size: 14px;
-            margin-bottom: 30px;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .stat-info h3 {
-            color: #999;
-            font-size: 13px;
-            font-weight: 500;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-        }
-
-        .stat-icon.pending {
-            background-color: #fff3cd;
-        }
-
-        .stat-icon.live {
-            background-color: #d4edda;
-        }
-
-        .stat-icon.expired {
-            background-color: #f8d7da;
-        }
-
-        /* Table Section */
-        .table-section {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-
-        .table-header {
-            padding: 20px 30px;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .table-header h3 {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .filter-icon {
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            background-color: #f9f9f9;
-            padding: 16px 30px;
-            text-align: left;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: #999;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        td {
-            padding: 16px 30px;
-            border-bottom: 1px solid #f5f5f5;
-            font-size: 14px;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-pending,
-        .status-pending-verification {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-
-        .status-live,
-        .status-approved {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .status-rejected,
-        .status-expired {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        .view-btn {
-            background-color: #1a1a2e;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s;
-        }
-
-        .view-btn:hover {
-            background-color: #0f0f1e;
-        }
-
-        /* Pricing Table */
-        .pricing-table {
-            margin-top: 20px;
-        }
-
-        .pricing-table th {
-            background-color: #f9f9f9;
-        }
-
-        .empty-state {
-            padding: 60px 30px;
-            text-align: center;
-            color: #999;
-        }
-
-        .empty-state p {
-            font-size: 16px;
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .topbar {
-                padding: 20px;
-            }
-
-            .content {
-                padding: 20px;
-            }
-
-            th, td {
-                padding: 12px 16px;
-                font-size: 13px;
-            }
-        }
+        @media (max-width: 900px){ .stats-grid{ grid-template-columns:1fr; } .main-content{ margin-left:0; } .sidebar{ display:none; } }
     </style>
 </head>
 <body>
@@ -426,7 +168,12 @@
                                     All Ads
                                 @endif
                             </h3>
-                            <span class="filter-icon">⚙️</span>
+                            <div class="type-toggle">
+                                <div class="pill">
+                                    <button id="toggle-jobs" class="active">Jobs</button>
+                                    <button id="toggle-offers">Offers</button>
+                                </div>
+                            </div>
                         </div>
 
                         @if(isset($allAds) && count($allAds) > 0)
@@ -444,7 +191,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach($allAds as $ad)
-                                        <tr>
+                                        <tr data-type="{{ strtolower($ad['type'] ?? 'ad') }}">
                                             <td>{{ $ad['id'] }}</td>
                                             <td>{{ $ad['business_name'] }}</td>
                                             <td>{{ $ad['phone'] }}</td>
@@ -467,6 +214,7 @@
                                 <p>No ads found</p>
                             </div>
                         @endif
+                        <div id="filter-empty" class="empty-state">No items match the selected filter</div>
                     </div>
 
                 @else
@@ -515,5 +263,45 @@
             </div>
         </div>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const btnJobs = document.getElementById('toggle-jobs');
+    const btnOffers = document.getElementById('toggle-offers');
+    const rows = Array.from(document.querySelectorAll('tbody tr'));
+    const empty = document.getElementById('filter-empty');
+
+    function setActive(btn){
+        if(!btnJobs || !btnOffers) return;
+        btnJobs.classList.remove('active');
+        btnOffers.classList.remove('active');
+        if(btn) btn.classList.add('active');
+    }
+
+    function filter(type){
+        let visible = 0;
+        rows.forEach(r => {
+            const t = (r.getAttribute('data-type') || '').toLowerCase();
+            if(type === 'jobs'){
+                if(t === 'job') { r.style.display = 'table-row'; visible++; } else { r.style.display = 'none'; }
+            } else if(type === 'offers'){
+                if(t === 'offer') { r.style.display = 'table-row'; visible++; } else { r.style.display = 'none'; }
+            } else {
+                r.style.display = 'table-row'; visible++;
+            }
+        });
+        if(!empty) return;
+        empty.style.display = visible > 0 ? 'none' : 'block';
+    }
+
+    // default to Jobs to match provided image feel
+    if(btnJobs && btnOffers){
+        setActive(btnJobs);
+        filter('jobs');
+
+        btnJobs.addEventListener('click', function(){ setActive(btnJobs); filter('jobs'); });
+        btnOffers.addEventListener('click', function(){ setActive(btnOffers); filter('offers'); });
+    }
+});
+</script>
 </body>
 </html>

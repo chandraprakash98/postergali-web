@@ -279,6 +279,8 @@ class OfferController extends Controller
 
             $data['media'] = $media;
 
+             $data['status'] = 'pending';
+
             $offer = Offer::create($data);
 
             if (!empty($data['transaction_id'])) {
