@@ -63,13 +63,17 @@
 
         table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
         thead th{ background: transparent; color:#9a8f86; text-align:left; padding:10px 18px; font-size:12px; font-weight:700; text-transform:uppercase; }
-        tbody tr{ background: var(--panel); border-radius:10px; display:table; width:100%; table-layout:fixed; box-shadow: 0 6px 12px rgba(43,30,24,0.03); }
+        tbody tr{ background: var(--panel); border-radius:10px; box-shadow: 0 6px 12px rgba(43,30,24,0.03); }
+        tbody tr td:first-child{ border-top-left-radius:10px; border-bottom-left-radius:10px; }
+        tbody tr td:last-child{ border-top-right-radius:10px; border-bottom-right-radius:10px; }
         td{ padding:14px 18px; vertical-align:middle; color:#4f463f; }
 
         .status-badge{ padding:6px 12px; border-radius:999px; font-weight:700; font-size:12px; }
         .status-pending{ background:#fff7e6; color:#b77400; }
         .status-live{ background:#eaf7ef; color:var(--success); }
         .status-expired{ background:#fdecea; color:var(--danger); }
+        .status-active{ background:#eaf7ef; color:var(--success); }
+        .status-success{ background:#eaf7ef; color:var(--success); }
 
         .view-btn{ background: var(--success); color:#fff; padding:8px 14px; border-radius:20px; text-decoration:none; font-weight:700; }
 
@@ -108,6 +112,10 @@
                     <span class="menu-icon">💰</span>
                     Pricing Info
                 </a>
+                <a href="{{ route('admin.referrals') }}" class="menu-item {{ ($active ?? null) === 'referrals' ? 'active' : '' }}">
+                    <span class="menu-icon">🤝</span>
+                    Referrals
+                </a>
             </div>
         </div>
 
@@ -125,7 +133,54 @@
             </div>
 
             <div class="content">
-                @if(($active ?? 'all') !== 'pricing')
+                @if(($active ?? 'all') === 'referrals')
+                    <h2 class="page-title">Referrals</h2>
+                    <p class="page-subtitle">Referral records from the referral table</p>
+
+                    <div class="table-section">
+                        <div class="table-header">
+                            <h3>All Referrals</h3>
+                        </div>
+
+                        @if(isset($referrals) && count($referrals) > 0)
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>REFERRAL NAME</th>
+                                        <th>REFERRAL MOBILE</th>
+                                        <th>REFERRER NAME</th>
+                                        <th>REFERRER MOBILE</th>
+                                        <th>STATUS</th>
+                                        <th>CREATED AT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($referrals as $referral)
+                                        <tr>
+                                            <td>#{{ $referral->id }}</td>
+                                            <td>{{ $referral->referral_name }}</td>
+                                            <td>{{ $referral->referral_mobile }}</td>
+                                            <td>{{ $referral->referrer_name }}</td>
+                                            <td>{{ $referral->referrer_mobile }}</td>
+                                            <td>
+                                                <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $referral->status ?? 'unknown')) }}">
+                                                    {{ ucfirst($referral->status ?? 'Unknown') }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $referral->created_at ? $referral->created_at->format('M d, Y') : 'N/A' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <div class="empty-state">
+                                <p>No referrals found</p>
+                            </div>
+                        @endif
+                    </div>
+
+                @elseif(($active ?? 'all') !== 'pricing')
                     <h2 class="page-title">Dashboard</h2>
                     <p class="page-subtitle">Overview of all ad listings</p>
 

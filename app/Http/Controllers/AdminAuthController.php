@@ -296,6 +296,12 @@ class AdminAuthController extends Controller
         return view('admin.dashboard', ['active' => 'pricing', 'plans' => $plans, 'stats' => $this->getStats()]);
     }
 
+    public function referrals()
+    {
+        $referrals = Referral::orderBy('created_at', 'desc')->get();
+        return view('admin.dashboard', ['active' => 'referrals', 'referrals' => $referrals, 'stats' => $this->getStats()]);
+    }
+
     private function getAllAds()
     {
         $jobs = Job::all()->map(fn($job) => [
