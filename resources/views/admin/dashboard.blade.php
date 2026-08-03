@@ -25,23 +25,27 @@
 
         .container{ display:flex; min-height:100vh; }
 
-        .sidebar{ width:240px; background:var(--sidebar); color:#fff; padding:28px 22px; position:fixed; height:100vh; overflow-y:auto; }
+        .sidebar{ width:240px; background:var(--sidebar); color:#fff; padding:28px 22px; position:fixed; height:100vh; overflow-y:auto; display:flex; flex-direction:column; }
         .logo{ font-size:20px; font-weight:800; margin-bottom:30px; }
         .logo .menu-icon{ background:#fff; color:var(--sidebar); padding:8px; border-radius:8px; display:inline-block; }
-        .menu-items{ display:flex; flex-direction:column; gap:14px; }
+        .menu-items{ display:flex; flex-direction:column; gap:14px; flex:1; }
+        .sidebar-footer{ margin-top:auto; padding-top:20px; border-top:1px solid rgba(255,255,255,0.12); }
         .menu-item{ color: rgba(255,255,255,0.95); text-decoration:none; padding:12px 14px; border-radius:10px; display:flex; gap:12px; align-items:center; font-weight:600; }
         .menu-item:hover{ background: rgba(255,255,255,0.06); }
         .menu-item.active{ background: rgba(255,255,255,0.12); }
 
         .main-content{ flex:1; margin-left:240px; }
-        .topbar{ padding:28px 40px; display:flex; justify-content:space-between; align-items:center; }
-        .topbar h1{ font-size:28px; color:#302b27; font-weight:800; }
+        .topbar{ padding:28px 40px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
+        .page-heading{ display:flex; flex-direction:column; gap:4px; max-width:55%; }
+        .page-heading h2{ font-size:22px; color:#302b27; margin:0; font-weight:800; }
+        .page-heading p{ color:#8b8179; margin:0; }
         .user-section{ display:flex; gap:16px; align-items:center; color:var(--muted); }
         .logout-btn{ background: var(--accent); color:#fff; border:none; padding:8px 14px; border-radius:20px; cursor:pointer; font-weight:700; }
 
         .content{ padding:30px 40px 80px; }
         .page-title{ font-size:22px; color:#302b27; margin-bottom:6px; }
         .page-subtitle{ color:#8b8179; margin-bottom:20px; }
+        .view-btn{ background: var(--success); color:#fff; padding:8px 10px; min-width:80px; display:inline-flex; align-items:center; justify-content:center; border-radius:20px; text-decoration:none; font-weight:700; white-space:nowrap; }
 
         .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:28px; }
         .stat-card{ background:var(--panel); padding:20px; border-radius:14px; display:flex; justify-content:space-between; align-items:center; box-shadow: 0 6px 18px rgba(43,30,24,0.04); }
@@ -117,26 +121,39 @@
                     Referrals
                 </a>
             </div>
+            <div class="sidebar-footer">
+                <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
+            </div>
         </div>
 
         <!-- Main Content -->
         <div class="main-content">
             <div class="topbar">
-                <h1>Dashboard</h1>
-                <div class="user-section">
-                    <span>{{ Auth::user()->name }}</span>
-                    <form method="POST" action="{{ route('admin.logout') }}" style="margin: 0;">
-                        @csrf
-                        <button type="submit" class="logout-btn">Logout</button>
-                    </form>
+                <div class="page-heading">
+                    @if(($active ?? 'all') === 'referrals')
+                        <h2>Referrals</h2>
+                        <p>Referral records from the referral table</p>
+                    @elseif(($active ?? 'all') === 'pricing')
+                        <h2>Pricing Info</h2>
+                        <p>Manage subscription plans</p>
+                    @else
+                        <h2>Dashboard</h2>
+                        <p>Overview of all ad listings</p>
+                    @endif
+                </div>
+                <div class="type-toggle">
+                    <div class="pill">
+                        <button id="toggle-jobs" class="active">Jobs</button>
+                        <button id="toggle-offers">Offers</button>
+                    </div>
                 </div>
             </div>
 
             <div class="content">
                 @if(($active ?? 'all') === 'referrals')
-                    <h2 class="page-title">Referrals</h2>
-                    <p class="page-subtitle">Referral records from the referral table</p>
-
                     <div class="table-section">
                         <div class="table-header">
                             <h3>All Referrals</h3>
@@ -181,9 +198,6 @@
                     </div>
 
                 @elseif(($active ?? 'all') !== 'pricing')
-                    <h2 class="page-title">Dashboard</h2>
-                    <p class="page-subtitle">Overview of all ad listings</p>
-
                     <!-- Stats Grid -->
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -223,12 +237,6 @@
                                     All Ads
                                 @endif
                             </h3>
-                            <div class="type-toggle">
-                                <div class="pill">
-                                    <button id="toggle-jobs" class="active">Jobs</button>
-                                    <button id="toggle-offers">Offers</button>
-                                </div>
-                            </div>
                         </div>
 
                         @if(isset($allAds) && count($allAds) > 0)
@@ -274,9 +282,6 @@
 
                 @else
                     <!-- Pricing Info Section -->
-                    <h2 class="page-title">Pricing Info</h2>
-                    <p class="page-subtitle">Manage subscription plans</p>
-
                     <div class="table-section">
                         <div class="table-header">
                             <h3>All Plans</h3>
