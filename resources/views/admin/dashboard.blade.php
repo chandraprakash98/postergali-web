@@ -144,12 +144,14 @@
                         <p>Overview of all ad listings</p>
                     @endif
                 </div>
-                <div class="type-toggle">
-                    <div class="pill">
-                        <button id="toggle-jobs" class="active">Jobs</button>
-                        <button id="toggle-offers">Offers</button>
+                @if(($active ?? 'all') !== 'referrals' && ($active ?? 'all') !== 'pricing')
+                    <div class="type-toggle">
+                        <div class="pill">
+                            <button id="toggle-jobs" class="active">Jobs</button>
+                            <button id="toggle-offers">Offers</button>
+                        </div>
                     </div>
-                </div>
+                @endif
             </div>
 
             <div class="content">
@@ -353,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function(){
         empty.style.display = visible > 0 ? 'none' : 'block';
     }
 
-    // default to Jobs to match provided image feel
+    // only enable filtering when the toggle exists
     if(btnJobs && btnOffers){
         setActive(btnJobs);
         filter('jobs');
