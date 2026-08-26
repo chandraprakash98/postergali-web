@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JSON Viewer & Compare</title>
+  <meta name="description" content="JSON tree viewer with key search and side-by-side compare tool."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#1e1e2e;
+      --sidebar:#12121c;
+      --surface:#252535;
+      --surface2:#2e2e42;
+      --border:#3a3a52;
+      --border2:#4a4a65;
+      --text:#cdd6f4;
+      --text-muted:#6c7086;
+      --text-dim:#45475a;
+      --accent:#7c3aed;
+      --accent2:#a78bfa;
+      --accent-glow:rgba(124,58,237,.2);
+      /* JSON colors matching the screenshot */
+      --j-key:#ce9178;        /* orange-ish for keys */
+      --j-string:#4ec9b0;     /* teal-green for strings */
+      --j-number:#b5cea8;     /* light green for numbers */
+      --j-bool:#569cd6;       /* blue for booleans */
+      --j-null:#9cdcfe;       /* light blue italic for null */
+      --j-bracket:#d4d4d4;    /* white-ish for brackets */
+      --j-collapse:#264f78;   /* collapse button bg */
+      --green:#4ec9b0;
+      --red:#f38ba8;
+      --yellow:#f9e2af;
+      --blue:#89b4fa;
+      --orange:#fab387;
+    }
+    html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+
+    /* ── App Shell ── */
+    .app{display:flex;flex-direction:column;height:100vh}
+
+    /* ── Top Bar ── */
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;height:50px;
+      background:var(--sidebar);border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;letter-spacing:-.3px}
+    .logo-icon{
+      width:28px;height:28px;border-radius:7px;
+      background:linear-gradient(135deg,#7c3aed,#a78bfa);
+      display:grid;place-items:center;font-size:14px
+    }
+    .logo em{color:var(--accent2);font-style:normal}
+
+    /* ── Tabs ── */
+    .tabs{display:flex;gap:2px;background:var(--surface);border-radius:10px;padding:3px}
+    .tab-btn{
+      padding:6px 18px;border-radius:7px;border:none;background:transparent;
+      color:var(--text-muted);font-family:inherit;font-size:13px;font-weight:500;
+      cursor:pointer;transition:all .18s;
+    }
+    .tab-btn.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(124,58,237,.4)}
+    .tab-btn:not(.active):hover{color:var(--text);background:var(--surface2)}
+
+    /* ── Tab Panels ── */
+    .panels{flex:1;overflow:hidden;display:flex;flex-direction:column}
+    .panel{display:none;flex:1;overflow:hidden}
+    .panel.active{display:flex}
+
+    /* ══════════════════════════════════
+       VIEWER TAB
+    ══════════════════════════════════ */
+    #panel-viewer{flex-direction:row}
+
+    /* Left input pane */
+    .input-pane{
+      flex:0 0 380px;min-width:260px;max-width:560px;
+      display:flex;flex-direction:column;
+      background:var(--sidebar);border-right:1px solid var(--border);
+    }
+    .pane-hdr{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:9px 14px;border-bottom:1px solid var(--border);
+      font-size:11px;font-weight:600;letter-spacing:.07em;
+      text-transform:uppercase;color:var(--text-muted);flex-shrink:0;
+    }
+    .pane-hdr-btns{display:flex;gap:5px}
+    .ico-btn{
+      width:26px;height:26px;border-radius:5px;border:1px solid var(--border);
+      background:transparent;color:var(--text-muted);cursor:pointer;
+      display:grid;place-items:center;font-size:13px;transition:all .15s;
+    }
+    .ico-btn:hover{border-color:var(--accent2);color:var(--accent2);background:var(--accent-glow)}
+    #json-input{
+      flex:1;resize:none;border:none;outline:none;background:transparent;
+      color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;
+      line-height:1.65;padding:14px;tab-size:2;
+    }
+    #json-input::placeholder{color:var(--text-dim)}
+    #json-input::-webkit-scrollbar{width:5px}
+    #json-input::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+    .err-bar{
+      padding:8px 14px;background:rgba(243,139,168,.08);
+      border-top:1px solid rgba(243,139,168,.25);
+      color:var(--red);font-size:11.5px;font-family:'JetBrains Mono',monospace;
+      display:none;flex-shrink:0;
+    }
+    .err-bar.show{display:block}
+
+    /* Resize handle */
+    .drag-bar{
+      width:4px;cursor:col-resize;background:transparent;
+      transition:background .2s;flex-shrink:0;
+    }
+    .drag-bar:hover,.drag-bar.dragging{background:var(--accent)}
+
+    /* Right output pane */
+    .output-pane{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+    /* Toolbar */
+    .output-toolbar{
+      display:flex;align-items:center;gap:10px;padding:8px 14px;
+      border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;
+    }
+    .search-box{flex:1;min-width:160px;position:relative}
+    .search-box input{
+      width:100%;padding:6px 12px 6px 30px;
+      background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+      color:var(--text);font-family:inherit;font-size:13px;outline:none;
+      transition:border-color .2s;
+    }
+    .search-box input:focus{border-color:var(--accent)}
+    .search-box .si{
+      position:absolute;left:9px;top:50%;transform:translateY(-50%);
+      color:var(--text-muted);font-size:12px;pointer-events:none;
+    }
+    .search-matches{font-size:12px;color:var(--text-muted);white-space:nowrap}
+    .toolbar-btns{display:flex;gap:6px}
+    .sm-btn{
+      padding:5px 11px;border-radius:6px;border:1px solid var(--border);
+      background:var(--surface2);color:var(--text-muted);font-family:inherit;
+      font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;
+    }
+    .sm-btn:hover{border-color:var(--accent2);color:var(--accent2);background:var(--accent-glow)}
+
+    .stats-row{display:flex;gap:12px;font-size:11.5px;color:var(--text-muted)}
+    .stat{display:flex;gap:4px;align-items:center}
+    .stat strong{color:var(--text);font-weight:600}
+
+    /* Status badge */
+    .status{
+      display:inline-flex;align-items:center;gap:5px;
+      padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;
+      border:1px solid;white-space:nowrap;
+    }
+    .status.valid  {color:#4ade80;border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.07)}
+    .status.invalid{color:var(--red);border-color:rgba(243,139,168,.3);background:rgba(243,139,168,.07)}
+    .status.empty  {color:var(--text-muted);border-color:var(--border);background:transparent}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+    /* Tree output */
+    #tree-out{
+      flex:1;overflow:auto;padding:14px 20px;
+      font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.75;
+    }
+    #tree-out::-webkit-scrollbar{width:6px}
+    #tree-out::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+    /* Empty */
+    .empty{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      height:100%;gap:10px;color:var(--text-muted);text-align:center;
+    }
+    .empty-ico{font-size:42px;opacity:.3}
+    .empty h3{font-size:15px;color:var(--text-dim)}
+    .empty p{font-size:12.5px;max-width:240px;line-height:1.6}
+
+    /* ─── JSON Tree (screenshot style) ─── */
+    .jn{display:block;white-space:pre-wrap;word-break:break-all}
+    .jn-row{
+      display:flex;align-items:flex-start;gap:0;
+      border-radius:4px;padding:0 2px;transition:background .12s;
+    }
+    .jn-row:hover{background:rgba(255,255,255,.04)}
+    .jn-row.hl{background:rgba(167,139,250,.18)!important}
+
+    /* Collapse toggle – small square like the screenshot */
+    .jcol{
+      display:inline-flex;align-items:center;justify-content:center;
+      width:14px;height:14px;border:1px solid #555;border-radius:2px;
+      font-size:9px;line-height:1;cursor:pointer;margin-right:4px;
+      color:#aaa;background:#1e1e2e;flex-shrink:0;margin-top:4px;
+      user-select:none;transition:border-color .15s;
+    }
+    .jcol:hover{border-color:var(--accent2);color:var(--accent2)}
+    .jcol-placeholder{display:inline-block;width:18px;flex-shrink:0}
+
+    .jkey{color:var(--j-key)}
+    .jcolon{color:#d4d4d4;margin:0 2px}
+    .jstr{color:var(--j-string)}
+    .jnum{color:var(--j-number)}
+    .jbool{color:var(--j-bool);font-weight:500}
+    .jnull{color:var(--j-null);font-style:italic}
+    .jbrkt{color:var(--j-bracket)}
+    .jtrail{color:var(--text-muted)}
+
+    .jchildren{padding-left:20px;border-left:1px solid #333;margin-left:7px}
+    .jchildren.hidden{display:none}
+
+    /* Copy on hover */
+    .jcopy-wrap{margin-left:auto;opacity:0;transition:opacity .12s}
+    .jn-row:hover .jcopy-wrap{opacity:1}
+    .jcopy{
+      font-size:10px;padding:1px 6px;border-radius:4px;
+      border:1px solid var(--border);background:var(--surface);
+      color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .12s;
+    }
+    .jcopy:hover{border-color:var(--accent2);color:var(--accent2)}
+
+    /* Path bar */
+    #path-bar{
+      padding:6px 14px;border-top:1px solid var(--border);
+      font-family:'JetBrains Mono',monospace;font-size:11px;
+      background:var(--sidebar);color:var(--text-muted);
+      min-height:30px;display:flex;align-items:center;gap:3px;flex-wrap:wrap;
+      flex-shrink:0;
+    }
+    .pseg{color:var(--accent2)}
+    .pdot{color:var(--text-dim)}
+
+    /* ══════════════════════════════════
+       COMPARE TAB
+    ══════════════════════════════════ */
+    #panel-compare{flex-direction:column}
+    .cmp-toolbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:9px 16px;border-bottom:1px solid var(--border);
+      flex-shrink:0;gap:10px;flex-wrap:wrap;
+    }
+    .cmp-title{font-size:13px;font-weight:600;color:var(--text-muted)}
+    .cmp-actions{display:flex;gap:8px}
+    .cmp-btn{
+      padding:6px 14px;border-radius:7px;border:1px solid var(--border);
+      background:var(--surface2);color:var(--text);font-family:inherit;
+      font-size:12.5px;font-weight:500;cursor:pointer;transition:all .18s;
+      display:inline-flex;align-items:center;gap:5px;
+    }
+    .cmp-btn:hover{border-color:var(--accent2);color:var(--accent2);background:var(--accent-glow)}
+    .cmp-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    .cmp-btn.primary:hover{background:#6d28d9;border-color:#6d28d9;color:#fff}
+
+    .cmp-legend{display:flex;gap:16px;font-size:11.5px}
+    .leg{display:flex;align-items:center;gap:5px}
+    .leg-dot{width:10px;height:10px;border-radius:2px}
+    .leg-add{background:rgba(74,222,128,.25);border:1px solid rgba(74,222,128,.5)}
+    .leg-del{background:rgba(243,139,168,.25);border:1px solid rgba(243,139,168,.5)}
+    .leg-mod{background:rgba(249,226,175,.2);border:1px solid rgba(249,226,175,.4)}
+
+    .cmp-panels{flex:1;display:flex;overflow:hidden}
+
+    /* each compare side */
+    .cmp-side{
+      flex:1;display:flex;flex-direction:column;
+      border-right:1px solid var(--border);
+    }
+    .cmp-side:last-child{border-right:none}
+
+    .cmp-side-hdr{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 14px;border-bottom:1px solid var(--border);
+      font-size:12px;font-weight:600;color:var(--text-muted);
+      flex-shrink:0;
+    }
+    .cmp-side-status{font-size:11px}
+    .cmp-textarea{
+      flex:1;resize:none;border:none;outline:none;
+      background:var(--sidebar);color:var(--text);
+      font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;
+      padding:12px;tab-size:2;
+    }
+    .cmp-textarea::placeholder{color:var(--text-dim)}
+    .cmp-textarea::-webkit-scrollbar{width:5px}
+    .cmp-textarea::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+    /* Diff result panel */
+    .diff-result-panel{
+      flex:0 0 0;overflow:hidden;
+      border-top:1px solid var(--border);
+      background:var(--bg);
+      transition:flex-basis .3s ease;
+      display:flex;flex-direction:column;
+    }
+    .diff-result-panel.open{flex-basis:55%}
+
+    .diff-hdr{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:8px 16px;border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .diff-hdr-title{font-size:12.5px;font-weight:600}
+    .diff-summary{font-size:12px;color:var(--text-muted);display:flex;gap:14px}
+    .ds-add{color:#4ade80} .ds-del{color:var(--red)} .ds-mod{color:var(--yellow)}
+
+    .diff-cols{flex:1;display:flex;overflow:hidden}
+    .diff-col{
+      flex:1;overflow:auto;padding:10px 16px;
+      font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;
+      border-right:1px solid var(--border);
+    }
+    .diff-col:last-child{border-right:none}
+    .diff-col::-webkit-scrollbar{width:5px}
+    .diff-col::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+    .diff-col-hdr{
+      font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;
+      border-bottom:1px solid var(--border);
+    }
+
+    /* Diff line types */
+    .dl{display:flex;align-items:flex-start;gap:8px;padding:1px 4px;border-radius:3px;min-height:24px}
+    .dl.add{background:rgba(74,222,128,.1);border-left:3px solid rgba(74,222,128,.6)}
+    .dl.del{background:rgba(243,139,168,.1);border-left:3px solid rgba(243,139,168,.5)}
+    .dl.mod{background:rgba(249,226,175,.08);border-left:3px solid rgba(249,226,175,.4)}
+    .dl.same{opacity:.55;border-left:3px solid transparent}
+    .dl-sign{width:14px;flex-shrink:0;font-weight:700;font-size:13px;margin-top:1px}
+    .dl.add .dl-sign{color:#4ade80}
+    .dl.del .dl-sign{color:var(--red)}
+    .dl.mod .dl-sign{color:var(--yellow)}
+    .dl.same .dl-sign{color:var(--text-dim)}
+    .dl-path{color:var(--accent2);font-size:11px;flex-shrink:0;margin-top:3px;min-width:130px}
+    .dl-val{color:var(--text);word-break:break-all}
+    .dl-val-old{color:var(--red);text-decoration:line-through;margin-right:6px}
+    .dl-val-new{color:#4ade80}
+    .dl-type-badge{
+      font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;
+      margin-left:6px;flex-shrink:0;margin-top:3px;
+    }
+    .dl-type-badge.add{background:rgba(74,222,128,.2);color:#4ade80}
+    .dl-type-badge.del{background:rgba(243,139,168,.2);color:var(--red)}
+    .dl-type-badge.mod{background:rgba(249,226,175,.15);color:var(--yellow)}
+
+    .no-diff{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      height:100%;gap:10px;color:var(--text-muted);text-align:center;
+    }
+    .no-diff-ico{font-size:36px;opacity:.4}
+
+    /* ── Toast ── */
+    #toast{
+      position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(60px);
+      background:var(--surface2);border:1px solid var(--border2);border-radius:9px;
+      padding:9px 18px;font-size:13px;font-weight:500;
+      box-shadow:0 8px 32px rgba(0,0,0,.6);
+      transition:transform .3s cubic-bezier(.175,.885,.32,1.275);
+      z-index:100;white-space:nowrap;
+    }
+    #toast.show{transform:translateX(-50%) translateY(0)}
+
+    /* Scrollbars global */
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      JSON<em>Studio</em>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('viewer',this)">🌲 Viewer</button>
+      <button class="tab-btn" onclick="switchTab('compare',this)">⚖️ Compare</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="status-badge" class="status empty"><span class="status-dot"></span> Waiting</span>
+    </div>
+  </div>
+
+  <!-- Panels -->
+  <div class="panels">
+
+    <!-- ══ VIEWER PANEL ══ -->
+    <div class="panel active" id="panel-viewer">
+
+      <!-- Input -->
+      <div class="input-pane" id="input-pane">
+        <div class="pane-hdr">
+          <span>📄 Input</span>
+          <div class="pane-hdr-btns">
+            <button class="ico-btn" title="Paste clipboard" onclick="pasteClip()">📋</button>
+            <button class="ico-btn" title="Upload file" onclick="document.getElementById('fup').click()">📂</button>
+            <button class="ico-btn" title="Format JSON" onclick="fmtJSON()">✨</button>
+            <button class="ico-btn" title="Clear" onclick="clearAll()">🗑</button>
+            <input type="file" id="fup" accept=".json" style="display:none" onchange="loadFile(event)"/>
+          </div>
+        </div>
+        <textarea id="json-input" spellcheck="false" placeholder="Paste your JSON here…&#10;&#10;{&#10;  &quot;key&quot;: &quot;value&quot;&#10;}"></textarea>
+        <div class="err-bar" id="err-bar"></div>
+      </div>
+
+      <!-- Drag -->
+      <div class="drag-bar" id="drag-bar"></div>
+
+      <!-- Output -->
+      <div class="output-pane">
+        <div class="output-toolbar">
+          <div class="search-box">
+            <span class="si">🔍</span>
+            <input type="text" id="search-q" placeholder="Find key or value… (Ctrl+F)" oninput="doSearch(this.value)"/>
+          </div>
+          <span class="search-matches" id="match-count" style="display:none"></span>
+          <div class="toolbar-btns">
+            <button class="sm-btn" onclick="collapseAll()">⬆ Collapse All</button>
+            <button class="sm-btn" onclick="expandAll()">⬇ Expand All</button>
+          </div>
+          <div class="stats-row" id="stats-row" style="display:none">
+            <span class="stat">Keys <strong id="s-keys">0</strong></span>
+            <span class="stat">Depth <strong id="s-depth">0</strong></span>
+            <span class="stat">Size <strong id="s-size">0</strong></span>
+          </div>
+        </div>
+        <div id="tree-out">
+          <div class="empty">
+            <div class="empty-ico">🌿</div>
+            <h3>No JSON loaded</h3>
+            <p>Paste or type JSON in the left panel to visualize it as a tree.</p>
+          </div>
+        </div>
+        <div id="path-bar"><span style="color:var(--text-dim)">Hover a node to see its JSON path</span></div>
+      </div>
+    </div><!-- /panel-viewer -->
+
+    <!-- ══ COMPARE PANEL ══ -->
+    <div class="panel" id="panel-compare">
+      <div class="cmp-toolbar">
+        <div class="cmp-title">⚖️ JSON Compare — paste two JSON files to find differences</div>
+        <div class="cmp-legend">
+          <span class="leg"><span class="leg-dot leg-add"></span>Added</span>
+          <span class="leg"><span class="leg-dot leg-del"></span>Removed</span>
+          <span class="leg"><span class="leg-dot leg-mod"></span>Modified</span>
+        </div>
+        <div class="cmp-actions">
+          <button class="cmp-btn" onclick="swapCmp()">⇄ Swap</button>
+          <button class="cmp-btn" onclick="clearCmp()">🗑 Clear</button>
+          <button class="cmp-btn primary" onclick="runCompare()">▶ Compare</button>
+        </div>
+      </div>
+
+      <div class="cmp-panels">
+        <!-- Left -->
+        <div class="cmp-side">
+          <div class="cmp-side-hdr">
+            <span>🅐 File A (Original)</span>
+            <span class="cmp-side-status" id="cmp-a-status"></span>
+          </div>
+          <textarea class="cmp-textarea" id="cmp-a" spellcheck="false" placeholder='Paste original JSON here…&#10;&#10;{"name":"Alice","age":30}'></textarea>
+        </div>
+        <!-- Right -->
+        <div class="cmp-side">
+          <div class="cmp-side-hdr">
+            <span>🅑 File B (Modified)</span>
+            <span class="cmp-side-status" id="cmp-b-status"></span>
+          </div>
+          <textarea class="cmp-textarea" id="cmp-b" spellcheck="false" placeholder='Paste modified JSON here…&#10;&#10;{"name":"Bob","age":30,"city":"NYC"}'></textarea>
+        </div>
+      </div>
+
+      <!-- Diff result (slides up) -->
+      <div class="diff-result-panel" id="diff-panel">
+        <div class="diff-hdr">
+          <span class="diff-hdr-title">🔎 Diff Results</span>
+          <div class="diff-summary" id="diff-summary"></div>
+          <button class="sm-btn" onclick="closeDiff()">✕ Close</button>
+        </div>
+        <div class="diff-cols">
+          <div class="diff-col">
+            <div class="diff-col-hdr">Changes Overview</div>
+            <div id="diff-overview"></div>
+          </div>
+          <div class="diff-col">
+            <div class="diff-col-hdr">Detail (Path → Old → New)</div>
+            <div id="diff-detail"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /panel-compare -->
+
+  </div><!-- /panels -->
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════ */
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+/* ═══════════════════════════════════════
+   VIEWER – STATE
+═══════════════════════════════════════ */
+let parsed = null;
+let searchTerm = '';
+let matchNodes = [];
+let matchIdx = 0;
+let debTimer = null;
+
+const jInput = document.getElementById('json-input');
+jInput.addEventListener('input', () => {
+  clearTimeout(debTimer);
+  debTimer = setTimeout(parseAndRender, 200);
+});
+
+/* ═══════════════════════════════════════
+   PARSE & RENDER
+═══════════════════════════════════════ */
+function parseAndRender() {
+  const raw = jInput.value.trim();
+  if (!raw) { resetViewer(); return; }
+  try {
+    parsed = JSON.parse(raw);
+    setStatus('valid', '✓ Valid');
+    document.getElementById('err-bar').classList.remove('show');
+    renderTree(parsed);
+    updateStats(parsed, raw.length);
+  } catch(e) {
+    parsed = null;
+    setStatus('invalid', '✕ Invalid');
+    const eb = document.getElementById('err-bar');
+    eb.textContent = '⚠ ' + e.message;
+    eb.classList.add('show');
+    showEmpty();
+    hideStats();
+  }
+}
+
+function resetViewer() {
+  parsed = null;
+  setStatus('empty', '⏳ Waiting');
+  document.getElementById('err-bar').classList.remove('show');
+  showEmpty();
+  hideStats();
+}
+
+function showEmpty() {
+  document.getElementById('tree-out').innerHTML =
+    '<div class="empty"><div class="empty-ico">🌿</div><h3>No JSON loaded</h3><p>Paste or type JSON in the left panel to visualize it as a tree.</p></div>';
+}
+
+/* ═══════════════════════════════════════
+   STATUS
+═══════════════════════════════════════ */
+function setStatus(type, text) {
+  const el = document.getElementById('status-badge');
+  el.className = 'status ' + type;
+  el.innerHTML = '<span class="status-dot"></span> ' + text;
+}
+
+/* ═══════════════════════════════════════
+   STATS
+═══════════════════════════════════════ */
+function countKeys(o) {
+  if (typeof o !== 'object' || !o) return 0;
+  let n = 0;
+  for (const k in o) { n++; n += countKeys(o[k]); }
+  return n;
+}
+function maxD(o, d=0) {
+  if (typeof o !== 'object' || !o) return d;
+  let m = d;
+  for (const k in o) m = Math.max(m, maxD(o[k], d+1));
+  return m;
+}
+function fmtSz(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+function updateStats(data, len) {
+  document.getElementById('stats-row').style.display = 'flex';
+  document.getElementById('s-keys').textContent = countKeys(data);
+  document.getElementById('s-depth').textContent = maxD(data);
+  document.getElementById('s-size').textContent = fmtSz(len);
+}
+function hideStats() { document.getElementById('stats-row').style.display = 'none'; }
+
+/* ═══════════════════════════════════════
+   TREE BUILDER (screenshot style)
+═══════════════════════════════════════ */
+function renderTree(data) {
+  const out = document.getElementById('tree-out');
+  out.innerHTML = '';
+  out.appendChild(buildNode(data, null, '$', true));
+}
+
+function buildNode(value, key, path, isLast) {
+  const wrap = document.createElement('div');
+  wrap.className = 'jn';
+  wrap.dataset.path = path;
+
+  const isObj = typeof value === 'object' && value !== null;
+  const isArr = Array.isArray(value);
+
+  const row = document.createElement('div');
+  row.className = 'jn-row';
+  row.addEventListener('mouseenter', () => {
+    document.getElementById('path-bar').innerHTML = fmtPath(path);
+  });
+
+  if (isObj) {
+    // Collapse toggle
+    const tog = document.createElement('span');
+    tog.className = 'jcol';
+    tog.textContent = '⊟';
+    tog.title = 'Collapse';
+    row.appendChild(tog);
+
+    // Key (if exists)
+    if (key !== null) {
+      const kEl = document.createElement('span');
+      kEl.className = 'jkey';
+      kEl.textContent = '"' + key + '"';
+      kEl.dataset.searchable = String(key);
+      const col = document.createElement('span');
+      col.className = 'jcolon';
+      col.textContent = ':';
+      row.append(kEl, col);
+    }
+
+    // Opening bracket
+    const open = document.createElement('span');
+    open.className = 'jbrkt';
+    open.textContent = isArr ? '[' : '{';
+    row.appendChild(open);
+
+    // Count preview (shown when collapsed)
+    const preview = document.createElement('span');
+    const cnt = isArr ? value.length : Object.keys(value).length;
+    preview.className = 'jtrail';
+    preview.style.display = 'none';
+    preview.textContent = ' …' + cnt + (isArr ? ' items' : ' keys') + (isArr ? ' ]' : ' }') + (isLast ? '' : ',');
+    row.appendChild(preview);
+
+    // Copy
+    const cc = document.createElement('span');
+    cc.className = 'jcopy-wrap';
+    const cb = document.createElement('button');
+    cb.className = 'jcopy';
+    cb.textContent = 'copy';
+    cb.addEventListener('click', e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(JSON.stringify(value, null, 2)).then(() => toast('Copied!'));
+    });
+    cc.appendChild(cb);
+    row.appendChild(cc);
+
+    wrap.appendChild(row);
+
+    // Children container
+    const kids = document.createElement('div');
+    kids.className = 'jchildren';
+    const entries = isArr ? value.map((v,i)=>[i,v]) : Object.entries(value);
+    entries.forEach(([k,v], idx) => {
+      const childPath = isArr ? path+'['+k+']' : path+'.'+k;
+      kids.appendChild(buildNode(v, isArr ? null : k, childPath, idx === entries.length - 1));
+    });
+    wrap.appendChild(kids);
+
+    // Closing bracket
+    const closeRow = document.createElement('div');
+    closeRow.className = 'jn-row';
+    const close = document.createElement('span');
+    close.className = 'jbrkt';
+    close.textContent = (isArr ? ']' : '}') + (isLast ? '' : ',');
+    const cph = document.createElement('span');
+    cph.className = 'jcol-placeholder';
+    closeRow.append(cph, close);
+    wrap.appendChild(closeRow);
+
+    // Toggle logic
+    tog.addEventListener('click', e => {
+      e.stopPropagation();
+      const hidden = kids.classList.toggle('hidden');
+      closeRow.style.display = hidden ? 'none' : '';
+      preview.style.display = hidden ? '' : 'none';
+      tog.textContent = hidden ? '⊕' : '⊟';
+      tog.title = hidden ? 'Expand' : 'Collapse';
+    });
+    row.addEventListener('click', () => tog.click());
+
+  } else {
+    // Leaf node
+    const ph = document.createElement('span');
+    ph.className = 'jcol-placeholder';
+    row.appendChild(ph);
+
+    if (key !== null) {
+      const kEl = document.createElement('span');
+      kEl.className = 'jkey';
+      kEl.textContent = '"' + key + '"';
+      kEl.dataset.searchable = String(key);
+      const col = document.createElement('span');
+      col.className = 'jcolon';
+      col.textContent = ':';
+      row.append(kEl, col);
+    }
+
+    const [cls, display] = leafClass(value);
+    const vEl = document.createElement('span');
+    vEl.className = cls;
+    vEl.textContent = display + (isLast ? '' : ',');
+    vEl.dataset.searchable = String(value);
+    row.appendChild(vEl);
+
+    // Copy
+    const cc = document.createElement('span');
+    cc.className = 'jcopy-wrap';
+    const cb = document.createElement('button');
+    cb.className = 'jcopy';
+    cb.textContent = 'copy';
+    cb.addEventListener('click', e => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(String(value)).then(() => toast('Copied!'));
+    });
+    cc.appendChild(cb);
+    row.appendChild(cc);
+
+    wrap.appendChild(row);
+  }
+
+  return wrap;
+}
+
+function leafClass(v) {
+  if (v === null)              return ['jnull',  'null'];
+  if (typeof v === 'boolean')  return ['jbool',  String(v)];
+  if (typeof v === 'number')   return ['jnum',   String(v)];
+  if (typeof v === 'string')   return ['jstr',   '"' + v + '"'];
+  return ['', String(v)];
+}
+
+function fmtPath(p) {
+  const segs = p.split(/(?=\.|\[)/).map(s => s.replace(/^\./,''));
+  return segs.map((s,i) =>
+    '<span class="pseg">' + s + '</span>' + (i < segs.length-1 ? '<span class="pdot">.</span>' : '')
+  ).join('');
+}
+
+/* ═══════════════════════════════════════
+   SEARCH / FIND KEY-VALUE
+═══════════════════════════════════════ */
+function doSearch(val) {
+  searchTerm = val.toLowerCase().trim();
+  matchNodes = [];
+  matchIdx = 0;
+
+  document.querySelectorAll('#tree-out .jn-row').forEach(row => {
+    row.classList.remove('hl');
+    if (!searchTerm) return;
+    let hit = false;
+    row.querySelectorAll('[data-searchable]').forEach(el => {
+      if (el.dataset.searchable.toLowerCase().includes(searchTerm)) hit = true;
+    });
+    if (hit) {
+      row.classList.add('hl');
+      matchNodes.push(row);
+      // expand parents
+      let p = row.parentElement;
+      while (p && p.id !== 'tree-out') {
+        if (p.classList.contains('jchildren')) {
+          p.classList.remove('hidden');
+          const prevRow = p.previousElementSibling;
+          if (prevRow) {
+            const tog = prevRow.querySelector('.jcol');
+            if (tog) { tog.textContent = '⊟'; tog.title = 'Collapse'; }
+            const preview = prevRow.querySelector('.jtrail');
+            if (preview) preview.style.display = 'none';
+          }
+          // show closing bracket
+          const wrap = p.parentElement;
+          if (wrap) {
+            const closeRow = wrap.querySelector(':scope > .jn-row:last-child');
+            if (closeRow) closeRow.style.display = '';
+          }
+        }
+        p = p.parentElement;
+      }
+    }
+  });
+
+  const mc = document.getElementById('match-count');
+  if (!searchTerm) { mc.style.display = 'none'; return; }
+  mc.style.display = 'inline';
+  mc.textContent = matchNodes.length ? matchNodes.length + ' match' + (matchNodes.length > 1 ? 'es' : '') : 'No matches';
+  if (matchNodes.length) {
+    matchNodes[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+/* ═══════════════════════════════════════
+   TOOLBAR ACTIONS (VIEWER)
+═══════════════════════════════════════ */
+function collapseAll() {
+  document.querySelectorAll('#tree-out .jchildren').forEach(c => {
+    c.classList.add('hidden');
+    const row = c.previousElementSibling;
+    if (row) {
+      const tog = row.querySelector('.jcol');
+      if (tog) { tog.textContent = '⊕'; tog.title = 'Expand'; }
+      const preview = row.querySelector('.jtrail');
+      if (preview) preview.style.display = '';
+    }
+    // hide closing bracket
+    const wrap = c.parentElement;
+    if (wrap) {
+      const closeRow = wrap.querySelector(':scope > .jn-row:last-child');
+      if (closeRow && closeRow !== c.previousElementSibling) closeRow.style.display = 'none';
+    }
+  });
+}
+
+function expandAll() {
+  document.querySelectorAll('#tree-out .jchildren').forEach(c => {
+    c.classList.remove('hidden');
+    const row = c.previousElementSibling;
+    if (row) {
+      const tog = row.querySelector('.jcol');
+      if (tog) { tog.textContent = '⊟'; tog.title = 'Collapse'; }
+      const preview = row.querySelector('.jtrail');
+      if (preview) preview.style.display = 'none';
+    }
+    const wrap = c.parentElement;
+    if (wrap) {
+      const closeRow = wrap.querySelector(':scope > .jn-row:last-child');
+      if (closeRow) closeRow.style.display = '';
+    }
+  });
+}
+
+function fmtJSON() {
+  const raw = jInput.value.trim();
+  if (!raw) return;
+  try {
+    jInput.value = JSON.stringify(JSON.parse(raw), null, 2);
+    parseAndRender();
+    toast('Formatted ✨');
+  } catch(e) { toast('Invalid JSON – cannot format'); }
+}
+
+function clearAll() {
+  jInput.value = '';
+  document.getElementById('search-q').value = '';
+  searchTerm = '';
+  document.getElementById('match-count').style.display = 'none';
+  resetViewer();
+  document.getElementById('path-bar').innerHTML = '<span style="color:var(--text-dim)">Hover a node to see its JSON path</span>';
+}
+
+async function pasteClip() {
+  try {
+    jInput.value = await navigator.clipboard.readText();
+    parseAndRender();
+    toast('Pasted 📋');
+  } catch(e) { toast('Clipboard access denied'); }
+}
+
+function loadFile(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => { jInput.value = ev.target.result; parseAndRender(); toast('Loaded: ' + f.name); };
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+/* ═══════════════════════════════════════
+   RESIZE PANE
+═══════════════════════════════════════ */
+const dragBar = document.getElementById('drag-bar');
+const inputPane = document.getElementById('input-pane');
+let dragging = false, sx, sw;
+
+dragBar.addEventListener('mousedown', e => {
+  dragging = true; sx = e.clientX; sw = inputPane.offsetWidth;
+  dragBar.classList.add('dragging');
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  inputPane.style.flex = '0 0 ' + Math.min(560, Math.max(260, sw + e.clientX - sx)) + 'px';
+});
+document.addEventListener('mouseup', () => {
+  if (dragging) {
+    dragging = false;
+    dragBar.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  }
+});
+
+/* ═══════════════════════════════════════
+   COMPARE ENGINE
+═══════════════════════════════════════ */
+function parseSafe(str, statusEl) {
+  try {
+    const v = JSON.parse(str.trim());
+    if (statusEl) statusEl.textContent = '✓ Valid';
+    if (statusEl) statusEl.style.color = '#4ade80';
+    return { ok: true, val: v };
+  } catch(e) {
+    if (statusEl) statusEl.textContent = '✕ ' + e.message.split('\n')[0];
+    if (statusEl) statusEl.style.color = 'var(--red)';
+    return { ok: false };
+  }
+}
+
+// Deep diff: returns array of {path, type:'add'|'del'|'mod', oldVal, newVal}
+function deepDiff(a, b, path) {
+  path = path || '$';
+  const diffs = [];
+
+  if (typeof a !== typeof b || (a === null) !== (b === null) ||
+      Array.isArray(a) !== Array.isArray(b)) {
+    diffs.push({ path, type: 'mod', oldVal: a, newVal: b });
+    return diffs;
+  }
+
+  if (typeof a !== 'object' || a === null) {
+    if (a !== b) diffs.push({ path, type: 'mod', oldVal: a, newVal: b });
+    return diffs;
+  }
+
+  const isArr = Array.isArray(a);
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  const allKeys = new Set([...keysA, ...keysB]);
+
+  allKeys.forEach(k => {
+    const childPath = isArr ? path + '[' + k + ']' : path + '.' + k;
+    if (!(k in a)) {
+      diffs.push({ path: childPath, type: 'add', oldVal: undefined, newVal: b[k] });
+    } else if (!(k in b)) {
+      diffs.push({ path: childPath, type: 'del', oldVal: a[k], newVal: undefined });
+    } else {
+      diffs.push(...deepDiff(a[k], b[k], childPath));
+    }
+  });
+
+  return diffs;
+}
+
+function fmtVal(v) {
+  if (v === undefined) return '—';
+  if (v === null) return 'null';
+  if (typeof v === 'object') return JSON.stringify(v).substring(0, 80) + (JSON.stringify(v).length > 80 ? '…' : '');
+  if (typeof v === 'string') return '"' + v + '"';
+  return String(v);
+}
+
+function runCompare() {
+  const aEl = document.getElementById('cmp-a');
+  const bEl = document.getElementById('cmp-b');
+  const aStatus = document.getElementById('cmp-a-status');
+  const bStatus = document.getElementById('cmp-b-status');
+
+  const aRes = parseSafe(aEl.value, aStatus);
+  const bRes = parseSafe(bEl.value, bStatus);
+
+  if (!aRes.ok || !bRes.ok) {
+    toast('Fix JSON errors before comparing');
+    return;
+  }
+
+  const diffs = deepDiff(aRes.val, bRes.val);
+  renderDiff(diffs);
+}
+
+function renderDiff(diffs) {
+  const panel = document.getElementById('diff-panel');
+  panel.classList.add('open');
+
+  const adds = diffs.filter(d => d.type === 'add').length;
+  const dels = diffs.filter(d => d.type === 'del').length;
+  const mods = diffs.filter(d => d.type === 'mod').length;
+  const total = diffs.length;
+
+  document.getElementById('diff-summary').innerHTML =
+    '<span class="ds-add">+' + adds + ' added</span>' +
+    '<span class="ds-del">−' + dels + ' removed</span>' +
+    '<span class="ds-mod">~ ' + mods + ' modified</span>' +
+    '<span>' + total + ' total change' + (total !== 1 ? 's' : '') + '</span>';
+
+  // Overview
+  const ov = document.getElementById('diff-overview');
+  if (!total) {
+    ov.innerHTML = '<div class="no-diff"><div class="no-diff-ico">🎉</div><p>No differences found! The two JSON files are identical.</p></div>';
+    document.getElementById('diff-detail').innerHTML = '';
+    return;
+  }
+
+  ov.innerHTML = diffs.map(d => {
+    const icon = d.type === 'add' ? '＋' : d.type === 'del' ? '－' : '~';
+    const label = d.type === 'add' ? 'ADDED' : d.type === 'del' ? 'REMOVED' : 'CHANGED';
+    return '<div class="dl ' + d.type + '">' +
+      '<span class="dl-sign">' + icon + '</span>' +
+      '<span class="dl-path">' + d.path + '</span>' +
+      '<span class="dl-type-badge ' + d.type + '">' + label + '</span>' +
+      '</div>';
+  }).join('');
+
+  // Detail
+  document.getElementById('diff-detail').innerHTML = diffs.map(d => {
+    if (d.type === 'add') {
+      return '<div class="dl add"><span class="dl-sign">＋</span><span class="dl-path">' + d.path + '</span><span class="dl-val"><span class="dl-val-new">' + escH(fmtVal(d.newVal)) + '</span></span></div>';
+    }
+    if (d.type === 'del') {
+      return '<div class="dl del"><span class="dl-sign">－</span><span class="dl-path">' + d.path + '</span><span class="dl-val"><span class="dl-val-old">' + escH(fmtVal(d.oldVal)) + '</span></span></div>';
+    }
+    return '<div class="dl mod"><span class="dl-sign">~</span><span class="dl-path">' + d.path + '</span><span class="dl-val"><span class="dl-val-old">' + escH(fmtVal(d.oldVal)) + '</span><span class="dl-val-new">→ ' + escH(fmtVal(d.newVal)) + '</span></span></div>';
+  }).join('');
+}
+
+function escH(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function closeDiff() {
+  document.getElementById('diff-panel').classList.remove('open');
+}
+
+function swapCmp() {
+  const a = document.getElementById('cmp-a');
+  const b = document.getElementById('cmp-b');
+  [a.value, b.value] = [b.value, a.value];
+  toast('Swapped A ⇄ B');
+}
+
+function clearCmp() {
+  document.getElementById('cmp-a').value = '';
+  document.getElementById('cmp-b').value = '';
+  document.getElementById('cmp-a-status').textContent = '';
+  document.getElementById('cmp-b-status').textContent = '';
+  closeDiff();
+}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+let tTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ═══════════════════════════════════════
+   KEYBOARD SHORTCUTS
+═══════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key === 'Enter') { e.preventDefault(); fmtJSON(); }
+  if ((e.ctrlKey||e.metaKey) && e.key === 'f')     { e.preventDefault(); document.getElementById('search-q').focus(); }
+});
+
+/* ═══════════════════════════════════════
+   SAMPLE JSON ON LOAD
+═══════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  jInput.value = JSON.stringify({
+    "app": "JSON Studio",
+    "version": "2.0.0",
+    "features": ["tree view","search","copy","format","compare"],
+    "author": {
+      "name": "You",
+      "active": true,
+      "score": 99
+    },
+    "config": {
+      "theme": "dark",
+      "fontSize": 13,
+      "autoFormat": false,
+      "plugins": null
+    },
+    "tags": ["json","developer","tool"]
+  }, null, 2);
+  parseAndRender();
+
+  // Sample compare data
+  document.getElementById('cmp-a').value = JSON.stringify({
+    "name": "Alice",
+    "age": 30,
+    "city": "London",
+    "skills": ["JavaScript", "Python"],
+    "active": true
+  }, null, 2);
+  document.getElementById('cmp-b').value = JSON.stringify({
+    "name": "Alice",
+    "age": 31,
+    "city": "Paris",
+    "skills": ["JavaScript", "Python", "Go"],
+    "active": true,
+    "role": "Engineer"
+  }, null, 2);
+});
+</script>
+</body>
+</html>

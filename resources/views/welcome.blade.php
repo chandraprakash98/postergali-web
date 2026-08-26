@@ -3,89 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        html { scroll-behavior: smooth; }
-
-        /* ── Mobile Nav Drawer ── */
-        .mobile-nav-drawer {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 9999;
-        }
-        .mobile-nav-drawer.open { display: flex; flex-direction: column; }
-        .drawer-overlay {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-        }
-        .drawer-panel {
-            position: relative;
-            background: #fff;
-            width: 75%;
-            max-width: 300px;
-            height: 100%;
-            padding: 24px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
-        }
-        .drawer-close {
-            align-self: flex-end;
-            background: none;
-            border: none;
-            font-size: 28px;
-            cursor: pointer;
-            color: #333;
-            margin-bottom: 12px;
-        }
-        .drawer-panel a {
-            display: block;
-            padding: 14px 12px;
-            font-size: 17px;
-            font-weight: 600;
-            color: #1a1a1a;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
-        .drawer-panel a:hover,
-        .drawer-panel a:active { background: #f4f4f4; }
-        .drawer-panel .drawer-download-btn {
-            display: block;
-            margin-top: 16px;
-            padding: 14px 20px;
-            background: #C4351D;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        /* Show hamburger on small screens */
-        @media (max-width: 768px) {
-            .nav-links { display: none !important; }
-            .menu-toggle { display: flex !important; cursor: pointer; }
-        }
-        @media (min-width: 769px) {
-            .mobile-nav-drawer { display: none !important; }
-            .menu-toggle { display: none !important; }
-        }
-    </style>
-<title>PosterGali</title>
+<title>PosterGali </title>
 
    <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
 </head>
 
 <body>
+
+<div class="company-top-bar">
+    <div class="company-top-container">
+        <div class="company-line">
+            <strong>PosterGali</strong> is a product of
+            <strong>Unitygrid Private Limited</strong>
+        </div>
+        <div class="company-subline">
+            PosterGali is owned, operated and developed by
+            <strong>Unitygrid Private Limited</strong>,
+            an Indian technology company.
+        </div>
+    </div>
+</div>
 
 <!-- NAVBAR -->
 <nav class="navbar">
@@ -97,11 +34,11 @@
     </div>
 
     <div class="nav-links">
-        <a href="#hero">Home</a>
-        <a href="#features">Features</a>
-        <a href="#faq">FAQ</a>
-        <a href="#company">Company</a>
-        <a href="#contact">Contact</a>
+        <a href="#">Home</a>
+        <a href="#">Features</a>
+        <a href="#">FAQ</a>
+        <a href="#">Company</a>
+        <a href="#">Contact</a>
     </div>
 
     <div class="nav-actions">
@@ -115,7 +52,7 @@
 </nav>
 
 <!-- HERO SECTION -->
-<section class="hero" id="hero">
+<section class="hero">
 
     <div class="tag">India ka Poster Bazaar</div>
 
@@ -214,8 +151,8 @@
     </div>
 </section>
 
-<!-- WHY / FEATURES SECTION -->
-<section class="why-section" id="features">
+<!-- WHY POSTERGALI SECTION -->
+<section class="why-section">
     <div class="sub-header-label">Why PosterGali?</div>
     <h2 class="main-section-title">India's Hyperlocal Street Ad Network</h2>
 
@@ -411,12 +348,12 @@
 </section>
 
 <!-- GET IN TOUCH / CONTACT SECTION -->
-<section class="contact-section" id="contact">
+<section class="contact-section">
     <div class="sub-header-label">Want to connect business?</div>
     <h2 class="main-section-title">Let's Talk About Growing Your Local Reach Today</h2>
 
     <div class="contact-card-green">
-        <h2>Get in touch</h2>
+        <h1>Get in touch</h1>
         <p>We're here to help your business connect locally. Share your details, we'll contact you soon.</p>
 
         <!-- Phone & Email info pill -->
@@ -481,7 +418,7 @@
 </section>
 
 <!-- FAQS SECTION -->
-<section class="faq-section" id="faq">
+<section class="faq-section">
     <div class="faq-header-badge">FAQs</div>
     
     <div class="faq-accordion-box">
@@ -557,8 +494,8 @@
     </div>
 </section>
 
-<!-- FOOTER / COMPANY SECTION -->
-<footer class="footer-section" id="company">
+<!-- FOOTER SECTION -->
+<footer class="footer-section">
     <!-- Hanging Wooden Signboard Logo -->
     <div class="footer-sign-wrap">
         <svg width="170" height="110" viewBox="0 0 170 110">
@@ -619,68 +556,15 @@
     </div>
 </footer>
 
-<!-- MOBILE NAV DRAWER -->
-<div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
-    <div class="drawer-overlay" id="drawerOverlay"></div>
-    <div class="drawer-panel">
-        <button class="drawer-close" id="drawerClose" aria-label="Close menu">&#x2715;</button>
-        <a href="#hero">Home</a>
-        <a href="#features">Features</a>
-        <a href="#faq">FAQ</a>
-        <a href="#company">Company</a>
-        <a href="#contact">Contact</a>
-        <a href="#" class="drawer-download-btn">Download Now</a>
-    </div>
-</div>
-
 <script>
-    // ── FAQ Accordion ──
+    // Interactive FAQ Accordion
     document.querySelectorAll('.faq-item').forEach(item => {
         item.addEventListener('click', () => {
             const isActive = item.classList.contains('active');
             document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('active'));
-            if (!isActive) item.classList.add('active');
-        });
-    });
-
-    // ── Mobile Hamburger Menu ──
-    const drawer  = document.getElementById('mobileNavDrawer');
-    const toggle  = document.querySelector('.menu-toggle');
-    const overlay = document.getElementById('drawerOverlay');
-    const closeBtn = document.getElementById('drawerClose');
-
-    function openDrawer() {
-        drawer.classList.add('open');
-        document.body.style.overflow = 'hidden'; // prevent background scroll
-    }
-
-    function closeDrawer() {
-        drawer.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
-    if (toggle)  toggle.addEventListener('click', openDrawer);
-    if (overlay) overlay.addEventListener('click', closeDrawer);
-    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
-
-    // Close drawer when any link inside it is clicked
-    document.querySelectorAll('.mobile-nav-drawer a').forEach(link => {
-        link.addEventListener('click', closeDrawer);
-    });
-
-    // ── Smooth Scroll offset for fixed navbar ──
-    // Accounts for the navbar height so sections aren't hidden behind it
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return; // skip pure # links
-            const target = document.querySelector(targetId);
-            if (!target) return;
-            e.preventDefault();
-            const navbar = document.querySelector('.navbar');
-            const offset = navbar ? navbar.offsetHeight : 70;
-            const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-            window.scrollTo({ top, behavior: 'smooth' });
+            if (!isActive) {
+                item.classList.add('active');
+            }
         });
     });
 </script>
