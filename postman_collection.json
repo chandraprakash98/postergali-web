@@ -1,0 +1,439 @@
+{
+  "info": {
+    "_postman_id": "9b128509-3221-4f11-8854-postergali-api",
+    "name": "Postergali API - Comprehensive Collection",
+    "description": "Postman Collection covering Job & Offer Filtering, Payment Business Rules (FULL_UPI, SEMI, FULL_CREDIT), Exception Handling, and REST Security.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "lat",
+      "value": "28.5914",
+      "type": "string"
+    },
+    {
+      "key": "lng",
+      "value": "77.4021",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Job Filtering",
+      "item": [
+        {
+          "name": "GET Nearby Jobs - Default (5km)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs?latitude={{lat}}&longitude={{lng}}&radius=5",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "latitude", "value": "{{lat}}" },
+                { "key": "longitude", "value": "{{lng}}" },
+                { "key": "radius", "value": "5" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response structure is valid', function () { const json = pm.response.json(); pm.expect(json.success).to.be.true; pm.expect(json.data).to.be.an('array'); pm.expect(json.pagination).to.be.an('object'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Jobs - Filter by Subcategory and Salary (<10,000)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs?latitude={{lat}}&longitude={{lng}}&radius=15&sub_categories=food&salary=less_than_10000",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "latitude", "value": "{{lat}}" },
+                { "key": "longitude", "value": "{{lng}}" },
+                { "key": "radius", "value": "15" },
+                { "key": "sub_categories", "value": "food" },
+                { "key": "salary", "value": "less_than_10000" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Filtered results match salary criteria', function () { const json = pm.response.json(); json.data.forEach(item => pm.expect(item.salary).to.be.at.most(9999)); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Jobs - Filter by Job Type & Expiry (within 3 days)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs?latitude={{lat}}&longitude={{lng}}&radius=10&job_type=full_time&is_expiry=within_3_days",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "latitude", "value": "{{lat}}" },
+                { "key": "longitude", "value": "{{lng}}" },
+                { "key": "radius", "value": "10" },
+                { "key": "job_type", "value": "full_time" },
+                { "key": "is_expiry", "value": "within_3_days" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Jobs - Reject Unsupported Filter (Negative Test)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs?latitude={{lat}}&longitude={{lng}}&unsupported_key=123",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "latitude", "value": "{{lat}}" },
+                { "key": "longitude", "value": "{{lng}}" },
+                { "key": "unsupported_key", "value": "123" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 422', function () { pm.response.to.have.status(422); });",
+                  "pm.test('Error message identifies unsupported parameter', function () { const json = pm.response.json(); pm.expect(json.success).to.be.false; pm.expect(json.errors.filters).to.exist; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Jobs - Reject Invalid Expiry Format (Negative Test)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs?latitude={{lat}}&longitude={{lng}}&is_expiry=invalid_window",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "latitude", "value": "{{lat}}" },
+                { "key": "longitude", "value": "{{lng}}" },
+                { "key": "is_expiry", "value": "invalid_window" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 422', function () { pm.response.to.have.status(422); });",
+                  "pm.test('Validation error on is_expiry', function () { const json = pm.response.json(); pm.expect(json.errors.is_expiry).to.exist; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Offer Filtering",
+      "item": [
+        {
+          "name": "GET Nearby Offers - Filter by Offer Type & Expiry",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/offers?latitude={{lat}}&longitude={{lng}}&radius=10&offer_type=discount&is_expiry=within_a_day",
+              "host": ["{{base_url}}"],
+              "path": ["offers"],
+              "query": [
+                { "key": "latitude", "value": "{{lat}}" },
+                { "key": "longitude", "value": "{{lng}}" },
+                { "key": "radius", "value": "10" },
+                { "key": "offer_type", "value": "discount" },
+                { "key": "is_expiry", "value": "within_a_day" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains offers', function () { const json = pm.response.json(); pm.expect(json.success).to.be.true; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Search Offers by Device ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/offers/search?device_id=dev-001",
+              "host": ["{{base_url}}"],
+              "path": ["offers", "search"],
+              "query": [
+                { "key": "device_id", "value": "dev-001" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Payment Business Rules",
+      "item": [
+        {
+          "name": "POST Job - FULL_UPI Payment (Valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_id\": \"temp-job-upi-01\",\n  \"device_id\": \"dev-postman-1\",\n  \"device_os\": \"android\",\n  \"master_category\": \"Services\",\n  \"business_name\": \"Postman Services\",\n  \"job_role\": \"Developer\",\n  \"job_type\": \"full_time\",\n  \"phone_number\": \"9876543210\",\n  \"latitude\": 28.5914,\n  \"longitude\": 77.4021,\n  \"city\": \"Noida\",\n  \"plan_id\": \"plan-1\",\n  \"payment_type\": \"FULL_UPI\",\n  \"total_amount\": 499.00,\n  \"razorpay_amount\": 499.00,\n  \"credit_amount\": 0.00,\n  \"razorpay_order_id\": \"order_upi_postman\",\n  \"razorpay_payment_id\": \"pay_upi_postman\",\n  \"transaction_id\": \"TXN_POSTMAN_UPI_01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Job - SEMI Payment (Valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_id\": \"temp-job-semi-02\",\n  \"device_id\": \"dev-postman-2\",\n  \"device_os\": \"android\",\n  \"master_category\": \"Services\",\n  \"business_name\": \"Postman Services Semi\",\n  \"job_role\": \"Designer\",\n  \"job_type\": \"full_time\",\n  \"phone_number\": \"9876543210\",\n  \"latitude\": 28.5914,\n  \"longitude\": 77.4021,\n  \"city\": \"Noida\",\n  \"plan_id\": \"plan-1\",\n  \"customer_id\": \"PSTGL00001\",\n  \"payment_type\": \"SEMI\",\n  \"total_amount\": 1200.00,\n  \"razorpay_amount\": 700.00,\n  \"credit_amount\": 500.00,\n  \"razorpay_order_id\": \"order_semi_postman\",\n  \"razorpay_payment_id\": \"pay_semi_postman\",\n  \"transaction_id\": \"TXN_POSTMAN_SEMI_02\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Job - FULL_CREDIT Payment (Valid)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_id\": \"temp-job-credit-03\",\n  \"device_id\": \"dev-postman-3\",\n  \"device_os\": \"android\",\n  \"master_category\": \"Services\",\n  \"business_name\": \"Postman Services Credit\",\n  \"job_role\": \"Manager\",\n  \"job_type\": \"full_time\",\n  \"phone_number\": \"9876543210\",\n  \"latitude\": 28.5914,\n  \"longitude\": 77.4021,\n  \"city\": \"Noida\",\n  \"plan_id\": \"plan-1\",\n  \"customer_id\": \"PSTGL00001\",\n  \"payment_type\": \"FULL_CREDIT\",\n  \"total_amount\": 250.00,\n  \"razorpay_amount\": 0.00,\n  \"credit_amount\": 250.00,\n  \"transaction_id\": \"TXN_POSTMAN_CREDIT_03\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST Job - SEMI Payment (Invalid Sum - Rejection)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_id\": \"temp-job-invalid-semi\",\n  \"device_id\": \"dev-postman-4\",\n  \"device_os\": \"android\",\n  \"master_category\": \"Services\",\n  \"business_name\": \"Postman Invalid Semi\",\n  \"job_role\": \"Developer\",\n  \"job_type\": \"full_time\",\n  \"phone_number\": \"9876543210\",\n  \"latitude\": 28.5914,\n  \"longitude\": 77.4021,\n  \"city\": \"Noida\",\n  \"plan_id\": \"plan-1\",\n  \"payment_type\": \"SEMI\",\n  \"total_amount\": 1000.00,\n  \"razorpay_amount\": 600.00,\n  \"credit_amount\": 300.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/jobs",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 422 Unprocessable Entity', function () { pm.response.to.have.status(422); });",
+                  "pm.test('Validation error mentions sum mismatch', function () { const json = pm.response.json(); pm.expect(json.errors.total_amount).to.exist; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Exception Handling & Security",
+      "item": [
+        {
+          "name": "GET 404 Resource Not Found",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/jobs/99999999",
+              "host": ["{{base_url}}"],
+              "path": ["jobs", "99999999"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () { pm.response.to.have.status(404); });",
+                  "pm.test('Consistent error payload', function () { const json = pm.response.json(); pm.expect(json.success).to.be.false; pm.expect(json.message).to.eql('Resource not found.'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT 405 Method Not Allowed",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/referrals/check",
+              "host": ["{{base_url}}"],
+              "path": ["referrals", "check"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 405', function () { pm.response.to.have.status(405); });",
+                  "pm.test('Consistent error payload', function () { const json = pm.response.json(); pm.expect(json.success).to.be.false; pm.expect(json.message).to.eql('Method not allowed.'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

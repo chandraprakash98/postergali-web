@@ -17,10 +17,13 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => bcrypt('password'),
+            ]
+        );
 
         // Seed admin user
         $this->call(AdminSeeder::class);
@@ -30,5 +33,8 @@ class DatabaseSeeder extends Seeder
 
         // Seed customer records
         $this->call(CustomerSeeder::class);
+
+        // Seed comprehensive filter & payment data
+        $this->call(ComprehensiveFilterAndPaymentSeeder::class);
     }
 }

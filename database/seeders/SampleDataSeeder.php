@@ -15,7 +15,7 @@ class SampleDataSeeder extends Seeder
     public function run(): void
     {
         // Create sample plans
-        Plan::firstOrCreate(
+        $basicPlan = Plan::firstOrCreate(
             ['plan_title' => 'Basic'],
             [
                 'duration' => '30 days',
@@ -23,7 +23,7 @@ class SampleDataSeeder extends Seeder
             ]
         );
 
-        Plan::firstOrCreate(
+        $proPlan = Plan::firstOrCreate(
             ['plan_title' => 'Pro'],
             [
                 'duration' => '90 days',
@@ -31,7 +31,7 @@ class SampleDataSeeder extends Seeder
             ]
         );
 
-        Plan::firstOrCreate(
+        $premiumPlan = Plan::firstOrCreate(
             ['plan_title' => 'Premium'],
             [
                 'duration' => '180 days',
@@ -116,21 +116,18 @@ class SampleDataSeeder extends Seeder
         ];
 
         foreach ($jobData as $data) {
-            $data['device_id'] = 'sample-device-';
+            $data['temp_id'] = 'sample-job-' . uniqid();
+            $data['device_id'] = 'sample-device-001';
+            $data['device_os'] = 'android';
             $data['master_category'] = 'JOB';
-            $data['sub_category'] = 'General';
-$data['latitude'] = '28.8889';
-$data['longitude'] = '77.2088';
-$data['plan_id'] = 1; // Assuming the Basic plan has ID 1
-$data['expiry_date'] = now()->addDays(30); // Set expiry date based on plan duration
-$data['created_at'] = now();
-$data['updated_at'] = now();
-$data['status'] = 'pending'; // Set default status to pending
-$data['mobile_number'] = $data['phone_number']; // Set mobile_number same as phone_number
-
+            $data['subcategory'] = 'General';
+            $data['latitude'] = '28.8889';
+            $data['longitude'] = '77.2088';
+            $data['plan_id'] = (string) $basicPlan->id;
+            $data['expires_at'] = now()->addDays(30);
+            $data['approved_at'] = $data['status'] === 'approved' ? now() : null;
 
             Job::firstOrCreate(
-
                 ['business_name' => $data['business_name'], 'city' => $data['city']],
                 $data
             );
@@ -181,6 +178,17 @@ $data['mobile_number'] = $data['phone_number']; // Set mobile_number same as pho
         ];
 
         foreach ($offerData as $data) {
+            $data['temp_id'] = 'sample-offer-' . uniqid();
+            $data['device_id'] = 'sample-device-001';
+            $data['device_os'] = 'android';
+            $data['master_category'] = 'OFFER';
+            $data['subcategory'] = 'General';
+            $data['latitude'] = '28.8889';
+            $data['longitude'] = '77.2088';
+            $data['plan_id'] = (string) $basicPlan->id;
+            $data['expires_at'] = now()->addDays(30);
+            $data['approved_at'] = $data['status'] === 'approved' ? now() : null;
+
             Offer::firstOrCreate(
                 ['business_name' => $data['business_name'], 'city' => $data['city']],
                 $data

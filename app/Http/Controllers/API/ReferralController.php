@@ -80,6 +80,7 @@ class ReferralController extends Controller
             'referrer_mobile' => $referral->referrer_mobile,
             'status' => $referral->status,
             'customer_id' => $referrerCustomerId,
+            'customerId' => $referrerCustomerId,
         ]);
     }
 

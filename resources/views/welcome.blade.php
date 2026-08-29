@@ -367,7 +367,7 @@
             </div>
             <div class="contact-info-item">
                 <div class="contact-icon-circle">✉️</div>
-                <div>askpostergali@gmail.com</div>
+                <div>contact@postergali.com</div>
             </div>
         </div>
 

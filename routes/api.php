@@ -8,8 +8,8 @@ use App\Http\Controllers\API\ReferralController;
 use App\Http\Controllers\AdminAuthController;
 
 Route::prefix('v1')->group(function () {
-    Route::apiResource('offers', OfferController::class);
     Route::get('offers/search', [OfferController::class, 'search']);
+    Route::apiResource('offers', OfferController::class);
     Route::get('jobs/search', [JobController::class, 'search']);
     Route::apiResource('jobs', JobController::class);
     Route::post('notifications', [AdminAuthController::class, 'storeNotification']);
