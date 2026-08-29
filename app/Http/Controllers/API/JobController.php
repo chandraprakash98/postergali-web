@@ -35,26 +35,36 @@ class JobController extends Controller
         $validated = $request->validate([
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            'radius' => 'sometimes|numeric|min:0.1|max:50',
+            'radius' => 'sometimes|numeric|min:0.1|max:100',
+            'distance' => 'sometimes|numeric|min:0.1|max:100',
             'per_page' => 'sometimes|integer|min:1|max:200',
             'page' => 'sometimes|integer|min:1',
             'sub_categories' => 'sometimes',
             'sub_category' => 'sometimes|string',
+            'category' => 'sometimes|string',
+            'categories' => 'sometimes',
             'is_expiry' => 'sometimes|string',
+            'expiry' => 'sometimes|string',
             'job_type' => 'sometimes|string',
             'job_types' => 'sometimes',
             'salary' => 'sometimes|string',
+            'min_salary' => 'sometimes|numeric|min:0',
+            'max_salary' => 'sometimes|numeric|min:0',
         ]);
 
         $userLat = (float) $validated['latitude'];
         $userLng = (float) $validated['longitude'];
-        $radius = (float) ($validated['radius'] ?? 5);
+        $radius = (float) ($validated['radius'] ?? $validated['distance'] ?? 5);
         $perPage = min((int) ($validated['per_page'] ?? 50), 200);
 
         $subCategories = $this->filterService->normalizeSubCategories($request);
-        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry'));
+        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry', $request->input('expiry')));
         $jobTypes = $this->filterService->normalizeJobTypes($request);
-        $salaryRange = $this->filterService->normalizeSalaryRange($request->input('salary'));
+        $salaryRange = $this->filterService->normalizeSalaryRange(
+            $request->input('salary'),
+            $request->input('min_salary'),
+            $request->input('max_salary')
+        );
 
         $query = Job::nearby($userLat, $userLng, $radius)->active();
 
@@ -101,30 +111,40 @@ class JobController extends Controller
             'device_id' => 'sometimes|string',
             'latitude' => 'sometimes|numeric|between:-90,90',
             'longitude' => 'sometimes|numeric|between:-180,180',
-            'radius' => 'sometimes|numeric|min:0.1|max:50',
+            'radius' => 'sometimes|numeric|min:0.1|max:100',
+            'distance' => 'sometimes|numeric|min:0.1|max:100',
             'phone_number' => 'sometimes|string',
             'mobile_number' => 'sometimes|string',
             'per_page' => 'sometimes|integer|min:1|max:200',
             'page' => 'sometimes|integer|min:1',
             'sub_categories' => 'sometimes',
             'sub_category' => 'sometimes|string',
+            'category' => 'sometimes|string',
+            'categories' => 'sometimes',
             'is_expiry' => 'sometimes|string',
+            'expiry' => 'sometimes|string',
             'job_type' => 'sometimes|string',
             'job_types' => 'sometimes',
             'salary' => 'sometimes|string',
+            'min_salary' => 'sometimes|numeric|min:0',
+            'max_salary' => 'sometimes|numeric|min:0',
         ]);
 
         $deviceId = $validated['device_id'] ?? null;
         $phone = $validated['phone_number'] ?? $validated['mobile_number'] ?? null;
         $latitude = isset($validated['latitude']) ? (float) $validated['latitude'] : null;
         $longitude = isset($validated['longitude']) ? (float) $validated['longitude'] : null;
-        $radius = (float) ($validated['radius'] ?? 5);
+        $radius = (float) ($validated['radius'] ?? $validated['distance'] ?? 5);
         $perPage = min((int) ($validated['per_page'] ?? 50), 200);
 
         $subCategories = $this->filterService->normalizeSubCategories($request);
-        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry'));
+        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry', $request->input('expiry')));
         $jobTypes = $this->filterService->normalizeJobTypes($request);
-        $salaryRange = $this->filterService->normalizeSalaryRange($request->input('salary'));
+        $salaryRange = $this->filterService->normalizeSalaryRange(
+            $request->input('salary'),
+            $request->input('min_salary'),
+            $request->input('max_salary')
+        );
 
         $query = Job::withCommonFields()->active();
 

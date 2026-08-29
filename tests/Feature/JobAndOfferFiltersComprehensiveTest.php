@@ -231,6 +231,33 @@ class JobAndOfferFiltersComprehensiveTest extends TestCase
             ->assertJsonPath('data.0.temp_id', 'job-1');
     }
 
+    public function test_jobs_filter_with_distance_alias_and_hyphenated_job_type_and_currency_salary(): void
+    {
+        $response = $this->getJson('/api/v1/jobs?latitude=' . self::LAT . '&longitude=' . self::LNG . '&distance=10&job_type=Full-time&salary=' . urlencode('Less than ₹10,000'));
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.temp_id', 'job-1');
+    }
+
+    public function test_offers_filter_with_distance_alias_and_expiry_alias(): void
+    {
+        $response = $this->getJson('/api/v1/offers?latitude=' . self::LAT . '&longitude=' . self::LNG . '&distance=10&expiry=Within%20a%20day');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.temp_id', 'offer-1');
+    }
+
+    public function test_jobs_filter_with_typo_tolerant_maintenance_subcategory(): void
+    {
+        $response = $this->getJson('/api/v1/jobs?latitude=' . self::LAT . '&longitude=' . self::LNG . '&sub_categories=' . urlencode('Housekeeping and Maintanence,Food and Hospitality'));
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.temp_id', 'job-1');
+    }
+
     public function test_offer_search_by_device_id(): void
     {
         $response = $this->getJson('/api/v1/offers/search?device_id=dev-2');

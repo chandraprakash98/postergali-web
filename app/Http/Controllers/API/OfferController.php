@@ -34,23 +34,27 @@ class OfferController extends Controller
         $validated = $request->validate([
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            'radius' => 'sometimes|numeric|min:0.1|max:50',
+            'radius' => 'sometimes|numeric|min:0.1|max:100',
+            'distance' => 'sometimes|numeric|min:0.1|max:100',
             'per_page' => 'sometimes|integer|min:1|max:200',
             'page' => 'sometimes|integer|min:1',
             'sub_categories' => 'sometimes',
             'sub_category' => 'sometimes|string',
+            'category' => 'sometimes|string',
+            'categories' => 'sometimes',
             'is_expiry' => 'sometimes|string',
+            'expiry' => 'sometimes|string',
             'offer_type' => 'sometimes|string',
             'offer_types' => 'sometimes',
         ]);
 
         $userLat = (float) $validated['latitude'];
         $userLng = (float) $validated['longitude'];
-        $radius = (float) ($validated['radius'] ?? 5);
+        $radius = (float) ($validated['radius'] ?? $validated['distance'] ?? 5);
         $perPage = min((int) ($validated['per_page'] ?? 50), 200);
 
         $subCategories = $this->filterService->normalizeSubCategories($request);
-        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry'));
+        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry', $request->input('expiry')));
         $offerTypes = $this->filterService->normalizeOfferTypes($request);
 
         $query = Offer::nearby($userLat, $userLng, $radius)->active();
@@ -94,14 +98,18 @@ class OfferController extends Controller
             'device_id' => 'required_without_all:latitude,longitude|string',
             'latitude' => 'sometimes|numeric|between:-90,90',
             'longitude' => 'sometimes|numeric|between:-180,180',
-            'radius' => 'sometimes|numeric|min:0.1|max:50',
+            'radius' => 'sometimes|numeric|min:0.1|max:100',
+            'distance' => 'sometimes|numeric|min:0.1|max:100',
             'mobile_number' => 'sometimes|string',
             'phone_number' => 'sometimes|string',
             'per_page' => 'sometimes|integer|min:1|max:200',
             'page' => 'sometimes|integer|min:1',
             'sub_categories' => 'sometimes',
             'sub_category' => 'sometimes|string',
+            'category' => 'sometimes|string',
+            'categories' => 'sometimes',
             'is_expiry' => 'sometimes|string',
+            'expiry' => 'sometimes|string',
             'offer_type' => 'sometimes|string',
             'offer_types' => 'sometimes',
         ]);
@@ -110,11 +118,11 @@ class OfferController extends Controller
         $mobile = $validated['mobile_number'] ?? $validated['phone_number'] ?? null;
         $latitude = isset($validated['latitude']) ? (float) $validated['latitude'] : null;
         $longitude = isset($validated['longitude']) ? (float) $validated['longitude'] : null;
-        $radius = (float) ($validated['radius'] ?? 5);
+        $radius = (float) ($validated['radius'] ?? $validated['distance'] ?? 5);
         $perPage = min((int) ($validated['per_page'] ?? 50), 200);
 
         $subCategories = $this->filterService->normalizeSubCategories($request);
-        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry'));
+        $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry', $request->input('expiry')));
         $offerTypes = $this->filterService->normalizeOfferTypes($request);
 
         $query = Offer::withCommonFields()->active();

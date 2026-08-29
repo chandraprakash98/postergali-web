@@ -13,23 +13,35 @@ class FilterService
      * Whitelist of allowed parameters for Jobs and Offers.
      */
     public const ALLOWED_JOB_INDEX_PARAMS = [
-        'latitude', 'longitude', 'radius', 'per_page', 'page',
-        'sub_categories', 'sub_category', 'is_expiry', 'job_type', 'job_types', 'salary'
+        'latitude', 'longitude', 'radius', 'distance', 'per_page', 'page',
+        'sub_categories', 'sub_category', 'category', 'categories',
+        'is_expiry', 'expiry',
+        'job_type', 'job_types',
+        'salary', 'min_salary', 'max_salary'
     ];
 
     public const ALLOWED_JOB_SEARCH_PARAMS = [
-        'device_id', 'latitude', 'longitude', 'radius', 'phone_number', 'mobile_number',
-        'per_page', 'page', 'sub_categories', 'sub_category', 'is_expiry', 'job_type', 'job_types', 'salary'
+        'device_id', 'latitude', 'longitude', 'radius', 'distance', 'phone_number', 'mobile_number',
+        'per_page', 'page',
+        'sub_categories', 'sub_category', 'category', 'categories',
+        'is_expiry', 'expiry',
+        'job_type', 'job_types',
+        'salary', 'min_salary', 'max_salary'
     ];
 
     public const ALLOWED_OFFER_INDEX_PARAMS = [
-        'latitude', 'longitude', 'radius', 'per_page', 'page',
-        'sub_categories', 'sub_category', 'is_expiry', 'offer_type', 'offer_types'
+        'latitude', 'longitude', 'radius', 'distance', 'per_page', 'page',
+        'sub_categories', 'sub_category', 'category', 'categories',
+        'is_expiry', 'expiry',
+        'offer_type', 'offer_types'
     ];
 
     public const ALLOWED_OFFER_SEARCH_PARAMS = [
-        'device_id', 'latitude', 'longitude', 'radius', 'mobile_number', 'phone_number',
-        'per_page', 'page', 'sub_categories', 'sub_category', 'is_expiry', 'offer_type', 'offer_types'
+        'device_id', 'latitude', 'longitude', 'radius', 'distance', 'mobile_number', 'phone_number',
+        'per_page', 'page',
+        'sub_categories', 'sub_category', 'category', 'categories',
+        'is_expiry', 'expiry',
+        'offer_type', 'offer_types'
     ];
 
     /**
@@ -55,7 +67,7 @@ class FilterService
      */
     public function normalizeSubCategories(Request $request): array
     {
-        $raw = $request->input('sub_categories', $request->input('sub_category'));
+        $raw = $request->input('sub_categories', $request->input('sub_category', $request->input('categories', $request->input('category'))));
 
         if ($raw === null || $raw === '') {
             return [];
@@ -79,7 +91,7 @@ class FilterService
             return;
         }
 
-        $stopWords = ['and', 'or', 'the', 'of', 'in', 'at', 'for', 'to', 'a', 'an', 'is', 'by', 'with', 'on'];
+        $stopWords = ['and', 'or', 'the', 'of', 'in', 'at', 'for', 'to', 'a', 'an', 'is', 'by', 'with', 'on', '&'];
 
         $query->where(function (Builder $q) use ($subCategories, $stopWords, $column) {
             foreach ($subCategories as $phrase) {
@@ -88,11 +100,18 @@ class FilterService
                     continue;
                 }
 
-                $words = preg_split('/[\s]+/', strtolower($phrase)) ?: [];
+                // Correct UI typo maintanence -> maintenance
+                $cleanedPhrase = str_ireplace('maintanence', 'maintenance', $phrase);
+
+                $words = preg_split('/[\s\/,&]+/', strtolower($cleanedPhrase)) ?: [];
                 $words = array_values(array_filter(
                     $words,
                     static fn ($w) => strlen($w) >= 3 && !in_array($w, $stopWords, true)
                 ));
+
+                if (stripos($phrase, 'maintan') !== false) {
+                    $words[] = 'mainten';
+                }
 
                 if (empty($words)) {
                     $q->orWhere(DB::raw("LOWER($column)"), 'like', '%' . strtolower($phrase) . '%');
@@ -121,7 +140,7 @@ class FilterService
             return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $raw)));
         }
 
-        $parts = preg_split('/[,\s]+/', (string) $raw) ?: [];
+        $parts = preg_split('/,/', (string) $raw) ?: [];
 
         return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $parts)));
     }
@@ -137,11 +156,15 @@ class FilterService
 
         $query->where(function (Builder $q) use ($jobTypes) {
             foreach ($jobTypes as $jobType) {
-                $normalized = strtolower(trim((string) $jobType));
-                if ($normalized === '') {
+                $raw = trim((string) $jobType);
+                if ($raw === '') {
                     continue;
                 }
-                $q->orWhere(DB::raw('LOWER(job_type)'), 'like', '%' . $normalized . '%');
+                $normalized = strtolower(preg_replace('/[\s\-_]+/', '', $raw));
+                
+                // Matches full_time, full-time, full time, Part-Time, part_time, temporary
+                $q->orWhere(DB::raw("REPLACE(REPLACE(REPLACE(LOWER(job_type), '-', ''), '_', ''), ' ', '')"), 'like', '%' . $normalized . '%');
+                $q->orWhere(DB::raw('LOWER(job_type)'), 'like', '%' . strtolower($raw) . '%');
             }
         });
     }
@@ -161,7 +184,7 @@ class FilterService
             return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $raw)));
         }
 
-        $parts = preg_split('/[,\s]+/', (string) $raw) ?: [];
+        $parts = preg_split('/,/', (string) $raw) ?: [];
 
         return array_values(array_filter(array_map(static fn ($value) => trim((string) $value), $parts)));
     }
@@ -191,8 +214,21 @@ class FilterService
      *
      * @throws ValidationException
      */
-    public function normalizeSalaryRange(?string $salary): ?array
+    public function normalizeSalaryRange(?string $salary, ?string $minSalary = null, ?string $maxSalary = null): ?array
     {
+        if ($minSalary !== null || $maxSalary !== null) {
+            $range = [];
+            if ($minSalary !== null && is_numeric($minSalary)) {
+                $range['min'] = (float) $minSalary;
+            }
+            if ($maxSalary !== null && is_numeric($maxSalary)) {
+                $range['max'] = (float) $maxSalary;
+            }
+            if (!empty($range)) {
+                return $range;
+            }
+        }
+
         if ($salary === null || trim($salary) === '') {
             return null;
         }
@@ -201,15 +237,15 @@ class FilterService
         $normalized = strtolower(trim((string) $normalized));
         $normalized = preg_replace('/[\s\-_]+/', '_', $normalized);
 
-        if (preg_match('/less_than_?10[_,.]?000/', $normalized) || preg_match('/less_than_?10k/', $normalized)) {
-            return ['max' => 9999];
+        if (preg_match('/less_than_?10[_,.]?000/', $normalized) || preg_match('/less_than_?10k/', $normalized) || preg_match('/under_?10[_,.]?000/', $normalized)) {
+            return ['max' => 10000];
         }
 
-        if (preg_match('/less_than_?20[_,.]?000/', $normalized) || preg_match('/less_than_?20k/', $normalized)) {
-            return ['max' => 19999];
+        if (preg_match('/less_than_?20[_,.]?000/', $normalized) || preg_match('/less_than_?20k/', $normalized) || preg_match('/under_?20[_,.]?000/', $normalized)) {
+            return ['max' => 20000];
         }
 
-        if (preg_match('/21[_,.]?000_and_above/', $normalized) || preg_match('/21k_and_above/', $normalized) || preg_match('/above_21[_,.]?000/', $normalized)) {
+        if (preg_match('/21[_,.]?000_and_above/', $normalized) || preg_match('/21k_and_above/', $normalized) || preg_match('/above_21[_,.]?000/', $normalized) || preg_match('/above_20[_,.]?000/', $normalized) || preg_match('/21000\+/', $normalized)) {
             return ['min' => 21000];
         }
 
@@ -261,19 +297,34 @@ class FilterService
         $normalized = preg_replace('/[\s\-_]+/', '_', $normalized);
 
         $dayMap = [
+            '1' => 1,
             'within_a_day' => 1,
-            'withinaday' => 1,
             'within_1_day' => 1,
             'within1day' => 1,
+            'within_day' => 1,
+            'withina_day' => 1,
+            'withinaday' => 1,
+            '1_day' => 1,
+            '1day' => 1,
+            '3' => 3,
             'within_3_days' => 3,
             'within3days' => 3,
             'within3_days' => 3,
             'within_3_day' => 3,
             'within3day' => 3,
+            '3_days' => 3,
+            '3days' => 3,
+            '7' => 7,
             'within_a_week' => 7,
             'withinaweek' => 7,
             'within_week' => 7,
             'within1week' => 7,
+            'within_7_days' => 7,
+            'within7days' => 7,
+            '7_days' => 7,
+            '7days' => 7,
+            'a_week' => 7,
+            '1_week' => 7,
         ];
 
         if (isset($dayMap[$normalized])) {
