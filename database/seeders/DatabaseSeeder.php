@@ -36,5 +36,8 @@ class DatabaseSeeder extends Seeder
 
         // Seed comprehensive filter & payment data
         $this->call(ComprehensiveFilterAndPaymentSeeder::class);
+
+        // Seed ad subcategories (job & offer)
+        $this->call(AdSubcategorySeeder::class);
     }
 }

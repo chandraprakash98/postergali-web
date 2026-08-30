@@ -222,7 +222,7 @@
                                 <strong>Sub Category</strong>
                                 <select name="subcategory" form="details-form" onchange="document.getElementById('details-action').value='subcategory'; document.getElementById('details-form').submit()" style="width:100%; padding:12px 14px; border:1px solid #d1d5db; border-radius:12px; margin-bottom:16px; font-size:14px;">
                                     <option value="">Select sub category...</option>
-                                    @foreach(['Shop/Office/School Staff','Delivery & Logistics','Food, Healthcare & Hospitality','Services, Labor, & Daily Wages'] as $option)
+                                    @foreach($jobSubcategories as $option)
                                         <option value="{{ $option }}" {{ $ad->subcategory === $option ? 'selected' : '' }}>{{ $option }}</option>
                                     @endforeach
                                 </select>
@@ -247,7 +247,7 @@
                                 <strong>Sub Category</strong>
                                 <select name="subcategory" form="details-form" onchange="document.getElementById('details-action').value='subcategory'; document.getElementById('details-form').submit()" style="width:100%; padding:12px 14px; border:1px solid #d1d5db; border-radius:12px; margin-bottom:16px; font-size:14px;">
                                     <option value="">Select sub category...</option>
-                                    @foreach(['Local Shop Promotion','Jobs in Local Business','Local Service','Home Based Business','Academic/Hobby/Sports Classes','Street Vendors'] as $option)
+                                    @foreach($offerSubcategories as $option)
                                         <option value="{{ $option }}" {{ $ad->subcategory === $option ? 'selected' : '' }}>{{ $option }}</option>
                                     @endforeach
                                 </select>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdSubcategory;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Referral;
@@ -97,9 +98,11 @@ class AdminAuthController extends Controller
         $plan = Plan::find($model->plan_id) ?: $model->plan;
 
         return view('admin.ad-details', [
-            'type' => $type,
-            'ad' => $model,
-            'plan' => $plan,
+            'type'               => $type,
+            'ad'                 => $model,
+            'plan'               => $plan,
+            'jobSubcategories'   => AdSubcategory::namesForType('job'),
+            'offerSubcategories' => AdSubcategory::namesForType('offer'),
         ]);
     }
 

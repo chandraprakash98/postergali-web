@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\OfferController;
 use App\Http\Controllers\API\JobController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\API\ReferralController;
 use App\Http\Controllers\AdminAuthController;
 
 Route::prefix('v1')->group(function () {
+    Route::get('categories', [CategoryController::class, 'index']);
     Route::get('offers/search', [OfferController::class, 'search']);
     Route::apiResource('offers', OfferController::class);
     Route::get('jobs/search', [JobController::class, 'search']);
