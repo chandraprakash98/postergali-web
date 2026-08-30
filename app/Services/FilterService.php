@@ -30,14 +30,14 @@ class FilterService
     ];
 
     public const ALLOWED_OFFER_INDEX_PARAMS = [
-        'latitude', 'longitude', 'radius', 'distance', 'per_page', 'page',
+        'latitude', 'longitude', 'radius', 'distance', 'min_radius', 'max_radius', 'min_distance', 'max_distance', 'per_page', 'page',
         'sub_categories', 'sub_category', 'category', 'categories',
         'is_expiry', 'expiry',
         'offer_type', 'offer_types'
     ];
 
     public const ALLOWED_OFFER_SEARCH_PARAMS = [
-        'device_id', 'latitude', 'longitude', 'radius', 'distance', 'mobile_number', 'phone_number',
+        'device_id', 'latitude', 'longitude', 'radius', 'distance', 'min_radius', 'max_radius', 'min_distance', 'max_distance', 'mobile_number', 'phone_number',
         'per_page', 'page',
         'sub_categories', 'sub_category', 'category', 'categories',
         'is_expiry', 'expiry',
@@ -200,11 +200,14 @@ class FilterService
 
         $query->where(function (Builder $q) use ($offerTypes) {
             foreach ($offerTypes as $offerType) {
-                $normalized = strtolower(trim((string) $offerType));
-                if ($normalized === '') {
+                $raw = trim((string) $offerType);
+                if ($raw === '') {
                     continue;
                 }
-                $q->orWhere(DB::raw('LOWER(offer_type)'), 'like', '%' . $normalized . '%');
+                $normalized = strtolower(preg_replace('/[\s\-_]+/', '', $raw));
+                
+                $q->orWhere(DB::raw("REPLACE(REPLACE(REPLACE(LOWER(offer_type), '-', ''), '_', ''), ' ', '')"), 'like', '%' . $normalized . '%');
+                $q->orWhere(DB::raw('LOWER(offer_type)'), 'like', '%' . strtolower($raw) . '%');
             }
         });
     }
@@ -363,5 +366,83 @@ class FilterService
 
         $query->whereNotNull('expires_at')
             ->whereBetween('expires_at', [$expiryWindow['from'], $expiryWindow['to']]);
+    }
+
+    /**
+     * Parse distance / radius filter into numeric [min, max] range in km.
+     * Supports:
+     * - "0-5 Km", "5-10 Km", "10-15 Km", "15-20 Km", "0-5", "5-10", "10-15"
+     * - "0_5", "5_10", "10_15"
+     * - "5" or 5.0 (means 0 to 5 km)
+     * - min_distance / max_distance / min_radius / max_radius query params
+     *
+     * @throws ValidationException
+     */
+    public function normalizeDistanceRange(
+        mixed $distance = null,
+        mixed $radius = null,
+        mixed $minDistance = null,
+        mixed $maxDistance = null,
+        mixed $minRadius = null,
+        mixed $maxRadius = null
+    ): array {
+        $min = $minDistance ?? $minRadius;
+        $max = $maxDistance ?? $maxRadius;
+
+        if ($min !== null || $max !== null) {
+            $minVal = ($min !== null && is_numeric($min)) ? max((float) $min, 0.0) : 0.0;
+            $maxVal = ($max !== null && is_numeric($max)) ? (float) $max : 100.0;
+            return [
+                'min' => $minVal,
+                'max' => min(max($maxVal, $minVal > 0 ? $minVal + 0.1 : 0.1), 100.0),
+            ];
+        }
+
+        $raw = $distance ?? $radius;
+        if ($raw === null || trim((string) $raw) === '') {
+            return ['min' => 0.0, 'max' => 5.0];
+        }
+
+        $str = strtolower(trim((string) $raw));
+        $str = str_replace(['km', 'kms', 'k.m.', ' '], '', $str);
+
+        // Handle ranges like "0-5", "5-10", "10-15", "0_5", "5_10", "10_15"
+        if (preg_match('/^(\d+(?:\.\d+)?)(?:-|_|to)(\d+(?:\.\d+)?)$/', $str, $matches)) {
+            $minVal = max((float) $matches[1], 0.0);
+            $maxVal = min(max((float) $matches[2], $minVal), 100.0);
+            return [
+                'min' => $minVal,
+                'max' => $maxVal,
+            ];
+        }
+
+        if (is_numeric($str)) {
+            $maxVal = min(max((float) $str, 0.1), 100.0);
+            return [
+                'min' => 0.0,
+                'max' => $maxVal,
+            ];
+        }
+
+        // Handle "under 5" / "less than 5"
+        if (preg_match('/^(?:under|less_than|below)(\d+(?:\.\d+)?)$/', $str, $matches)) {
+            return [
+                'min' => 0.0,
+                'max' => min((float) $matches[1], 100.0),
+            ];
+        }
+
+        // Handle "above 10" / "more than 10"
+        if (preg_match('/^(?:above|more_than|greater_than)(\d+(?:\.\d+)?)$/', $str, $matches)) {
+            $minVal = (float) $matches[1];
+            return [
+                'min' => $minVal,
+                'max' => 100.0,
+            ];
+        }
+
+        throw ValidationException::withMessages([
+            'distance' => ["Invalid distance filter: '$raw'."],
+        ]);
     }
 }

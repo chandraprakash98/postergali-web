@@ -34,8 +34,12 @@ class OfferController extends Controller
         $validated = $request->validate([
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            'radius' => 'sometimes|numeric|min:0.1|max:100',
-            'distance' => 'sometimes|numeric|min:0.1|max:100',
+            'radius' => 'sometimes',
+            'distance' => 'sometimes',
+            'min_radius' => 'sometimes|numeric|min:0|max:100',
+            'max_radius' => 'sometimes|numeric|min:0.1|max:100',
+            'min_distance' => 'sometimes|numeric|min:0|max:100',
+            'max_distance' => 'sometimes|numeric|min:0.1|max:100',
             'per_page' => 'sometimes|integer|min:1|max:200',
             'page' => 'sometimes|integer|min:1',
             'sub_categories' => 'sometimes',
@@ -50,14 +54,22 @@ class OfferController extends Controller
 
         $userLat = (float) $validated['latitude'];
         $userLng = (float) $validated['longitude'];
-        $radius = (float) ($validated['radius'] ?? $validated['distance'] ?? 5);
         $perPage = min((int) ($validated['per_page'] ?? 50), 200);
+
+        $distanceRange = $this->filterService->normalizeDistanceRange(
+            $request->input('distance'),
+            $request->input('radius'),
+            $request->input('min_distance'),
+            $request->input('max_distance'),
+            $request->input('min_radius'),
+            $request->input('max_radius')
+        );
 
         $subCategories = $this->filterService->normalizeSubCategories($request);
         $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry', $request->input('expiry')));
         $offerTypes = $this->filterService->normalizeOfferTypes($request);
 
-        $query = Offer::nearby($userLat, $userLng, $radius)->active();
+        $query = Offer::nearby($userLat, $userLng, $distanceRange['max'], $distanceRange['min'])->active();
 
         $this->filterService->applySubCategoryFilter($query, $subCategories);
 
@@ -82,7 +94,9 @@ class OfferController extends Controller
                 'from' => $offers->firstItem(),
                 'to' => $offers->lastItem(),
             ],
-            'radius_km' => $radius,
+            'radius_km' => $distanceRange['max'],
+            'min_distance_km' => $distanceRange['min'],
+            'max_distance_km' => $distanceRange['max'],
         ]);
     }
 
@@ -98,8 +112,12 @@ class OfferController extends Controller
             'device_id' => 'required_without_all:latitude,longitude|string',
             'latitude' => 'sometimes|numeric|between:-90,90',
             'longitude' => 'sometimes|numeric|between:-180,180',
-            'radius' => 'sometimes|numeric|min:0.1|max:100',
-            'distance' => 'sometimes|numeric|min:0.1|max:100',
+            'radius' => 'sometimes',
+            'distance' => 'sometimes',
+            'min_radius' => 'sometimes|numeric|min:0|max:100',
+            'max_radius' => 'sometimes|numeric|min:0.1|max:100',
+            'min_distance' => 'sometimes|numeric|min:0|max:100',
+            'max_distance' => 'sometimes|numeric|min:0.1|max:100',
             'mobile_number' => 'sometimes|string',
             'phone_number' => 'sometimes|string',
             'per_page' => 'sometimes|integer|min:1|max:200',
@@ -118,8 +136,16 @@ class OfferController extends Controller
         $mobile = $validated['mobile_number'] ?? $validated['phone_number'] ?? null;
         $latitude = isset($validated['latitude']) ? (float) $validated['latitude'] : null;
         $longitude = isset($validated['longitude']) ? (float) $validated['longitude'] : null;
-        $radius = (float) ($validated['radius'] ?? $validated['distance'] ?? 5);
         $perPage = min((int) ($validated['per_page'] ?? 50), 200);
+
+        $distanceRange = $this->filterService->normalizeDistanceRange(
+            $request->input('distance'),
+            $request->input('radius'),
+            $request->input('min_distance'),
+            $request->input('max_distance'),
+            $request->input('min_radius'),
+            $request->input('max_radius')
+        );
 
         $subCategories = $this->filterService->normalizeSubCategories($request);
         $expiryWindow = $this->filterService->normalizeExpiryWindow($request->input('is_expiry', $request->input('expiry')));
@@ -128,7 +154,7 @@ class OfferController extends Controller
         $query = Offer::withCommonFields()->active();
 
         if ($latitude !== null && $longitude !== null) {
-            $query = $query->nearby($latitude, $longitude, $radius);
+            $query = $query->nearby($latitude, $longitude, $distanceRange['max'], $distanceRange['min']);
         }
 
         $this->filterService->applySubCategoryFilter($query, $subCategories);
@@ -163,6 +189,9 @@ class OfferController extends Controller
                 'current_page' => $offers->currentPage(),
                 'last_page' => $offers->lastPage(),
             ],
+            'radius_km' => $distanceRange['max'],
+            'min_distance_km' => $distanceRange['min'],
+            'max_distance_km' => $distanceRange['max'],
         ]);
     }
 

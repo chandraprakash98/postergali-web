@@ -52,7 +52,7 @@ class Offer extends Model
      * @param float $radiusKm
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeNearby($query, float $latitude, float $longitude, float $radiusKm = 5)
+    public function scopeNearby($query, float $latitude, float $longitude, float $radiusKm = 5, float $minRadiusKm = 0)
     {
         $query = $query->select([
             'id',
@@ -70,7 +70,7 @@ class Offer extends Model
         ]);
         
         $query = LocationService::withBoundingBox($query, $latitude, $longitude, $radiusKm);
-        return LocationService::nearbyQuery($query, $latitude, $longitude, $radiusKm);
+        return LocationService::nearbyQuery($query, $latitude, $longitude, $radiusKm, minRadiusKm: $minRadiusKm);
     }
 
     /**

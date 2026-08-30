@@ -201,10 +201,12 @@ Retrieve promotional offers/discounts within a radius with multi-filtering.
 |---|---|---|---|
 | `latitude` | float | **Yes** | User's latitude |
 | `longitude` | float | **Yes** | User's longitude |
-| `radius` / `distance` | float | No | Search radius in km (Default: `5`) |
-| `sub_categories` | string / array | No | Filter subcategories (e.g. `Electronics,Clothing`) |
-| `is_expiry` / `expiry` | string | No | Expiry window (`within_a_day`, `within_3_days`, `within_a_week`) |
-| `offer_types` / `offer_type`| string / array | No | Offer type (e.g. `discount`, `combo`, `bogo`) |
+| `radius` / `distance` | string / float | No | Search radius in km (Default: `5`) or Distance range band: `0-5 Km`, `5-10 Km`, `10-15 Km`, `15-20 Km`, etc. |
+| `min_distance` / `min_radius` | float | No | Minimum distance in km (e.g. `5`) |
+| `max_distance` / `max_radius` | float | No | Maximum distance in km (e.g. `10`) |
+| `sub_categories` / `category` | string / array | No | Filter subcategories (e.g. `Food and Hospitality`, `Electronics,Clothing`) |
+| `is_expiry` / `expiry` | string | No | Expiry window (`within_a_day` / `1 day`, `within_3_days` / `3 days`, `within_a_week` / `7 days`) |
+| `offer_types` / `offer_type`| string / array | No | Offer type (e.g. `Discount`, `Combo`, `BOGO`) |
 
 - **Success Response (`200 OK`)**:
 ```json

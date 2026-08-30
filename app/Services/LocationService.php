@@ -44,7 +44,8 @@ class LocationService
         float $longitude,
         float $radiusKm = 5,
         string $latColumn = 'latitude',
-        string $lonColumn = 'longitude'
+        string $lonColumn = 'longitude',
+        float $minRadiusKm = 0
     ): Builder {
         $connection = $query->getQuery()->getConnection();
         $driver = $connection->getDriverName();
@@ -52,9 +53,17 @@ class LocationService
         if (!in_array($driver, ['mysql', 'mariadb'], true)) {
             $bounds = self::getBoundingBox($latitude, $longitude, $radiusKm);
 
-            return $query
+            $query
                 ->whereBetween($latColumn, [$bounds['minLat'], $bounds['maxLat']])
-                ->whereBetween($lonColumn, [$bounds['minLon'], $bounds['maxLon']])
+                ->whereBetween($lonColumn, [$bounds['minLon'], $bounds['maxLon']]);
+
+            if ($minRadiusKm > 0) {
+                $query->whereRaw("((($latColumn - ?) * 111.0) * (($latColumn - ?) * 111.0) + (($lonColumn - ?) * 111.0) * (($lonColumn - ?) * 111.0)) >= ?", [
+                    $latitude, $latitude, $longitude, $longitude, $minRadiusKm * $minRadiusKm
+                ]);
+            }
+
+            return $query
                 ->selectRaw('0 AS distance')
                 ->orderBy('distance', 'asc');
         }
@@ -75,6 +84,13 @@ class LocationService
                 )
             ), 2
         )";
+
+        if ($minRadiusKm > 0) {
+            $query->whereRaw(
+                $distanceFormula . " >= ?",
+                [$latitude, $longitude, $latitude, $minRadiusKm]
+            );
+        }
 
         // Use where clause instead of having to work with pagination
         return $query->whereRaw(

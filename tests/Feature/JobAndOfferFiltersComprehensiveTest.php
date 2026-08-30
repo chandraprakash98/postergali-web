@@ -266,4 +266,25 @@ class JobAndOfferFiltersComprehensiveTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.temp_id', 'offer-2');
     }
+
+    public function test_offers_filter_by_subcategory_expiry_and_distance_band_0_to_5_km(): void
+    {
+        $response = $this->getJson('/api/v1/offers?latitude=' . self::LAT . '&longitude=' . self::LNG . '&distance=' . urlencode('0-5 Km') . '&sub_categories=Food&expiry=Within%20a%20day');
+
+        $response->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.temp_id', 'offer-1')
+            ->assertJsonPath('min_distance_km', 0)
+            ->assertJsonPath('max_distance_km', 5);
+    }
+
+    public function test_offers_filter_distance_band_5_to_10_km_excludes_closer_records(): void
+    {
+        $response = $this->getJson('/api/v1/offers?latitude=' . self::LAT . '&longitude=' . self::LNG . '&distance=' . urlencode('5-10 Km'));
+
+        $response->assertOk()
+            ->assertJsonCount(0, 'data')
+            ->assertJsonPath('min_distance_km', 5)
+            ->assertJsonPath('max_distance_km', 10);
+    }
 }
