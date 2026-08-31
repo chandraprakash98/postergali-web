@@ -53,6 +53,7 @@ class PaymentCreditFlowTest extends TestCase
 
         $this->assertDatabaseHas('payments', [
             'transaction_id' => 'txn-001',
+            'customer_id' => $customer->customer_id,
             'item_type' => 'job',
             'credit_mode' => 'semi',
         ]);
@@ -98,6 +99,7 @@ class PaymentCreditFlowTest extends TestCase
 
         $this->assertDatabaseHas('payments', [
             'transaction_id' => 'txn-offer-001',
+            'customer_id' => $customer->customer_id,
             'item_type' => 'offer',
             'credit_mode' => 'semi',
         ]);

@@ -17,6 +17,7 @@ class Payment extends Model
     public const STATUS_FAILED = 'FAILED';
 
     protected $fillable = [
+        'customer_id',
         'transaction_id',
         'job_or_offer_id',
         'item_type',
@@ -39,6 +40,11 @@ class Payment extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
+    }
 
     public function job(): BelongsTo
     {

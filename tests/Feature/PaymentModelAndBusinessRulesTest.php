@@ -118,12 +118,18 @@ class PaymentModelAndBusinessRulesTest extends TestCase
 
         $this->assertDatabaseHas('payments', [
             'transaction_id' => 'TXN_SEMI_001',
+            'customer_id' => $customer->customer_id,
             'payment_type' => 'SEMI',
             'total_amount' => '1200.00',
             'razorpay_amount' => '700.00',
             'credit_amount' => '500.00',
             'payment_status' => 'COMPLETED',
         ]);
+
+        $payment = Payment::where('transaction_id', 'TXN_SEMI_001')->first();
+        $this->assertNotNull($payment->customer);
+        $this->assertSame($customer->id, $payment->customer->id);
+        $this->assertTrue($customer->payments->contains($payment));
 
         $credit = CustomerCredit::where('customer_id', $customer->customer_id)->first();
         $this->assertSame(500.0, (float) $credit->balance);
@@ -245,6 +251,34 @@ class PaymentModelAndBusinessRulesTest extends TestCase
             'total_amount' => '199.99',
             'razorpay_amount' => '129.50',
             'credit_amount' => '70.49',
+        ]);
+    }
+
+    public function test_payment_fetches_customer_id_by_mobile_number_when_saving_payment(): void
+    {
+        $customer = Customer::create([
+            'customer_id' => 'PSTGL_AUTO_001',
+            'mobile' => '9988776655',
+        ]);
+
+        $payload = $this->baseJobPayload([
+            'phone_number' => '9988776655',
+            'payment_type' => 'FULL_UPI',
+            'total_amount' => 600.00,
+            'razorpay_amount' => 600.00,
+            'credit_amount' => 0.00,
+            'transaction_id' => 'TXN_MOBILE_LOOKUP_01',
+        ]);
+        unset($payload['customer_id']);
+
+        $response = $this->postJson('/api/v1/jobs', $payload);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('payments', [
+            'transaction_id' => 'TXN_MOBILE_LOOKUP_01',
+            'customer_id' => 'PSTGL_AUTO_001',
+            'total_amount' => '600.00',
         ]);
     }
 }

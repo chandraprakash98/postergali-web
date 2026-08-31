@@ -2,6 +2,7 @@
 
 namespace App\DTOs;
 
+use App\Models\Customer;
 use App\Models\CustomerCredit;
 
 class PaymentData
@@ -19,6 +20,7 @@ class PaymentData
         public readonly ?int $jobOrOfferId = null,
         public readonly ?string $customerId = null,
         public readonly ?string $rawCreditMode = null,
+        public readonly ?string $mobile = null,
     ) {}
 
     /**
@@ -38,7 +40,16 @@ class PaymentData
         // Determine total amount
         $rawTotal = $data['total_amount'] ?? $data['amount'] ?? $data['salary'] ?? '0.00';
         $totalAmount = number_format((float) $rawTotal, 2, '.', '');
+        
+        $mobile = $data['mobile'] ?? $data['phone_number'] ?? $data['mobile_number'] ?? $data['phone'] ?? null;
         $customerId = $data['customer_id'] ?? null;
+
+        if ($mobile) {
+            $customer = Customer::where('mobile', (string) $mobile)->first();
+            if ($customer) {
+                $customerId = $customer->customer_id;
+            }
+        }
 
         // If explicit amounts are passed, use them
         if (isset($data['razorpay_amount']) || isset($data['credit_amount'])) {
@@ -100,12 +111,14 @@ class PaymentData
             jobOrOfferId: $jobOrOfferId,
             customerId: $customerId,
             rawCreditMode: $rawCreditMode ? strtolower((string) $rawCreditMode) : null,
+            mobile: $mobile ? (string) $mobile : null,
         );
     }
 
     public function toArray(): array
     {
         return [
+            'customer_id' => $this->customerId,
             'payment_type' => $this->paymentType,
             'total_amount' => $this->totalAmount,
             'razorpay_amount' => $this->razorpayAmount,

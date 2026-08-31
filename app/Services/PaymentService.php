@@ -97,14 +97,24 @@ class PaymentService
         $this->validatePaymentRules($paymentData);
 
         return DB::transaction(function () use ($paymentData) {
+            $customerId = $paymentData->customerId;
+            if (!$customerId && !empty($paymentData->mobile)) {
+                $customerId = Customer::where('mobile', (string) $paymentData->mobile)->value('customer_id');
+            }
+
             // Deduct customer credit if applicable
             $creditAmount = $paymentData->creditAmount;
-            if ($paymentData->customerId && bccomp($creditAmount, '0.00', 2) > 0) {
-                $this->deductCustomerCredit($paymentData->customerId, $creditAmount);
+            if ($customerId && bccomp($creditAmount, '0.00', 2) > 0) {
+                $this->deductCustomerCredit($customerId, $creditAmount);
+            }
+
+            $paymentAttributes = $paymentData->toArray();
+            if ($customerId) {
+                $paymentAttributes['customer_id'] = $customerId;
             }
 
             // Create Payment record
-            return Payment::create($paymentData->toArray());
+            return Payment::create($paymentAttributes);
         });
     }
 
