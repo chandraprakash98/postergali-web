@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\CustomerController;
-use App\Http\Controllers\API\OfferController;
+use App\Http\Controllers\API\InvoiceController;
 use App\Http\Controllers\API\JobController;
+use App\Http\Controllers\API\OfferController;
 use App\Http\Controllers\API\PlanController;
 use App\Http\Controllers\API\ReferralController;
 use App\Http\Controllers\AdminAuthController;
@@ -20,6 +21,8 @@ Route::prefix('v1')->group(function () {
     Route::get('customers/check', [CustomerController::class, 'check']);
     Route::get('customers/poster-ads', [CustomerController::class, 'posterAds']);
     Route::get('customers/{customerId}/balance', [CustomerController::class, 'balance']);
+    Route::match(['get', 'post'], 'customers/invoice', [InvoiceController::class, 'downloadInvoice']);
+    Route::match(['get', 'post'], 'payments/invoice', [InvoiceController::class, 'downloadInvoice']);
 });
 
 Route::prefix('v1')->group(function () {
