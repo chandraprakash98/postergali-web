@@ -3,14 +3,517 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PosterGali </title>
+<title>PosterGali - India's Hyperlocal Poster Bazaar</title>
 
-   <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+<!-- Google Fonts for Modern Display & Geometric Typography -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Target section clearance so fixed/sticky navbar doesn't cover headers */
+    [id] {
+        scroll-margin-top: 85px;
+    }
+
+    /* ── Mobile Navigation Toggle & Drawer ── */
+    .menu-toggle {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        width: 42px;
+        height: 42px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 8px;
+        transition: background 0.2s ease;
+    }
+
+    .menu-toggle:hover {
+        background: rgba(196, 53, 29, 0.08);
+    }
+
+    .menu-toggle span {
+        display: block;
+        width: 24px;
+        height: 3px;
+        background: #C4351D;
+        border-radius: 3px;
+        transition: transform 0.25s ease, opacity 0.25s ease;
+    }
+
+    .mobile-nav-drawer {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 99999;
+    }
+
+    .mobile-nav-drawer.open {
+        display: flex;
+    }
+
+    .drawer-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(4px);
+        animation: drawerFadeIn 0.25s ease-out;
+    }
+
+    .drawer-panel {
+        position: relative;
+        background: #FAF8E9;
+        width: 82%;
+        max-width: 320px;
+        height: 100%;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 6px 0 28px rgba(0, 0, 0, 0.25);
+        animation: drawerSlideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        overflow-y: auto;
+        z-index: 2;
+    }
+
+    .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1.5px solid #E5DFCA;
+    }
+
+    .drawer-close {
+        background: none;
+        border: none;
+        font-size: 28px;
+        color: #333;
+        cursor: pointer;
+        line-height: 1;
+        padding: 6px;
+        border-radius: 6px;
+        transition: color 0.15s, background 0.15s;
+    }
+
+    .drawer-close:hover {
+        background: rgba(0, 0, 0, 0.06);
+        color: #C4351D;
+    }
+
+    .drawer-links {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .drawer-links a {
+        display: block;
+        padding: 13px 16px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1A1A1A;
+        text-decoration: none;
+        border-radius: 10px;
+        transition: background 0.15s, color 0.15s;
+    }
+
+    .drawer-links a:hover,
+    .drawer-links a:active {
+        background: rgba(196, 53, 29, 0.08);
+        color: #C4351D;
+    }
+
+    .drawer-download-btn {
+        margin-top: auto;
+        background: #C4351D;
+        color: #ffffff !important;
+        text-align: center;
+        padding: 14px 22px;
+        border-radius: 999px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 800;
+        font-size: 15px;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(196, 53, 29, 0.35);
+        display: block;
+        transition: background 0.2s, transform 0.15s;
+    }
+
+    .drawer-download-btn:hover {
+        background: #A82813;
+        transform: translateY(-1px);
+    }
+
+    @keyframes drawerFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes drawerSlideRight {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+    }
+
+    @media (max-width: 768px) {
+        .nav-links {
+            display: none !important;
+        }
+        .menu-toggle {
+            display: flex !important;
+        }
+    }
+
+    /* ── DOWNLOAD NOW SECTION (MATCHING REFERENCE IMAGE 1) ── */
+    .app-crease-section {
+        background-image: url('{{ asset('images/downloadbg.png') }}') !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        padding: 72px 24px 80px !important;
+        text-align: center !important;
+        position: relative !important;
+        overflow: hidden !important;
+        width: 100% !important;
+    }
+
+    .app-crease-container {
+        max-width: 740px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .app-crease-badge {
+        display: inline-block !important;
+        background: #9E3324 !important;
+        color: #ffffff !important;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+        font-size: 13.5px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.9px !important;
+        padding: 6px 18px !important;
+        border-radius: 2px !important;
+        border: 1.5px solid #1a1612 !important;
+        box-shadow: 2.5px 3px 0px #1a1612 !important;
+        transform: rotate(-1.5deg) !important;
+        margin-bottom: 20px !important;
+        text-transform: uppercase !important;
+    }
+
+    .app-crease-section h2 {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-size: clamp(26px, 4.4vw, 42px) !important;
+        font-weight: 900 !important;
+        line-height: 1.16 !important;
+        color: #111111 !important;
+        letter-spacing: -0.4px !important;
+        margin: 0 auto 16px !important;
+        max-width: 680px !important;
+        text-align: center !important;
+    }
+
+    .app-crease-section p {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        font-size: clamp(13px, 1.8vw, 16px) !important;
+        font-weight: 500 !important;
+        color: #1f1b16 !important;
+        line-height: 1.5 !important;
+        margin: 0 auto 28px !important;
+        max-width: 550px !important;
+        text-align: center !important;
+        opacity: 0.96 !important;
+    }
+
+    .app-store-btns {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 16px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .app-store-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        background: #FAF4DF !important;
+        border: 2px solid #181512 !important;
+        border-radius: 999px !important;
+        padding: 10px 22px !important;
+        text-decoration: none !important;
+        color: #111111 !important;
+        box-shadow: 3px 4px 0px #181512 !important;
+        min-width: 220px !important;
+        text-align: left !important;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease !important;
+    }
+
+    .app-store-btn:hover {
+        background: #FFF8E7 !important;
+        transform: translate(1px, 2px) !important;
+        box-shadow: 2px 2px 0px #181512 !important;
+    }
+
+    .app-store-btn:active {
+        transform: translate(3px, 4px) !important;
+        box-shadow: 0px 0px 0px #181512 !important;
+    }
+
+    .store-icon-play {
+        flex-shrink: 0;
+        width: 26px;
+        height: 28px;
+    }
+
+    .apple-circle-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #1e2530;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .apple-circle-badge svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .btn-text-wrap {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .app-store-btn .btn-text-small {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 9.5px !important;
+        font-weight: 700 !important;
+        color: #444444 !important;
+        letter-spacing: 0.6px !important;
+        text-transform: uppercase !important;
+        line-height: 1 !important;
+        display: block !important;
+    }
+
+    .app-store-btn .btn-text-large {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        color: #111111 !important;
+        line-height: 1.25 !important;
+        margin-top: 2px !important;
+        display: block !important;
+    }
+
+    @media (max-width: 600px) {
+        .app-crease-section {
+            padding: 50px 18px 58px !important;
+        }
+        .desktop-br {
+            display: none;
+        }
+        .app-store-btn {
+            min-width: 205px !important;
+            padding: 9px 18px !important;
+        }
+    }
+
+    /* ── WHY POSTERGALI SECTION (MATCHING REFERENCE IMAGE 2) ── */
+    .why-section {
+        padding: 55px 20px 65px !important;
+        background: #FAF8E9 !important;
+        text-align: center !important;
+        position: relative !important;
+    }
+
+    .why-section .sub-header-label {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #222222 !important;
+        margin-bottom: 6px !important;
+        text-align: center !important;
+    }
+
+    .why-section .main-section-title {
+        font-family: 'Plus Jakarta Sans', 'BernardMT', serif !important;
+        font-size: clamp(22px, 4vw, 32px) !important;
+        font-weight: 900 !important;
+        color: #B55B09 !important;
+        line-height: 1.22 !important;
+        margin: 0 auto 28px !important;
+        max-width: 480px !important;
+        text-align: center !important;
+    }
+
+    .folder-container {
+        max-width: 450px !important;
+        margin: 0 auto !important;
+        position: relative !important;
+    }
+
+    .folder-tabs {
+        display: flex !important;
+        gap: 5px !important;
+        padding-left: 12px !important;
+        margin-bottom: -1px !important;
+        position: relative !important;
+        z-index: 2 !important;
+    }
+
+    .folder-tab {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        padding: 9px 22px !important;
+        border-top-left-radius: 14px !important;
+        border-top-right-radius: 14px !important;
+        border: none !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        outline: none !important;
+    }
+
+    .folder-tab.tab-vendors {
+        background: #F6CB7B !important;
+        color: #1F1710 !important;
+    }
+
+    .folder-tab.tab-locals {
+        background: #D98377 !important;
+        color: #261B17 !important;
+    }
+
+    .folder-tab.tab-hiring {
+        background: #DF8C81 !important;
+        color: #261B17 !important;
+    }
+
+    .folder-tab.active {
+        background: #F6CB7B !important;
+        color: #1F1710 !important;
+        font-weight: 800 !important;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .folder-card {
+        background: #F6CB7B !important;
+        border-radius: 22px !important;
+        border-top-left-radius: 0px !important;
+        padding: 16px !important;
+        box-shadow: 0 12px 30px rgba(184, 128, 38, 0.22), 0 4px 10px rgba(0, 0, 0, 0.06) !important;
+        text-align: left !important;
+    }
+
+    .folder-media-box {
+        width: 100% !important;
+        height: auto !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+        position: relative !important;
+        background: #181008 !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+        line-height: 0 !important;
+    }
+
+    .folder-img {
+        width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        border-radius: 16px !important;
+        object-fit: cover !important;
+    }
+
+    .folder-content-body {
+        padding-top: 14px !important;
+    }
+
+    .folder-content-body h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: clamp(17px, 2.8vw, 20px) !important;
+        font-weight: 900 !important;
+        color: #381F10 !important;
+        margin-bottom: 7px !important;
+        line-height: 1.3 !important;
+    }
+
+    .folder-content-body p {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 12.5px !important;
+        color: #4A3525 !important;
+        line-height: 1.45 !important;
+        margin-bottom: 16px !important;
+        font-weight: 500 !important;
+    }
+
+    .btn-folder-cta {
+        display: block !important;
+        width: 100% !important;
+        background: linear-gradient(180deg, #F3AA33 0%, #E69418 100%) !important;
+        border: 1px solid #D6880E !important;
+        color: #FFFFFF !important;
+        padding: 12px 18px !important;
+        border-radius: 999px !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 13px !important;
+        font-weight: 800 !important;
+        text-align: center !important;
+        text-decoration: none !important;
+        box-shadow: 0 4px 14px rgba(220, 137, 24, 0.4) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+        cursor: pointer !important;
+        transition: transform 0.15s ease, filter 0.15s ease !important;
+    }
+
+    .btn-folder-cta:hover {
+        transform: translateY(-1px) !important;
+        filter: brightness(1.05) !important;
+    }
+
+    .feature-grid-sub {
+        max-width: 400px !important;
+        margin: 24px auto 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 12.5px !important;
+        color: #2E2A27 !important;
+        line-height: 1.8 !important;
+        font-weight: 700 !important;
+        text-align: left !important;
+    }
+
+    .feature-grid-sub .green-highlight {
+        color: #2E7D32 !important;
+        font-weight: 800 !important;
+    }
+</style>
 </head>
 
 <body>
 
-<div class="company-top-bar">
+<div class="company-top-bar" id="company-top">
     <div class="company-top-container">
         <div class="company-line">
             <strong>PosterGali</strong> is a product of
@@ -25,34 +528,36 @@
 </div>
 
 <!-- NAVBAR -->
-<nav class="navbar">
+<nav class="navbar" id="navbar">
     <div class="logo-wrap">
-        <div class="logo-badge">
-            <span>Poster</span>
-            <span>गली</span>
-        </div>
+        <a href="#hero" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
+            <div class="logo-badge">
+                <span>Poster</span>
+                <span>गली</span>
+            </div>
+        </a>
     </div>
 
     <div class="nav-links">
-        <a href="#">Home</a>
-        <a href="#">Features</a>
-        <a href="#">FAQ</a>
-        <a href="#">Company</a>
-        <a href="#">Contact</a>
+        <a href="#hero">Home</a>
+        <a href="#why-postergali">Features</a>
+        <a href="#faq">FAQ</a>
+        <a href="#company">Company</a>
+        <a href="#contact">Contact</a>
     </div>
 
     <div class="nav-actions">
-        <button class="btn-download">Download Now</button>
-        <div class="menu-toggle" aria-label="Toggle menu">
+        <a href="#download" class="btn-download" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Download Now</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" type="button">
             <span></span>
             <span></span>
             <span></span>
-        </div>
+        </button>
     </div>
 </nav>
 
 <!-- HERO SECTION -->
-<section class="hero">
+<section class="hero" id="hero">
 
     <div class="tag">India ka Poster Bazaar</div>
 
@@ -63,7 +568,7 @@
     </p>
 
     <!-- DESKTOP CTA BUTTON ONLY -->
-    <button class="hero-cta-btn">Download Now</button>
+    <a href="#download" class="hero-cta-btn" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Download Now</a>
 
     <!-- UNIFIED STAGGERED POSTERS & PHONE STAGE -->
     <div class="phone-section">
@@ -95,7 +600,7 @@
 
         <!-- 5th Poster (Right High) -->
         <div class="poster-card poster-right-high">
-            <img class="poster-img"src="{{ asset('images/jb2.png') }}"  alt="Poster 5">
+            <img class="poster-img" src="{{ asset('images/jb2.png') }}"  alt="Poster 5">
         </div>
 
         <!-- 6th Poster (Far Right) -->
@@ -117,90 +622,82 @@
     <div>SMART TARGETING</div>
 </div>
 
-<!-- APP DOWNLOAD / CREASED PAPER SECTION -->
-<section class="app-crease-section">
-    <div class="app-crease-badge">DOWNLOAD NOW</div>
-    <h2>Your Very Own Poster Bazaar Available On Android & iOS</h2>
-    <p>Get it free today, design your first poster in minutes and watch your business grow like never before!</p>
+<!-- APP DOWNLOAD / CREASED PAPER SECTION (MATCHING REFERENCE IMAGE 1) -->
+<section class="app-crease-section" id="download">
+    <div class="app-crease-container">
+        <div class="app-crease-badge">DOWNLOAD NOW</div>
+        <h2>Your Very Own Poster<br>Bazaar  Available On<br>Android & IOS</h2>
+        <p>Get it free today, design your first poster in minutes<br class="desktop-br"> and watch your business grow like never before!</p>
 
-    <div class="app-store-btns">
-        <!-- Google Play Store -->
-        <a href="#" class="app-store-btn">
-            <svg width="22" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
-                <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
-                <path d="M3.6 1.8L14.2 12.4L17.5 9.1L4.8 1.9C4.4 1.7 4 1.7 3.6 1.8Z" fill="#4CAF50"/>
-                <path d="M3.6 23C4 23.1 4.4 23.1 4.8 22.9L17.5 15.7L14.2 12.4L3.6 23Z" fill="#F44336"/>
-            </svg>
-            <div>
-                <span class="btn-text-small">GET IT ON</span>
-                <span class="btn-text-large">Google Play Store</span>
-            </div>
-        </a>
+        <div class="app-store-btns">
+            <!-- Google Play Store -->
+            <a href="https://play.google.com" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Get PosterGali on Google Play Store">
+                <svg width="26" height="28" viewBox="0 0 24 24" fill="none" class="store-icon-play">
+                    <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
+                    <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
+                    <path d="M3.6 1.8L14.2 12.4L17.5 9.1L4.8 1.9C4.4 1.7 4 1.7 3.6 1.8Z" fill="#4CAF50"/>
+                    <path d="M3.6 23C4 23.1 4.4 23.1 4.8 22.9L17.5 15.7L14.2 12.4L3.6 23Z" fill="#F44336"/>
+                </svg>
+                <div class="btn-text-wrap">
+                    <span class="btn-text-small">GET IT ON</span>
+                    <span class="btn-text-large">Google Play Store</span>
+                </div>
+            </a>
 
-        <!-- Apple App Store -->
-        <a href="#" class="app-store-btn">
-            <svg width="22" height="24" viewBox="0 0 24 24" fill="#111">
-                <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM15.22 4.93C15.9 4.1 16.36 2.95 16.23 1.8C15.24 1.84 14.04 2.46 13.33 3.29C12.7 4.02 12.15 5.2 12.3 6.33C13.41 6.42 14.54 5.76 15.22 4.93Z"/>
-            </svg>
-            <div>
-                <span class="btn-text-small">DOWNLOAD ON THE</span>
-                <span class="btn-text-large">Apple App Store</span>
-            </div>
-        </a>
+            <!-- Apple App Store -->
+            <a href="https://apple.com/app-store/" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Download PosterGali on Apple App Store">
+                <div class="apple-circle-badge">
+                    <svg width="18" height="20" viewBox="0 0 24 24" fill="#ffffff">
+                        <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM15.22 4.93C15.9 4.1 16.36 2.95 16.23 1.8C15.24 1.84 14.04 2.46 13.33 3.29C12.7 4.02 12.15 5.2 12.3 6.33C13.41 6.42 14.54 5.76 15.22 4.93Z"/>
+                    </svg>
+                </div>
+                <div class="btn-text-wrap">
+                    <span class="btn-text-small">DOWNLOAD ON THE</span>
+                    <span class="btn-text-large">Apple App Store</span>
+                </div>
+            </a>
+        </div>
     </div>
 </section>
 
-<!-- WHY POSTERGALI SECTION -->
-<section class="why-section">
+<!-- WHY POSTERGALI SECTION (MATCHING REFERENCE IMAGE 2) -->
+<section class="why-section" id="why-postergali">
     <div class="sub-header-label">Why PosterGali?</div>
     <h2 class="main-section-title">India's Hyperlocal Street Ad Network</h2>
 
     <!-- FOLDER TABBED COMPONENT -->
     <div class="folder-container">
-        <div class="folder-tabs">
-            <button class="folder-tab tab-vendors">Vendors</button>
-            <button class="folder-tab tab-locals">Locals</button>
-            <button class="folder-tab tab-hiring">Hiring</button>
+        <div class="folder-tabs" role="tablist">
+            <button class="folder-tab tab-vendors active" id="tabVendors" role="tab" aria-selected="true" aria-controls="tabContentVendors" onclick="switchFolderTab('vendors')">Vendors</button>
+            <button class="folder-tab tab-locals" id="tabLocals" role="tab" aria-selected="false" aria-controls="tabContentLocals" onclick="switchFolderTab('locals')">Locals</button>
+            <button class="folder-tab tab-hiring" id="tabHiring" role="tab" aria-selected="false" aria-controls="tabContentHiring" onclick="switchFolderTab('hiring')">Hiring</button>
         </div>
 
-        <div class="folder-card">
-            <!-- Market Scene & Phone Holder Illustration -->
+        <div class="folder-card" id="folderCard">
+            <!-- Market Scene & Phone Holder Image -->
             <div class="folder-media-box">
-                <svg width="100%" height="100%" viewBox="0 0 380 200" preserveAspectRatio="xMidYMid slice">
-                    <rect width="380" height="200" fill="#2D1A0D"/>
-                    <path d="M 0,0 L 120,40 L 240,10 L 380,50 L 380,0 Z" fill="#992D1D" opacity="0.8"/>
-                    <path d="M 40,0 L 160,35 L 280,15 L 380,35 L 380,0 Z" fill="#E69526" opacity="0.7"/>
-
-                    <circle cx="90" cy="90" r="18" fill="#F5C29B"/>
-                    <path d="M 70,120 Q 90,105 110,120 L 110,160 L 70,160 Z" fill="#C4351D"/>
-
-                    <circle cx="310" cy="85" r="16" fill="#D99B73"/>
-                    <path d="M 290,110 Q 310,95 330,110 L 330,160 L 290,160 Z" fill="#2E7D32"/>
-
-                    <g transform="translate(110, 20)">
-                        <path d="M 10,140 Q 30,120 50,110 L 60,180 Z" fill="#C4885C"/>
-                        <rect x="30" y="10" width="85" height="165" rx="14" fill="#111111" stroke="#C4351D" stroke-width="2"/>
-                        <rect x="34" y="14" width="77" height="157" rx="10" fill="#FAF8E9"/>
-                        <rect x="34" y="14" width="77" height="22" fill="#C4351D"/>
-                        <text x="40" y="29" fill="#FFF" font-size="9" font-weight="bold" font-family="Impact">PosterGali</text>
-
-                        <rect x="38" y="42" width="69" height="30" rx="4" fill="#3B6B4A"/>
-                        <text x="42" y="54" fill="#FFF" font-size="6" font-weight="bold">Poster Lagao</text>
-                        <text x="42" y="64" fill="#FFF5C2" font-size="5">Dhanda Badhao</text>
-
-                        <image href="poster2.png" x="38" y="78" width="32" height="48" preserveAspectRatio="xMidYMid slice" />
-                        <image href="poster2.png" x="74" y="78" width="33" height="48" preserveAspectRatio="xMidYMid slice" />
-                        <circle cx="72.5" cy="148" r="8" fill="#F5A623" stroke="#111" stroke-width="1"/>
-                        <text x="69.5" y="152" fill="#111" font-size="11" font-weight="bold">+</text>
-                    </g>
-                </svg>
+                <img src="{{ asset('images/whypostergali.png') }}" alt="PosterGali App in Action" class="folder-img">
             </div>
 
-            <div class="folder-content-body">
+            <!-- Tab 1: Vendors Content (Default) -->
+            <div class="folder-content-body tab-content active" id="tabContentVendors" role="tabpanel">
                 <h3>Poster Lagao, Dhanda Badhao</h3>
-                <p>Got an opening, offer, new stock, service or a job to fill? Make a digital poster in under a minute — no design skills, no big budget. Your first posters are on us. Reach every phone in your mohalla for less than a chai.</p>
-                <button class="btn-folder-cta">Post Your First Poster For Free</button>
+                <p>Got an opening, offer, new stock, a service, or a job to fill? Make a digital poster in under a minute — no design skills, no big budget. Your first posters are on us. Reach every phone in your mohalla for less than a chai.</p>
+                <a href="#download" class="btn-folder-cta">Post Your First Poster For Free</a>
+            </div>
+
+            <!-- Tab 2: Locals Content -->
+            <div class="folder-content-body tab-content" id="tabContentLocals" role="tabpanel" style="display: none;">
+                <h3>Apne Mohalle Ki Har Khabar</h3>
+                <p>Discover daily offers, discounts, neighborhood grocery deals, home services, and local community updates directly from verified shops and neighbors in your area.</p>
+                <a href="#download" class="btn-folder-cta">Explore Your Mohalla</a>
+            </div>
+
+            <!-- Tab 3: Hiring Content -->
+            <div class="folder-content-body tab-content" id="tabContentHiring" role="tabpanel" style="display: none;">
+                <h3>Staff Chahiye? Poster Lagao</h3>
+                <p>Hire shop assistants, delivery riders, cooks, helpers, or technicians in hours. Connect directly with local job seekers in your area with zero middlemen and zero commission.</p>
+                <a href="#download" class="btn-folder-cta">Post a Job Poster Free</a>
             </div>
         </div>
     </div>
@@ -219,7 +716,7 @@
 </section>
 
 <!-- WHO IS IT FOR SECTION -->
-<section class="who-section">
+<section class="who-section" id="who-is-it-for">
     <div class="sub-header-label">Who is it for?</div>
     <h2 class="main-section-title">Different People, One Platform</h2>
 
@@ -271,7 +768,7 @@
 </section>
 
 <!-- FIVE PROMISES SECTION -->
-<section class="promises-section">
+<section class="promises-section" id="promises">
     <div class="sub-header-label">Why should people trust it?</div>
     <h2 class="main-section-title">Five Promises, No Exceptions</h2>
 
@@ -309,7 +806,7 @@
 </section>
 
 <!-- HOW IT WORKS (STAMP CAROUSEL) -->
-<section class="how-works-section">
+<section class="how-works-section" id="how-it-works">
     <div class="sub-header-label">How it works?</div>
     <h2 class="main-section-title">Getting started with PosterGali</h2>
     <p>Follow these simple steps to publish your poster in minutes.</p>
@@ -348,7 +845,7 @@
 </section>
 
 <!-- GET IN TOUCH / CONTACT SECTION -->
-<section class="contact-section">
+<section class="contact-section" id="contact">
     <div class="sub-header-label">Want to connect business?</div>
     <h2 class="main-section-title">Let's Talk About Growing Your Local Reach Today</h2>
 
@@ -418,7 +915,7 @@
 </section>
 
 <!-- FAQS SECTION -->
-<section class="faq-section">
+<section class="faq-section" id="faq">
     <div class="faq-header-badge">FAQs</div>
     
     <div class="faq-accordion-box">
@@ -494,39 +991,41 @@
     </div>
 </section>
 
-<!-- FOOTER SECTION -->
-<footer class="footer-section">
+<!-- FOOTER / COMPANY SECTION -->
+<footer class="footer-section" id="company">
     <!-- Hanging Wooden Signboard Logo -->
     <div class="footer-sign-wrap">
-        <svg width="170" height="110" viewBox="0 0 170 110">
-            <!-- Hanging String -->
-            <line x1="85" y1="5" x2="35" y2="35" stroke="#795548" stroke-width="2"/>
-            <line x1="85" y1="5" x2="135" y2="35" stroke="#795548" stroke-width="2"/>
-            <circle cx="85" cy="5" r="4" fill="#5D4037"/>
+        <a href="#hero" style="text-decoration: none; display: inline-block;">
+            <svg width="170" height="110" viewBox="0 0 170 110">
+                <!-- Hanging String -->
+                <line x1="85" y1="5" x2="35" y2="35" stroke="#795548" stroke-width="2"/>
+                <line x1="85" y1="5" x2="135" y2="35" stroke="#795548" stroke-width="2"/>
+                <circle cx="85" cy="5" r="4" fill="#5D4037"/>
 
-            <!-- Wooden Board Frame -->
-            <rect x="15" y="32" width="140" height="70" rx="8" fill="#FFF9E6" stroke="#8D6E63" stroke-width="3"/>
-            <rect x="18" y="35" width="134" height="64" rx="6" fill="none" stroke="#D7CCC8" stroke-width="1.5"/>
+                <!-- Wooden Board Frame -->
+                <rect x="15" y="32" width="140" height="70" rx="8" fill="#FFF9E6" stroke="#8D6E63" stroke-width="3"/>
+                <rect x="18" y="35" width="134" height="64" rx="6" fill="none" stroke="#D7CCC8" stroke-width="1.5"/>
 
-            <!-- Logo Text inside Wooden Signboard -->
-            <g transform="translate(30, 48)">
-                <text x="0" y="24" fill="#C4351D" font-weight="900" font-size="22" font-family="Impact">POSTER</text>
-                <text x="24" y="48" fill="#E88F2A" font-weight="900" font-size="22" font-family="Garamond">गली</text>
-                <circle cx="48" cy="10" r="3" fill="#C4351D"/>
-            </g>
-        </svg>
+                <!-- Logo Text inside Wooden Signboard -->
+                <g transform="translate(30, 48)">
+                    <text x="0" y="24" fill="#C4351D" font-weight="900" font-size="22" font-family="Impact">POSTER</text>
+                    <text x="24" y="48" fill="#E88F2A" font-weight="900" font-size="22" font-family="Garamond">गली</text>
+                    <circle cx="48" cy="10" r="3" fill="#C4351D"/>
+                </g>
+            </svg>
+        </a>
     </div>
 
     <p class="footer-tagline">India's hyperlocal poster platform. Start with your street, reach your whole city.</p>
 
     <div class="follow-title">FOLLOW US</div>
     <div class="social-icons">
-        <a href="#" class="social-btn">f</a>
-        <a href="#" class="social-btn">📷</a>
+        <a href="https://facebook.com/postergali" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Follow PosterGali on Facebook">f</a>
+        <a href="https://instagram.com/postergali" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Follow PosterGali on Instagram">📷</a>
     </div>
 
     <div class="app-store-btns" style="margin-bottom: 25px;">
-        <a href="#" class="app-store-btn" style="min-width: 140px;">
+        <a href="#download" class="app-store-btn" style="min-width: 140px;" aria-label="Get on Google Play">
             <svg width="18" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
                 <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
@@ -537,7 +1036,7 @@
             </div>
         </a>
 
-        <a href="#" class="app-store-btn" style="min-width: 140px;">
+        <a href="#download" class="app-store-btn" style="min-width: 140px;" aria-label="Download on App Store">
             <svg width="18" height="20" viewBox="0 0 24 24" fill="#111">
                 <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM15.22 4.93C15.9 4.1 16.36 2.95 16.23 1.8C15.24 1.84 14.04 2.46 13.33 3.29C12.7 4.02 12.15 5.2 12.3 6.33C13.41 6.42 14.54 5.76 15.22 4.93Z"/>
             </svg>
@@ -550,14 +1049,36 @@
 
     <!-- Bottom Golden Bar -->
     <div class="footer-bottom-bar">
-        <div>© 2024 PosterGali. All rights reserved.</div>
-        <div><a href="#">Privacy Policy</a></div>
-        <div><a href="#">Terms of Service</a></div>
+        <div>© 2026 PosterGali. All rights reserved.</div>
+        <div><a href="{{ url('/privacy-policy') }}">Privacy Policy</a></div>
+        <div><a href="{{ url('/privacy-policy') }}">Terms of Service</a></div>
     </div>
 </footer>
 
+<!-- MOBILE NAV DRAWER -->
+<div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="drawer-panel">
+        <div class="drawer-header">
+            <div class="logo-badge" style="transform: scale(0.9); transform-origin: left center;">
+                <span>Poster</span>
+                <span>गली</span>
+            </div>
+            <button class="drawer-close" id="drawerClose" aria-label="Close navigation menu">&times;</button>
+        </div>
+        <div class="drawer-links">
+            <a href="#hero">Home</a>
+            <a href="#why-postergali">Features</a>
+            <a href="#faq">FAQ</a>
+            <a href="#company">Company</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <a href="#download" class="drawer-download-btn">Download Now</a>
+    </div>
+</div>
+
 <script>
-    // Interactive FAQ Accordion
+    // ── Interactive FAQ Accordion ──
     document.querySelectorAll('.faq-item').forEach(item => {
         item.addEventListener('click', () => {
             const isActive = item.classList.contains('active');
@@ -565,6 +1086,82 @@
             if (!isActive) {
                 item.classList.add('active');
             }
+        });
+    });
+
+    // ── Folder Tab Switcher (Vendors / Locals / Hiring) ──
+    function switchFolderTab(tabName) {
+        const tabs = {
+            vendors: {
+                btn: document.getElementById('tabVendors'),
+                content: document.getElementById('tabContentVendors')
+            },
+            locals: {
+                btn: document.getElementById('tabLocals'),
+                content: document.getElementById('tabContentLocals')
+            },
+            hiring: {
+                btn: document.getElementById('tabHiring'),
+                content: document.getElementById('tabContentHiring')
+            }
+        };
+
+        ['vendors', 'locals', 'hiring'].forEach(key => {
+            if (tabs[key] && tabs[key].btn && tabs[key].content) {
+                if (key === tabName) {
+                    tabs[key].btn.classList.add('active');
+                    tabs[key].btn.setAttribute('aria-selected', 'true');
+                    tabs[key].content.style.display = 'block';
+                } else {
+                    tabs[key].btn.classList.remove('active');
+                    tabs[key].btn.setAttribute('aria-selected', 'false');
+                    tabs[key].content.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // ── Mobile Navigation Drawer ──
+    const drawer = document.getElementById('mobileNavDrawer');
+    const toggle = document.getElementById('menuToggle');
+    const overlay = document.getElementById('drawerOverlay');
+    const closeBtn = document.getElementById('drawerClose');
+
+    function openDrawer() {
+        if (drawer) {
+            drawer.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeDrawer() {
+        if (drawer) {
+            drawer.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    }
+
+    if (toggle) toggle.addEventListener('click', openDrawer);
+    if (overlay) overlay.addEventListener('click', closeDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+    // Close drawer when any link inside it is clicked
+    document.querySelectorAll('#mobileNavDrawer a').forEach(link => {
+        link.addEventListener('click', closeDrawer);
+    });
+
+    // ── Smooth Scroll with Header Offset ──
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const targetId = this.getAttribute('href');
+            if (!targetId || targetId === '#') return;
+            const target = document.querySelector(targetId);
+            if (!target) return;
+            e.preventDefault();
+            const navbar = document.querySelector('.navbar');
+            const offset = navbar ? navbar.offsetHeight + 10 : 80;
+            const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+            window.scrollTo({ top, behavior: 'smooth' });
         });
     });
 </script>
