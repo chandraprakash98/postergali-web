@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
-
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
 
 <style>
@@ -40,14 +40,14 @@
     }
 
     .menu-toggle:hover {
-        background: rgba(196, 53, 29, 0.08);
+        background: rgba(var(--color-primary-terracotta-700-rgb), 0.08);
     }
 
     .menu-toggle span {
         display: block;
         width: 24px;
         height: 3px;
-        background: #C4351D;
+        background: var(--color-primary-terracotta-700);
         border-radius: 3px;
         transition: transform 0.25s ease, opacity 0.25s ease;
     }
@@ -115,7 +115,7 @@
 
     .drawer-close:hover {
         background: rgba(0, 0, 0, 0.06);
-        color: #C4351D;
+        color: var(--color-primary-terracotta-700);
     }
 
     .drawer-links {
@@ -138,13 +138,13 @@
 
     .drawer-links a:hover,
     .drawer-links a:active {
-        background: rgba(196, 53, 29, 0.08);
-        color: #C4351D;
+        background: rgba(var(--color-primary-terracotta-700-rgb), 0.08);
+        color: var(--color-primary-terracotta-700);
     }
 
     .drawer-download-btn {
         margin-top: auto;
-        background: #C4351D;
+        background: var(--color-primary-terracotta-700);
         color: #ffffff !important;
         text-align: center;
         padding: 14px 22px;
@@ -153,13 +153,14 @@
         font-weight: 800;
         font-size: 15px;
         text-decoration: none;
-        box-shadow: 0 4px 14px rgba(196, 53, 29, 0.35);
+        box-shadow: 0 4px 14px rgba(var(--color-primary-terracotta-700-rgb), 0.35);
         display: block;
         transition: background 0.2s, transform 0.15s;
     }
 
     .drawer-download-btn:hover {
-        background: #A82813;
+        background: var(--color-primary-terracotta-700);
+        filter: brightness(0.9);
         transform: translateY(-1px);
     }
 
@@ -204,7 +205,7 @@
 
     .app-crease-badge {
         display: inline-block !important;
-        background: #9E3324 !important;
+        background: var(--color-primary-terracotta-700) !important;
         color: #ffffff !important;
         font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
         font-size: 13.5px !important;
@@ -513,28 +514,12 @@
 
 <body>
 
-<div class="company-top-bar" id="company-top">
-    <div class="company-top-container">
-        <div class="company-line">
-            <strong>PosterGali</strong> is a product of
-            <strong>Unitygrid Private Limited</strong>
-        </div>
-        <div class="company-subline">
-            PosterGali is owned, operated and developed by
-            <strong>Unitygrid Private Limited</strong>,
-            an Indian technology company.
-        </div>
-    </div>
-</div>
 
 <!-- NAVBAR -->
 <nav class="navbar" id="navbar">
     <div class="logo-wrap">
         <a href="#hero" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 8px;">
-            <div class="logo-badge">
-                <span>Poster</span>
-                <span>गली</span>
-            </div>
+            <img class="logo-image" src="{{ asset('images/logo.png') }}" alt="PosterGali">
         </a>
     </div>
 
@@ -564,7 +549,7 @@
     <h1>Your Street, your posters<br>now on your phone</h1>
 
     <p>
-        Whether it's hiring, a promotion, or any event — with PosterGali,<br>your message reaches straight to the walls of your city
+        Whether it's hiring, a promotion, or any event — with PosterGali, your message reaches straight to the walls of your city
     </p>
 
     <!-- DESKTOP CTA BUTTON ONLY -->
@@ -819,10 +804,10 @@
             <path d="M 160,130 Q 130,80 115,70 L 120,170 Z" fill="#C4885C"/>
             
             <!-- Phone mockup -->
-            <rect x="52" y="10" width="76" height="145" rx="14" fill="#111" stroke="#C4351D" stroke-width="2"/>
+            <rect x="52" y="10" width="76" height="145" rx="14" fill="#111" stroke="var(--color-primary-terracotta-700)" stroke-width="2"/>
             <rect x="56" y="14" width="68" height="137" rx="10" fill="#FAF8E9"/>
             
-            <rect x="56" y="14" width="68" height="20" fill="#C4351D"/>
+            <rect x="56" y="14" width="68" height="20" fill="var(--color-primary-terracotta-700)"/>
             <rect x="60" y="40" width="60" height="25" rx="4" fill="#3B6B4A"/>
             <image href="poster2.png" x="60" y="70" width="28" height="40" preserveAspectRatio="xMidYMid slice" />
             <image href="poster2.png" x="92" y="70" width="28" height="40" preserveAspectRatio="xMidYMid slice" />
@@ -1008,9 +993,9 @@
 
                 <!-- Logo Text inside Wooden Signboard -->
                 <g transform="translate(30, 48)">
-                    <text x="0" y="24" fill="#C4351D" font-weight="900" font-size="22" font-family="Impact">POSTER</text>
+                    <text x="0" y="24" fill="var(--color-primary-terracotta-700)" font-weight="900" font-size="22" font-family="Impact">POSTER</text>
                     <text x="24" y="48" fill="#E88F2A" font-weight="900" font-size="22" font-family="Garamond">गली</text>
-                    <circle cx="48" cy="10" r="3" fill="#C4351D"/>
+                    <circle cx="48" cy="10" r="3" fill="var(--color-primary-terracotta-700)"/>
                 </g>
             </svg>
         </a>
@@ -1060,10 +1045,7 @@
     <div class="drawer-overlay" id="drawerOverlay"></div>
     <div class="drawer-panel">
         <div class="drawer-header">
-            <div class="logo-badge" style="transform: scale(0.9); transform-origin: left center;">
-                <span>Poster</span>
-                <span>गली</span>
-            </div>
+            <img class="logo-image" src="{{ asset('images/logo.png') }}" alt="PosterGali">
             <button class="drawer-close" id="drawerClose" aria-label="Close navigation menu">&times;</button>
         </div>
         <div class="drawer-links">
