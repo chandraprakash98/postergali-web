@@ -1208,14 +1208,16 @@ body {
 /* ================= APP DOWNLOAD / CREASED PAPER SECTION ================= */
 
 .app-crease-section {
-
-    background: linear-gradient(90deg, #ffa600 0%, #f9a60c 100%);
+    background-image: url('/images/downloadbg.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
     box-shadow: 0 14px 28px rgba(95, 44, 9, 0.18);
     text-align: left;
     position: relative;
     overflow: hidden;
     max-width: 100%;
-    margin: 40px auto;
+    margin-top: 30px;
 }
 
 .app-crease-section::before {
@@ -1257,7 +1259,7 @@ body {
 .app-crease-section p {
     position: relative;
     z-index: 1;
-    font-size: 16px;
+    font-size: 17px;
     font-family: "Clash Display", sans-serif;
     color: #222;
     max-width: 300px;
@@ -1282,7 +1284,7 @@ body {
     gap: 10px;
     background: #ffffff;
     padding: 10px 12px;
-    border-radius: 12px;
+    border-radius: 8px;
     text-decoration: none;
     color: #111;
     box-shadow: 0 4px 0 rgba(17, 17, 17, 0.9);
@@ -1346,7 +1348,7 @@ body {
 /* ================= WHY POSTERGALI SECTION ================= */
 
 .why-section {
-    padding: 5px 16px 25px;
+   
     background: #FAF8E9;
 }
 
@@ -1378,19 +1380,23 @@ body {
 
 .folder-tabs {
     display: flex;
-    gap: 4px;
-    padding-left: 8px;
+    gap: 0;
+    padding-left: 0;
     margin-bottom: -1px;
 }
 
 .folder-tab {
-    padding: 8px 16px;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
+    padding: 5px 20px 6px;
+    border-radius: 0;
     font-size: 12px;
     font-weight: 900;
     border: none;
     cursor: pointer;
+    clip-path: polygon(9% 0, 88% 0, 100% 100%, 0 100%);
+    margin-right: 0;
+    min-width: 108px;
+    position: relative;
+    z-index: 1;
 }
 
 .folder-tab.tab-vendors {
@@ -1409,9 +1415,17 @@ body {
     color: #fff;
 }
 
+.folder-tab[aria-selected="false"] {
+    opacity: 0.72;
+}
+
+.folder-tab[aria-selected="true"] {
+    opacity: 1;
+}
+
 .folder-card {
     background: #F8E3B0;
-    border-radius: 16px;
+    border-radius: 0 16px 16px 16px;
     border-top-left-radius: 0px;
     padding: 14px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -2406,7 +2420,7 @@ html {
 
     /* ── WHY POSTERGALI SECTION (MATCHING REFERENCE IMAGE 2) ── */
     .why-section {
-        padding: 55px 20px 65px !important;
+        padding: 25px 20px 65px !important;
         background: #FAF8E9 !important;
         text-align: center !important;
         position: relative !important;
@@ -2440,8 +2454,8 @@ html {
 
     .folder-tabs {
         display: flex !important;
-        gap: 5px !important;
-        padding-left: 12px !important;
+        gap: 0 !important;
+        padding-left: 0 !important;
         margin-bottom: -1px !important;
         position: relative !important;
         z-index: 2 !important;
@@ -2451,11 +2465,15 @@ html {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 13px !important;
         font-weight: 700 !important;
-        padding: 9px 22px !important;
-        border-top-left-radius: 14px !important;
-        border-top-right-radius: 14px !important;
+        padding: 5px 20px 6px !important;
+        border-radius: 0 !important;
         border: none !important;
         cursor: pointer !important;
+        clip-path: polygon(9% 0, 88% 0, 100% 100%, 0 100%) !important;
+        margin-right: 0 !important;
+        min-width: 108px !important;
+        position: relative !important;
+        z-index: 1 !important;
         transition: all 0.2s ease !important;
         outline: none !important;
     }
@@ -2475,6 +2493,14 @@ html {
         color: #261B17 !important;
     }
 
+    .folder-tab[aria-selected="false"] {
+        opacity: 0.72 !important;
+    }
+
+    .folder-tab[aria-selected="true"] {
+        opacity: 1 !important;
+    }
+
     .folder-tab.active {
         background: #F6CB7B !important;
         color: #1F1710 !important;
@@ -2484,8 +2510,7 @@ html {
 
     .folder-card {
         background: #F6CB7B !important;
-        border-radius: 22px !important;
-        border-top-left-radius: 0px !important;
+        border-radius: 0 22px 22px 22px !important;
         padding: 16px !important;
         box-shadow: 0 12px 30px rgba(184, 128, 38, 0.22), 0 4px 10px rgba(0, 0, 0, 0.06) !important;
         text-align: left !important;

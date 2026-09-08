@@ -175,7 +175,7 @@
         <div class="folder-card" id="folderCard">
             <!-- Market Scene & Phone Holder Image -->
             <div class="folder-media-box">
-                <img src="{{ asset('images/whypostergali.png') }}" alt="PosterGali App in Action" class="folder-img">
+                <img src="{{ asset('images/tb1.png') }}" alt="PosterGali vendors view" class="folder-img" id="folderImage">
             </div>
 
             <!-- Tab 1: Vendors Content (Default) -->
@@ -590,27 +590,34 @@
         const tabs = {
             vendors: {
                 btn: document.getElementById('tabVendors'),
-                content: document.getElementById('tabContentVendors')
+                content: document.getElementById('tabContentVendors'),
+                image: '{{ asset('images/tb1.png') }}'
             },
             locals: {
                 btn: document.getElementById('tabLocals'),
-                content: document.getElementById('tabContentLocals')
+                content: document.getElementById('tabContentLocals'),
+                image: '{{ asset('images/tb2.png') }}'
             },
             hiring: {
                 btn: document.getElementById('tabHiring'),
-                content: document.getElementById('tabContentHiring')
+                content: document.getElementById('tabContentHiring'),
+                image: '{{ asset('images/tb3.png') }}'
             }
         };
 
         ['vendors', 'locals', 'hiring'].forEach(key => {
             if (tabs[key] && tabs[key].btn && tabs[key].content) {
                 if (key === tabName) {
+                    document.getElementById('folderImage').src = tabs[key].image;
+                    document.getElementById('folderImage').alt = `${tabName} PosterGali view`;
                     tabs[key].btn.classList.add('active');
                     tabs[key].btn.setAttribute('aria-selected', 'true');
+                    tabs[key].content.classList.add('active');
                     tabs[key].content.style.display = 'block';
                 } else {
                     tabs[key].btn.classList.remove('active');
                     tabs[key].btn.setAttribute('aria-selected', 'false');
+                    tabs[key].content.classList.remove('active');
                     tabs[key].content.style.display = 'none';
                 }
             }
