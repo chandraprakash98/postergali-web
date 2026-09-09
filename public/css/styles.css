@@ -1493,20 +1493,66 @@ body {
 /* ================= WHO IS IT FOR SECTION ================= */
 
 .who-section {
-    padding: 25px 16px 30px;
+   
     background: #FAF8E9;
 }
 
 .red-hero-card {
-    max-width: 400px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: none;
+   
     background: var(--color-primary-terracotta-700);
-    border-radius: 24px;
-    padding: 24px 16px 18px;
+    border-radius: 14px;
+    padding: 18px 10px 14px;
     box-shadow: 0 12px 30px rgba(var(--color-primary-terracotta-700-rgb), 0.28);
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.persona-carousel {
+    width: 100%;
+    position: relative;
+    outline: none;
+}
+
+.persona-slides {
+    width: 100%;
+    height: clamp(270px, 108vw, 420px);
+    position: relative;
+}
+
+.persona-slide {
+    position: absolute;
+    width: min(62%, 220px);
+    height: auto;
+    left: 50%;
+    top: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) scale(0.9) translateY(18px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.persona-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1) translateY(0);
+    z-index: 3;
+}
+
+.persona-slide.next,
+.persona-slide.previous {
+    opacity: 0.45;
+    z-index: 2;
+}
+
+.persona-slide.next {
+    transform: translateX(-38%) scale(0.86) translateY(22px);
+}
+
+.persona-slide.previous {
+    transform: translateX(-62%) scale(0.86) translateY(22px);
 }
 
 .raghav-phone-frame {
@@ -1626,7 +1672,10 @@ body {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--color-primary-terracotta-700);
+    background: rgba(255, 255, 255, 0.45);
+    border: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
 .dot-item.active {
@@ -1638,6 +1687,14 @@ body {
 .promises-section {
     padding: 30px 16px 40px;
     background: #FAF8E9;
+}
+
+.promises-section .sub-header-label {
+    font-size: 12px;
+}
+
+.promises-section .main-section-title {
+    font-size: clamp(14px, 4.2vw, 24px);
 }
 
 .stack-cards-wrapper {
@@ -2420,7 +2477,7 @@ html {
 
     /* ── WHY POSTERGALI SECTION (MATCHING REFERENCE IMAGE 2) ── */
     .why-section {
-        padding: 25px 20px 65px !important;
+        padding: 25px 20px 25px !important;
         background: #FAF8E9 !important;
         text-align: center !important;
         position: relative !important;
@@ -2428,7 +2485,7 @@ html {
 
     .why-section .sub-header-label {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 14px !important;
+        font-size: 11px !important;
         font-weight: 700 !important;
         color: #222222 !important;
         margin-bottom: 6px !important;

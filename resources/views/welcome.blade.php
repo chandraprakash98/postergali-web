@@ -16,6 +16,21 @@
 <body>
 
 
+<div class="company-top-bar">
+    <div class="company-top-container">
+        <div class="company-line">
+            <strong>PosterGali</strong> is a product of
+            <strong>Unitygrid Private Limited</strong>
+        </div>
+        <div class="company-subline">
+            PosterGali is owned, operated and developed by
+            <strong>Unitygrid Private Limited</strong>,
+            an Indian technology company.
+        </div>
+    </div>
+</div>
+
+
 <!-- NAVBAR -->
 <nav class="navbar" id="navbar">
     <div class="logo-wrap">
@@ -220,48 +235,20 @@
     <h2 class="main-section-title">Different People, One Platform</h2>
 
     <div class="red-hero-card">
-        <div class="raghav-phone-frame">
-            <div class="phone-notch"></div>
-            
-            <div class="raghav-illustration">
-                <svg width="100%" height="100%" viewBox="0 0 180 120" preserveAspectRatio="xMidYMid meet">
-                    <rect width="180" height="120" fill="#F5EFE0"/>
-                    <circle cx="90" cy="42" r="14" fill="#3D2314"/>
-                    <circle cx="90" cy="44" r="11" fill="#F0C5A3"/>
-                    <path d="M 74,58 Q 90,54 106,58 L 108,98 L 72,98 Z" fill="#FFFFFF" stroke="#D7CCC8" stroke-width="1"/>
-                    <path d="M 74,98 L 88,98 L 88,120 L 74,120 Z" fill="#A1887F"/>
-                    <path d="M 92,98 L 106,98 L 106,120 L 92,120 Z" fill="#A1887F"/>
-                    <rect x="100" y="70" width="10" height="18" rx="2" fill="#111"/>
-                </svg>
-            </div>
-
-            <div class="raghav-name-tag">
-                <strong>Raghav</strong>
-                <span>24, Gwalior</span>
-            </div>
-
-            <div class="box-challenge">
-                <div class="icon">⚠️</div>
-                <div class="box-text">
-                    <b>CHALLENGE:</b>
-                    Spent ₹15,000/month on printing posters.
-                </div>
-            </div>
-
-            <div class="box-solution">
-                <div class="icon">✔️</div>
-                <div class="box-text">
-                    <b>WITH POSTERGALI:</b>
-                    Posts his shop's products from home. ₹0 on printing.
-                </div>
+        <div class="persona-carousel" id="personaCarousel" tabindex="0" aria-label="PosterGali audience examples">
+            <div class="persona-slides">
+                <img class="persona-slide active" src="{{ asset('images/mb1.png') }}" alt="Raghav, a local job seeker">
+                <img class="persona-slide" src="{{ asset('images/mb2.png') }}" alt="Sunita Tai, a home tiffin service provider">
+                <img class="persona-slide" src="{{ asset('images/mb3.png') }}" alt="Ramesh Bhai, a mall retailer">
+                <img class="persona-slide" src="{{ asset('images/mb4.png') }}" alt="Shrey, a local deal seeker">
             </div>
         </div>
 
-        <div class="dots-indicator">
-            <span class="dot-item active"></span>
-            <span class="dot-item"></span>
-            <span class="dot-item"></span>
-            <span class="dot-item"></span>
+        <div class="dots-indicator" role="tablist" aria-label="Audience examples">
+            <button class="dot-item active" type="button" role="tab" aria-label="Show example 1" aria-selected="true"></button>
+            <button class="dot-item" type="button" role="tab" aria-label="Show example 2" aria-selected="false"></button>
+            <button class="dot-item" type="button" role="tab" aria-label="Show example 3" aria-selected="false"></button>
+            <button class="dot-item" type="button" role="tab" aria-label="Show example 4" aria-selected="false"></button>
         </div>
     </div>
 </section>
@@ -269,7 +256,7 @@
 <!-- FIVE PROMISES SECTION -->
 <section class="promises-section" id="promises">
     <div class="sub-header-label">Why should people trust it?</div>
-    <h2 class="main-section-title">Five Promises, No Exceptions</h2>
+    <p class="main-section-title">Five Promises, No Exceptions</p>
 
     <div class="stack-cards-wrapper">
         <div class="stack-card card-1">
@@ -622,6 +609,45 @@
                 }
             }
         });
+    }
+
+    // ── Audience Card Carousel ──
+    const personaCarousel = document.getElementById('personaCarousel');
+    const personaSlides = personaCarousel ? Array.from(personaCarousel.querySelectorAll('.persona-slide')) : [];
+    const personaDots = personaCarousel ? Array.from(document.querySelectorAll('.dot-item')) : [];
+    let personaIndex = 0;
+    let personaTouchStart = 0;
+
+    function showPersona(index) {
+        if (!personaSlides.length) return;
+        personaIndex = (index + personaSlides.length) % personaSlides.length;
+        personaSlides.forEach((slide, slideIndex) => {
+            slide.classList.toggle('active', slideIndex === personaIndex);
+            slide.classList.toggle('next', slideIndex === (personaIndex + 1) % personaSlides.length);
+            slide.classList.toggle('previous', slideIndex === (personaIndex - 1 + personaSlides.length) % personaSlides.length);
+        });
+        personaDots.forEach((dot, dotIndex) => {
+            const isActive = dotIndex === personaIndex;
+            dot.classList.toggle('active', isActive);
+            dot.setAttribute('aria-selected', String(isActive));
+        });
+    }
+
+    if (personaCarousel) {
+        personaCarousel.addEventListener('keydown', event => {
+            if (event.key === 'ArrowLeft') showPersona(personaIndex - 1);
+            if (event.key === 'ArrowRight') showPersona(personaIndex + 1);
+        });
+        personaCarousel.addEventListener('touchstart', event => {
+            personaTouchStart = event.changedTouches[0].clientX;
+        }, { passive: true });
+        personaCarousel.addEventListener('touchend', event => {
+            const distance = event.changedTouches[0].clientX - personaTouchStart;
+            if (Math.abs(distance) > 40) showPersona(personaIndex + (distance < 0 ? 1 : -1));
+        }, { passive: true });
+        personaDots.forEach((dot, dotIndex) => dot.addEventListener('click', () => showPersona(dotIndex)));
+        showPersona(0);
+        setInterval(() => showPersona(personaIndex + 1), 5000);
     }
 
     // ── Mobile Navigation Drawer ──
