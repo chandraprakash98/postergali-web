@@ -19,11 +19,12 @@ class PosterMilestoneNotificationService
      *
      * @param Job|Offer $poster
      * @param string $type 'job' or 'offer'
+     * @param bool $dryRun
      * @return int|null The milestone achieved (e.g. 100, 200, 300) or null if none
      */
-    public function checkAndNotifyViewMilestone(Job|Offer $poster, string $type = 'job'): ?int
+    public function checkAndNotifyViewMilestone(Job|Offer $poster, string $type = 'job', bool $dryRun = false): ?int
     {
-        $thresholds = (array) config('posters.view_milestones.thresholds', [100, 200, 300, 400, 500]);
+        $thresholds = (array) config('posters.view_milestones.thresholds', [100, 200, 300, 400, 500, 1000]);
         sort($thresholds, SORT_NUMERIC);
 
         $currentViews = (int) $poster->view_count;
@@ -70,22 +71,83 @@ class PosterMilestoneNotificationService
         $combinedBody = $resolvedBodyEn . "\n" . $resolvedBodyHi;
 
         if ($token) {
-            $this->firebaseService->sendToToken($token, $title, $combinedBody, [
-                'type' => 'view_milestone',
-                'item_type' => $type,
-                'item_id' => $poster->id,
-                'business_name' => $poster->business_name,
-                'milestone_views' => (string) $achievedMilestone,
-                'current_views' => (string) $currentViews,
-            ]);
-        } else {
-            Log::info("Milestone {$achievedMilestone} views reached for {$type} #{$poster->id}, but no FCM token found.");
+            if (!$dryRun) {
+                $this->firebaseService->sendToToken($token, $title, $combinedBody, [
+                    'type' => 'view_milestone',
+                    'item_type' => $type,
+                    'item_id' => $poster->id,
+                    'business_name' => $poster->business_name,
+                    'milestone_views' => (string) $achievedMilestone,
+                    'current_views' => (string) $currentViews,
+                ]);
+
+                // Mark milestone as notified only when successfully dispatched
+                $poster->last_view_milestone_notified = $achievedMilestone;
+                $poster->save();
+            }
+
+            return $achievedMilestone;
         }
 
-        // Mark milestone as notified
-        $poster->last_view_milestone_notified = $achievedMilestone;
-        $poster->save();
+        Log::info("Milestone {$achievedMilestone} views reached for {$type} #{$poster->id}, but no FCM token found.");
+        return null;
+    }
 
-        return $achievedMilestone;
+    /**
+     * Check all posters in database that have pending view milestones
+     * (e.g. view_count >= milestone and view_count > last_view_milestone_notified).
+     *
+     * @param bool $dryRun
+     * @return array
+     */
+    public function checkAllPendingMilestones(bool $dryRun = false): array
+    {
+        $thresholds = (array) config('posters.view_milestones.thresholds', [100, 200, 300, 400, 500, 1000]);
+        sort($thresholds, SORT_NUMERIC);
+        $minThreshold = !empty($thresholds) ? (int) min($thresholds) : 100;
+
+        $jobs = Job::where('view_count', '>=', $minThreshold)
+            ->where(function ($q) use ($minThreshold) {
+                $q->whereNull('last_view_milestone_notified')
+                  ->orWhere('last_view_milestone_notified', '<', $minThreshold)
+                  ->orWhereColumn('view_count', '>', 'last_view_milestone_notified');
+            })
+            ->get();
+
+        $offers = Offer::where('view_count', '>=', $minThreshold)
+            ->where(function ($q) use ($minThreshold) {
+                $q->whereNull('last_view_milestone_notified')
+                  ->orWhere('last_view_milestone_notified', '<', $minThreshold)
+                  ->orWhereColumn('view_count', '>', 'last_view_milestone_notified');
+            })
+            ->get();
+
+        $sentCount = 0;
+        $skippedCount = 0;
+
+        foreach ($jobs as $job) {
+            $milestone = $this->checkAndNotifyViewMilestone($job, 'job', $dryRun);
+            if ($milestone) {
+                $sentCount++;
+            } else {
+                $skippedCount++;
+            }
+        }
+
+        foreach ($offers as $offer) {
+            $milestone = $this->checkAndNotifyViewMilestone($offer, 'offer', $dryRun);
+            if ($milestone) {
+                $sentCount++;
+            } else {
+                $skippedCount++;
+            }
+        }
+
+        return [
+            'milestones_sent'    => $sentCount,
+            'milestones_skipped' => $skippedCount,
+            'jobs_checked'       => $jobs->count(),
+            'offers_checked'     => $offers->count(),
+        ];
     }
 }

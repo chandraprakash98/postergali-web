@@ -75,18 +75,23 @@ class AdminAuthController extends Controller
         ], 201);
     }
 
+    private function renderDashboard(string $active, array $data = [])
+    {
+        return view('admin.dashboard', array_merge([
+            'active'      => $active,
+            'stats'       => $this->getStats(),
+            'batchStatus' => $this->getBatchStatus(),
+        ], $data));
+    }
+
     public function dashboard()
     {
-        $stats = $this->getStats();
-        $allAds = $this->getAllAds();
-
-        return view('admin.dashboard', ['active' => 'all', 'allAds' => $allAds, 'stats' => $stats]);
+        return $this->renderDashboard('all', ['allAds' => $this->getAllAds()]);
     }
 
     public function allAds()
     {
-        $allAds = $this->getAllAds();
-        return view('admin.dashboard', ['active' => 'all', 'allAds' => $allAds, 'stats' => $this->getStats()]);
+        return $this->renderDashboard('all', ['allAds' => $this->getAllAds()]);
     }
 
     public function showAd(string $type, int $id)
@@ -229,7 +234,7 @@ class AdminAuthController extends Controller
 
         $allAds = $jobs->concat($offers)->sortByDesc('created_at')->values();
 
-        return view('admin.dashboard', ['active' => 'pending', 'allAds' => $allAds, 'stats' => $this->getStats()]);
+        return $this->renderDashboard('pending', ['allAds' => $allAds]);
     }
 
     public function liveAds()
@@ -260,7 +265,7 @@ class AdminAuthController extends Controller
 
         $allAds = $jobs->concat($offers)->sortByDesc('created_at')->values();
 
-        return view('admin.dashboard', ['active' => 'live', 'allAds' => $allAds, 'stats' => $this->getStats()]);
+        return $this->renderDashboard('live', ['allAds' => $allAds]);
     }
 
     public function expiredAds()
@@ -291,13 +296,13 @@ class AdminAuthController extends Controller
 
         $allAds = $jobs->concat($offers)->sortByDesc('created_at')->values();
 
-        return view('admin.dashboard', ['active' => 'expired', 'allAds' => $allAds, 'stats' => $this->getStats()]);
+        return $this->renderDashboard('expired', ['allAds' => $allAds]);
     }
 
     public function pricingInfo()
     {
         $plans = Plan::orderBy('price')->get();
-        return view('admin.dashboard', ['active' => 'pricing', 'plans' => $plans, 'stats' => $this->getStats()]);
+        return $this->renderDashboard('pricing', ['plans' => $plans]);
     }
 
     public function createPlan()
@@ -339,7 +344,7 @@ class AdminAuthController extends Controller
     public function referrals()
     {
         $referrals = Referral::orderBy('created_at', 'desc')->get();
-        return view('admin.dashboard', ['active' => 'referrals', 'referrals' => $referrals, 'stats' => $this->getStats()]);
+        return $this->renderDashboard('referrals', ['referrals' => $referrals]);
     }
 
     private function getAllAds()
@@ -453,44 +458,83 @@ class AdminAuthController extends Controller
         return $approvedAt->copy()->addDay();
     }
 
-    public function batchMonitor()
+    private function getBatchStatus(): array
     {
         $enabled     = (bool) config('posters.expiry_notification.enabled', true);
         $schedule    = config('posters.expiry_notification.schedule', '*/2 * * * *');
         $windowHours = (int) config('posters.expiry_notification.window_hours', 24);
 
-        $totalRuns         = BatchRunLog::count();
-        $lastRun           = BatchRunLog::latest('ran_at')->first();
-        $totalNotifications= BatchRunLog::sum('notifications_sent');
-        $totalSkipped      = BatchRunLog::sum('skipped_no_token');
-        $recentRuns        = BatchRunLog::latest('ran_at')->limit(50)->get();
+        $totalRuns          = BatchRunLog::count();
+        $lastRun            = BatchRunLog::latest('ran_at')->first();
+        $totalNotifications = (int) BatchRunLog::sum('notifications_sent');
+        $totalSkipped       = (int) BatchRunLog::sum('skipped_no_token');
 
-        // Compute next run from cron expression (simple approximation)
-        $nextRun = null;
-        try {
-            $parts = explode(' ', trim($schedule));
-            if (count($parts) === 5 && preg_match('/^\*\/(\d+)$/', $parts[0], $m)) {
-                $intervalMinutes = (int) $m[1];
-                $now = now();
-                $minutesPast = $now->minute % $intervalMinutes;
-                $minutesUntilNext = $minutesPast === 0 ? $intervalMinutes : ($intervalMinutes - $minutesPast);
-                $nextRun = $now->copy()->addMinutes($minutesUntilNext)->seconds(0);
-            }
-        } catch (\Throwable) {}
+        // Step minutes from cron (default every 2 minutes)
+        $stepMinutes = 2;
+        if (preg_match('/^\*\/(\d+)/', trim($schedule), $matches)) {
+            $stepMinutes = max(1, (int) $matches[1]);
+        } elseif (str_starts_with(trim($schedule), '* * * * *')) {
+            $stepMinutes = 1;
+        }
 
-        return view('admin.batch-monitor', [
-            'active'             => 'batch',
-            'enabled'            => $enabled,
-            'schedule'           => $schedule,
-            'windowHours'        => $windowHours,
-            'totalRuns'          => $totalRuns,
-            'lastRun'            => $lastRun,
-            'totalNotifications' => $totalNotifications,
-            'totalSkipped'       => $totalSkipped,
-            'recentRuns'         => $recentRuns,
-            'nextRun'            => $nextRun,
-            'stats'              => $this->getStats(),
-        ]);
+        $nowIst = Carbon::now('Asia/Kolkata');
+        $currentMinute = (int) $nowIst->minute;
+        $remainder = $currentMinute % $stepMinutes;
+        $minutesToAdd = $stepMinutes - $remainder;
+        if ($minutesToAdd === 0) {
+            $minutesToAdd = $stepMinutes;
+        }
+        $nextRunIst = $nowIst->copy()->addMinutes($minutesToAdd)->second(0);
+
+        // Convert lastRun ran_at to India Timezone (Asia/Kolkata)
+        $lastRunIst = $lastRun && $lastRun->ran_at
+            ? $lastRun->ran_at->copy()->timezone('Asia/Kolkata')
+            : null;
+
+        return [
+            'enabled'              => $enabled,
+            'schedule'             => $schedule,
+            'windowHours'          => $windowHours,
+            'stepMinutes'          => $stepMinutes,
+            'totalRuns'            => $totalRuns,
+            'totalNotifications'   => $totalNotifications,
+            'totalSkipped'         => $totalSkipped,
+            'lastRun'              => $lastRun,
+            'lastRunIst'           => $lastRunIst,
+            'lastRunFormatted'     => $lastRunIst ? $lastRunIst->format('d M Y, h:i:s A') . ' IST' : 'No runs yet',
+            'lastRunDate'          => $lastRunIst ? $lastRunIst->format('d M Y') : '—',
+            'lastRunTimeOnly'      => $lastRunIst ? $lastRunIst->format('h:i:s A') . ' IST' : 'Never',
+            'lastRunHuman'         => $lastRun && $lastRun->ran_at ? $lastRun->ran_at->diffForHumans() : 'Never',
+            'lastRunSent'          => $lastRun ? (int) $lastRun->notifications_sent : 0,
+            'lastRunSkipped'       => $lastRun ? (int) $lastRun->skipped_no_token : 0,
+            'lastRunDuration'      => $lastRun ? (int) $lastRun->duration_ms : 0,
+            'lastRunStatus'        => $lastRun ? ($lastRun->dry_run ? 'Dry Run' : ucfirst($lastRun->status)) : 'None',
+            'nextRun'              => $nextRunIst,
+            'nextRunIst'           => $nextRunIst,
+            'nextRunFormatted'     => $nextRunIst->format('h:i:s A') . ' IST',
+            'nextRunFullFormatted' => $nextRunIst->format('d M Y, h:i:s A') . ' IST',
+            'nextRunTimestampMs'   => $nextRunIst->getTimestamp() * 1000,
+            'serverNowTimestampMs' => $nowIst->getTimestamp() * 1000,
+            'currentIstTime'       => $nowIst->format('h:i:s A') . ' IST',
+        ];
+    }
+
+    public function batchStatus()
+    {
+        return response()->json($this->getBatchStatus());
+    }
+
+    public function batchMonitor()
+    {
+        $batchStatus = $this->getBatchStatus();
+        $recentRuns  = BatchRunLog::latest('ran_at')->limit(50)->get();
+
+        return view('admin.batch-monitor', array_merge($batchStatus, [
+            'active'      => 'batch',
+            'batchStatus' => $batchStatus,
+            'recentRuns'  => $recentRuns,
+            'stats'       => $this->getStats(),
+        ]));
     }
 
     public function logout()

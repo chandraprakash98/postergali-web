@@ -17,6 +17,7 @@
             --danger: #d9534f;
             --warning: #b77400;
             --info: #2563eb;
+            --border: #e9e1d5;
         }
 
         body {
@@ -40,68 +41,243 @@
 
         /* ── Main ── */
         .main-content { flex: 1; margin-left: 240px; }
-        .topbar { padding: 28px 40px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+        .topbar { padding: 28px 40px 18px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
         .page-heading h2 { font-size: 22px; color: #302b27; margin: 0; font-weight: 800; }
-        .page-heading p { color: #8b8179; margin: 4px 0 0; }
+        .page-heading p { color: #8b8179; margin: 4px 0 0; font-size: 14px; }
         .content { padding: 0 40px 80px; }
 
-        /* ── Status banner ── */
-        .status-banner {
-            display: flex; align-items: center; gap: 16px;
-            padding: 18px 24px; border-radius: 14px;
-            margin-bottom: 28px; font-weight: 600;
+        /* ── Status Bar (Enhanced) ── */
+        .status-bar-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(43,30,24,0.04);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
         }
-        .status-banner.enabled  { background: #eaf7ef; border: 1.5px solid #b7dfcd; color: #1a6147; }
-        .status-banner.disabled { background: #fdecea; border: 1.5px solid #f5c6c4; color: #8b1a1a; }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-        .status-dot.on  { background: var(--success); box-shadow: 0 0 0 3px rgba(47,143,107,0.25); animation: pulse 2s infinite; }
-        .status-dot.off { background: var(--danger); }
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 3px rgba(47,143,107,0.25); }
-            50%       { box-shadow: 0 0 0 6px rgba(47,143,107,0.10); }
-        }
-        .status-banner .meta { margin-left: auto; display: flex; gap: 24px; font-size: 13px; font-weight: 500; opacity: 0.85; }
-        .status-banner .meta span { display: flex; gap: 6px; align-items: center; }
 
-        /* ── Stats grid ── */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
-        .stat-card { background: var(--panel); padding: 20px 22px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 6px 18px rgba(43,30,24,0.04); }
-        .stat-info h3 { color: #8b8179; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-        .stat-number { font-size: 28px; color: #2f2a26; font-weight: 800; }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .status-pill.active {
+            background: #eaf7ef;
+            color: #1a6147;
+            border: 1px solid #b7dfcd;
+        }
+        .status-pill.disabled {
+            background: #fdecea;
+            color: #8b1a1a;
+            border: 1px solid #f5c6c4;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 0 3px rgba(47,143,107,0.25);
+            animation: pulse-ring 2s infinite;
+        }
+        .pulse-dot.off {
+            background: var(--danger);
+            box-shadow: none;
+            animation: none;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(47,143,107,0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 0 6px rgba(47,143,107,0.1); transform: scale(1.1); }
+        }
+
+        .status-info-group {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .info-block {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #8b8179;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .info-val-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .info-time {
+            font-size: 16px;
+            font-weight: 800;
+            color: #2f2a26;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+        .info-sub {
+            font-size: 12px;
+            color: #8b8179;
+            font-weight: 500;
+        }
+
+        .countdown-pill {
+            background: #2f2a26;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .countdown-pill.running {
+            background: #e58b6a;
+            animation: pulse-ring 1s infinite;
+        }
+
+        .clock-badge {
+            background: #ede9fe;
+            color: #6b21a8;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .refresh-btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            color: #4f463f;
+            padding: 7px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .refresh-btn:hover {
+            background: var(--bg);
+            border-color: #d8cebe;
+        }
+
+        /* ── Simple Stats Grid ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 18px 20px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(43,30,24,0.03);
+        }
+        .stat-info h3 { color: #8b8179; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; font-weight: 700; }
+        .stat-number { font-size: 26px; color: #2f2a26; font-weight: 800; }
         .stat-sub { font-size: 12px; color: #a09890; margin-top: 2px; }
-        .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-        .stat-icon.runs        { background: #ede9fe; color: #7c3aed; }
-        .stat-icon.notifs      { background: #eaf7ef; color: var(--success); }
-        .stat-icon.skipped     { background: #fff7e6; color: var(--warning); }
-        .stat-icon.last        { background: #e0f2fe; color: var(--info); }
+        .stat-icon { width: 46px; height: 46px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .stat-icon.runs    { background: #ede9fe; color: #7c3aed; }
+        .stat-icon.notifs  { background: #eaf7ef; color: var(--success); }
+        .stat-icon.skipped { background: #fff7e6; color: var(--warning); }
+        .stat-icon.speed   { background: #e0f2fe; color: var(--info); }
 
-        /* ── Table ── */
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        /* ── Simple Clean Table ── */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .section-header h3 { font-size: 16px; color: #2f2a26; font-weight: 800; }
         .section-header .badge { background: var(--accent); color: #fff; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
 
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-        thead th { background: transparent; color: #9a8f86; text-align: left; padding: 8px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
-        tbody tr { background: var(--panel); border-radius: 10px; box-shadow: 0 4px 10px rgba(43,30,24,0.03); }
-        tbody tr td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
-        tbody tr td:last-child  { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
-        td { padding: 12px 16px; vertical-align: middle; color: #4f463f; font-size: 14px; }
+        .table-wrap {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(43,30,24,0.03);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: #faf6ef;
+            color: #8b8179;
+            text-align: left;
+            padding: 12px 18px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody tr {
+            border-bottom: 1px solid #f1eae0;
+            transition: background 0.15s ease;
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #faf7f2; }
+        td { padding: 14px 18px; vertical-align: middle; color: #4f463f; font-size: 13px; }
 
         .pill { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 11px; display: inline-block; }
         .pill-success  { background: #eaf7ef; color: var(--success); }
         .pill-disabled { background: #f3f4f6; color: #6b7280; }
         .pill-dry      { background: #fff7e6; color: var(--warning); }
 
-        .num { font-weight: 700; color: #302b27; }
+        .tag-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 4px;
+            margin-bottom: 2px;
+        }
+        .tag-expiring { background: #fff7e6; color: #b77400; border: 1px solid #fde7be; }
+        .tag-expired  { background: #fdecea; color: #8b1a1a; border: 1px solid #f9c7c4; }
+        .tag-none     { color: #aaa; font-size: 12px; font-weight: 600; }
+
+        .badge-sent { font-weight: 700; color: var(--success); }
+        .badge-skip { font-weight: 700; color: var(--warning); font-size: 12px; margin-left: 6px; }
         .num-muted { font-weight: 700; color: #aaa; }
 
         .empty-state { padding: 60px 20px; text-align: center; color: #8b8179; }
         .empty-state .icon { font-size: 40px; display: block; margin-bottom: 12px; }
 
-        @media (max-width: 900px) {
+        @media (max-width: 992px) {
             .stats-grid { grid-template-columns: 1fr 1fr; }
+            .status-info-group { gap: 16px; }
+        }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
             .main-content { margin-left: 0; }
             .sidebar { display: none; }
+            .content { padding: 0 16px 60px; }
+            .topbar { padding: 20px 16px; }
         }
     </style>
 </head>
@@ -136,161 +312,241 @@
     <div class="main-content">
         <div class="topbar">
             <div class="page-heading">
-                <h2>🔔 Batch Monitor</h2>
-                <p>Real-time status of the notification batch job</p>
+                <h2>🔔 Batch Notification Monitor</h2>
+                <p>Real-time scheduler monitoring with Indian Standard Time (IST)</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span class="clock-badge">
+                    ⏰ IST: <strong class="live-ist-clock">{{ $currentIstTime }}</strong>
+                </span>
+                <button onclick="window.location.reload();" class="refresh-btn">
+                    🔄 Refresh
+                </button>
             </div>
         </div>
 
         <div class="content">
 
-            {{-- ── Status Banner ── --}}
-            <div class="status-banner {{ $enabled ? 'enabled' : 'disabled' }}">
-                <div class="status-dot {{ $enabled ? 'on' : 'off' }}"></div>
+            {{-- ── Status Bar (Simplified & Intuitive) ── --}}
+            <div class="status-bar-card">
                 <div>
-                    <div style="font-size:15px;">
-                        Batch is <strong>{{ $enabled ? 'ENABLED' : 'DISABLED' }}</strong>
-                    </div>
-                    <div style="font-size:12px; margin-top:3px; opacity:0.8;">
-                        Schedule: <code>{{ $schedule }}</code> &nbsp;·&nbsp; Window: {{ $windowHours }}h ahead
+                    <span class="status-pill {{ $enabled ? 'active' : 'disabled' }}">
+                        <span class="pulse-dot {{ $enabled ? '' : 'off' }}"></span>
+                        <span>{{ $enabled ? 'BATCH ACTIVE' : 'BATCH DISABLED' }}</span>
+                    </span>
+                    <div style="font-size:12px; color:#8b8179; margin-top:6px; font-weight:600;">
+                        Schedule: <code>Every {{ $stepMinutes }} mins</code> · Window: {{ $windowHours }}h
                     </div>
                 </div>
-                <div class="meta">
-                    @if($nextRun)
-                    <span>⏭️ Next run: <strong>{{ $nextRun->format('H:i') }}</strong>
-                        (in {{ now()->diffInMinutes($nextRun, false) }} min)</span>
-                    @endif
-                    @if($lastRun)
-                    <span>🕐 Last run: <strong>{{ $lastRun->ran_at->diffForHumans() }}</strong></span>
-                    @endif
-                </div>
-            </div>
 
-            {{-- ── Stats Grid ── --}}
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <h3>Total Runs</h3>
-                        <div class="stat-number">{{ number_format($totalRuns) }}</div>
-                        <div class="stat-sub">since tracking began</div>
-                    </div>
-                    <div class="stat-icon runs">🔁</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <h3>Notifications Sent</h3>
-                        <div class="stat-number">{{ number_format($totalNotifications) }}</div>
-                        <div class="stat-sub">all-time FCM pushes</div>
-                    </div>
-                    <div class="stat-icon notifs">📲</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <h3>Skipped (No Token)</h3>
-                        <div class="stat-number">{{ number_format($totalSkipped) }}</div>
-                        <div class="stat-sub">no FCM token found</div>
-                    </div>
-                    <div class="stat-icon skipped">⚠️</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-info">
-                        <h3>Last Run</h3>
-                        <div class="stat-number" style="font-size:16px; margin-top:4px;">
-                            {{ $lastRun ? $lastRun->ran_at->format('d M, H:i') : '—' }}
+                <div class="status-info-group">
+                    {{-- Last Run --}}
+                    <div class="info-block">
+                        <span class="info-label">🕒 Last Batch Run (IST)</span>
+                        <div class="info-val-row">
+                            <span class="info-time live-last-run">{{ $lastRunTimeOnly }}</span>
+                            <span class="info-sub live-last-human">({{ $lastRunHuman }} · {{ $lastRunSent }} sent)</span>
                         </div>
-                        @if($lastRun)
-                        <div class="stat-sub">{{ $lastRun->duration_ms }}ms duration</div>
-                        @endif
                     </div>
-                    <div class="stat-icon last">🕐</div>
+
+                    <div style="width:1px; height:34px; background:var(--border);"></div>
+
+                    {{-- Next Batch --}}
+                    <div class="info-block">
+                        <span class="info-label">⏳ Next Batch Coming (IST)</span>
+                        <div class="info-val-row">
+                            <span class="info-time live-next-run">{{ $nextRunFormatted }}</span>
+                            <span class="countdown-pill live-batch-countdown">--:--</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {{-- ── Run History Table ── --}}
+
+            {{-- ── Simplified Run History Table ── --}}
             <div class="section-header">
-                <h3>Run History</h3>
-                <span class="badge">Last 50 runs</span>
+                <h3>Batch Run History</h3>
+                <span class="badge">Recent 50 Runs</span>
             </div>
 
             @if($recentRuns->isEmpty())
                 <div class="empty-state">
                     <span class="icon">📭</span>
-                    <p>No batch runs recorded yet.</p>
+                    <p style="font-weight:700; font-size:16px; color:#2f2a26;">No batch runs recorded yet.</p>
                     <p style="margin-top:6px; font-size:13px;">
-                        The batch logs itself every time it runs via the scheduler.
+                        The batch logger will record every execution automatically every 2 minutes.
                     </p>
                 </div>
             @else
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Ran At</th>
-                            <th>Status</th>
-                            <th>Day-Before Jobs</th>
-                            <th>Day-Before Offers</th>
-                            <th>Expired Jobs</th>
-                            <th>Expired Offers</th>
-                            <th>Sent</th>
-                            <th>Skipped</th>
-                            <th>Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentRuns as $index => $run)
-                        <tr>
-                            <td class="num-muted">#{{ $totalRuns - $index }}</td>
-                            <td>
-                                <div style="font-weight:600; color:#302b27;">{{ $run->ran_at->format('d M Y') }}</div>
-                                <div style="font-size:12px; color:#9a8f86;">{{ $run->ran_at->format('H:i:s') }}</div>
-                            </td>
-                            <td>
-                                @if($run->status === 'success' && !$run->dry_run)
-                                    <span class="pill pill-success">✓ Success</span>
-                                @elseif($run->dry_run)
-                                    <span class="pill pill-dry">🧪 Dry Run</span>
-                                @else
-                                    <span class="pill pill-disabled">Disabled</span>
-                                @endif
-                            </td>
-                            <td class="{{ $run->day_before_jobs > 0 ? 'num' : 'num-muted' }}">
-                                {{ $run->day_before_jobs }}
-                            </td>
-                            <td class="{{ $run->day_before_offers > 0 ? 'num' : 'num-muted' }}">
-                                {{ $run->day_before_offers }}
-                            </td>
-                            <td class="{{ $run->on_expiry_jobs > 0 ? 'num' : 'num-muted' }}">
-                                {{ $run->on_expiry_jobs }}
-                            </td>
-                            <td class="{{ $run->on_expiry_offers > 0 ? 'num' : 'num-muted' }}">
-                                {{ $run->on_expiry_offers }}
-                            </td>
-                            <td>
-                                @if($run->notifications_sent > 0)
-                                    <span style="font-weight:700; color:var(--success);">
-                                        📲 {{ $run->notifications_sent }}
-                                    </span>
-                                @else
-                                    <span class="num-muted">0</span>
-                                @endif
-                            </td>
-                            <td>
-                                @if($run->skipped_no_token > 0)
-                                    <span style="font-weight:700; color:var(--warning);">
-                                        ⚠️ {{ $run->skipped_no_token }}
-                                    </span>
-                                @else
-                                    <span class="num-muted">0</span>
-                                @endif
-                            </td>
-                            <td style="color:#9a8f86; font-size:13px;">{{ $run->duration_ms }}ms</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:60px;">#</th>
+                                <th style="width:190px;">Time (IST)</th>
+                                <th style="width:130px;">Status</th>
+                                <th>Posters Found</th>
+                                <th style="width:120px;">Sent</th>
+                                <th style="width:100px;">Skipped</th>
+                                <th style="width:100px;">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($recentRuns as $index => $run)
+                            @php
+                                $ranAtIst = $run->ran_at ? $run->ran_at->timezone('Asia/Kolkata') : null;
+                                $expiringCount = (int) $run->day_before_jobs + (int) $run->day_before_offers;
+                                $expiredCount  = (int) $run->on_expiry_jobs + (int) $run->on_expiry_offers;
+                            @endphp
+                            <tr>
+                                <td class="num-muted">#{{ $totalRuns - $index }}</td>
+                                <td>
+                                    <div style="font-weight:700; color:#2f2a26; font-size:13px;">
+                                        {{ $ranAtIst ? $ranAtIst->format('d M Y') : '—' }}
+                                    </div>
+                                    <div style="font-size:12px; color:#8b8179; font-family:ui-monospace,monospace;">
+                                        {{ $ranAtIst ? $ranAtIst->format('h:i:s A') : '—' }} IST
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($run->status === 'success' && !$run->dry_run)
+                                        <span class="pill pill-success">✓ Success</span>
+                                    @elseif($run->dry_run)
+                                        <span class="pill pill-dry">🧪 Dry Run</span>
+                                    @else
+                                        <span class="pill pill-disabled">Disabled</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($expiringCount === 0 && $expiredCount === 0)
+                                        <span class="tag-none">0 Posters</span>
+                                    @else
+                                        @if($run->day_before_jobs > 0)
+                                            <span class="tag-pill tag-expiring">⏳ {{ $run->day_before_jobs }} Job Expiring</span>
+                                        @endif
+                                        @if($run->day_before_offers > 0)
+                                            <span class="tag-pill tag-expiring">⏳ {{ $run->day_before_offers }} Offer Expiring</span>
+                                        @endif
+                                        @if($run->on_expiry_jobs > 0)
+                                            <span class="tag-pill tag-expired">✕ {{ $run->on_expiry_jobs }} Job Expired</span>
+                                        @endif
+                                        @if($run->on_expiry_offers > 0)
+                                            <span class="tag-pill tag-expired">✕ {{ $run->on_expiry_offers }} Offer Expired</span>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($run->notifications_sent > 0)
+                                        <span class="badge-sent">📲 {{ $run->notifications_sent }} Sent</span>
+                                    @else
+                                        <span class="num-muted">0</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($run->skipped_no_token > 0)
+                                        <span class="badge-skip">⚠️ {{ $run->skipped_no_token }}</span>
+                                    @else
+                                        <span class="num-muted">0</span>
+                                    @endif
+                                </td>
+                                <td style="color:#8b8179; font-family:ui-monospace,monospace; font-size:12px;">
+                                    {{ $run->duration_ms }}ms
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
 
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    let targetTimestamp = {{ $nextRunTimestampMs ?? 0 }};
+    let serverTimestamp = {{ $serverNowTimestampMs ?? 0 }};
+    let clientTimestamp = Date.now();
+    let clockOffset = serverTimestamp ? (serverTimestamp - clientTimestamp) : 0;
+    let stepMinutes = {{ $stepMinutes ?? 2 }};
+    let isFetching = false;
+
+    function formatTimeIST(date) {
+        return date.toLocaleTimeString('en-IN', {
+            timeZone: 'Asia/Kolkata',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        }) + ' IST';
+    }
+
+    function updateTimer() {
+        const now = Date.now() + clockOffset;
+        let diffMs = targetTimestamp - now;
+
+        // Update live IST clock elements
+        const istDate = new Date(now);
+        document.querySelectorAll('.live-ist-clock').forEach(el => {
+            el.textContent = formatTimeIST(istDate);
+        });
+
+        const countdownEls = document.querySelectorAll('.live-batch-countdown');
+        if (diffMs <= 0) {
+            countdownEls.forEach(el => {
+                el.innerHTML = '⚡ Running batch...';
+                el.classList.add('running');
+            });
+
+            if (!isFetching) {
+                isFetching = true;
+                // Fetch fresh status from backend after 4 seconds
+                setTimeout(() => {
+                    fetch('{{ route("admin.batch.status") }}')
+                        .then(r => r.json())
+                        .then(data => {
+                            targetTimestamp = data.nextRunTimestampMs;
+                            serverTimestamp = data.serverNowTimestampMs;
+                            clientTimestamp = Date.now();
+                            clockOffset = serverTimestamp - clientTimestamp;
+                            isFetching = false;
+
+                            document.querySelectorAll('.live-last-run').forEach(el => {
+                                el.textContent = data.lastRunTimeOnly || data.lastRunFormatted;
+                            });
+                            document.querySelectorAll('.live-last-human').forEach(el => {
+                                el.textContent = '(' + data.lastRunHuman + ' · ' + data.lastRunSent + ' sent)';
+                            });
+                            document.querySelectorAll('.live-next-run').forEach(el => {
+                                el.textContent = data.nextRunFormatted;
+                            });
+
+                            countdownEls.forEach(el => el.classList.remove('running'));
+                        })
+                        .catch(() => {
+                            targetTimestamp = now + (stepMinutes * 60 * 1000);
+                            isFetching = false;
+                        });
+                }, 4000);
+            }
+            return;
+        }
+
+        const totalSec = Math.floor(diffMs / 1000);
+        const mins = Math.floor(totalSec / 60);
+        const secs = totalSec % 60;
+        const formatted = (mins < 10 ? '0' : '') + mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
+
+        countdownEls.forEach(el => {
+            el.classList.remove('running');
+            el.textContent = formatted;
+        });
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+})();
+</script>
 </body>
 </html>

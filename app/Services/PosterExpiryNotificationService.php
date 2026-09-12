@@ -155,6 +155,12 @@ class PosterExpiryNotificationService
             }
         }
 
+        // 3. Process any pending view milestones (e.g. view_count increased directly in DB)
+        $milestoneService = new PosterMilestoneNotificationService($this->firebaseService, $this);
+        $milestoneResults = $milestoneService->checkAllPendingMilestones($dryRun);
+        $notificationsSent += $milestoneResults['milestones_sent'];
+        $skippedNoToken    += $milestoneResults['milestones_skipped'];
+
         $durationMs = (int) round((microtime(true) - $startTime) * 1000);
 
         $result = [
