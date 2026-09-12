@@ -24,8 +24,12 @@ class Offer extends Model
     'city',
     'status',
     'view_count',
+    'last_view_milestone_notified',
     'approved_at',
     'expires_at',
+    'expiry_notified_at',
+    'day_before_expiry_notified_at',
+    'expired_notified_at',
     'plan_id'
 ];
 
@@ -33,6 +37,10 @@ class Offer extends Model
         'media' => 'array',
         'approved_at' => 'datetime',
         'expires_at' => 'datetime',
+        'expiry_notified_at' => 'datetime',
+        'day_before_expiry_notified_at' => 'datetime',
+        'expired_notified_at' => 'datetime',
+        'last_view_milestone_notified' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

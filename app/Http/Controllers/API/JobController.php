@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Job;
 use App\Services\FilterService;
 use App\Services\PaymentService;
+use App\Services\PosterMilestoneNotificationService;
+use App\Services\PosterPostingLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -16,6 +18,8 @@ class JobController extends Controller
     public function __construct(
         protected FilterService $filterService = new FilterService(),
         protected PaymentService $paymentService = new PaymentService(),
+        protected PosterPostingLimitService $posterLimitService = new PosterPostingLimitService(),
+        protected PosterMilestoneNotificationService $milestoneService = new PosterMilestoneNotificationService(),
     ) {}
 
     /**
@@ -220,6 +224,8 @@ class JobController extends Controller
             'customer_id' => ['nullable', 'string', 'exists:customers,customer_id'],
         ]);
 
+        $this->posterLimitService->enforceDailyLimit((string) $data['phone_number'], type: 'job', field: 'phone_number');
+
         return DB::transaction(function () use ($data) {
             if (!empty($data['amount']) && empty($data['salary'])) {
                 $data['salary'] = $data['amount'];
@@ -261,11 +267,14 @@ class JobController extends Controller
             'longitude',
             'status',
             'view_count',
+            'last_view_milestone_notified',
+            'device_id',
             'created_at',
             'expires_at',
         ])->findOrFail($id);
 
         $job->increment('view_count');
+        $this->milestoneService->checkAndNotifyViewMilestone($job, 'job');
 
         return $job;
     }

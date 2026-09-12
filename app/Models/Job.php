@@ -13,15 +13,20 @@ class Job extends Model
         'business_name','job_role','job_type',
         'salary','amount','phone_number',
         'latitude','longitude','city',
-        'approved_at','expires_at',
+        'approved_at','expires_at','expiry_notified_at',
+        'day_before_expiry_notified_at','expired_notified_at',
         'status','status_comment',
-        'view_count','reviewed_by',
+        'view_count','last_view_milestone_notified','reviewed_by',
         'boost_hours','plan_id'
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
         'expires_at' => 'datetime',
+        'expiry_notified_at' => 'datetime',
+        'day_before_expiry_notified_at' => 'datetime',
+        'expired_notified_at' => 'datetime',
+        'last_view_milestone_notified' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

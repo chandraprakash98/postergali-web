@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Offer;
 use App\Services\FilterService;
 use App\Services\PaymentService;
+use App\Services\PosterMilestoneNotificationService;
+use App\Services\PosterPostingLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,6 +17,8 @@ class OfferController extends Controller
     public function __construct(
         protected FilterService $filterService = new FilterService(),
         protected PaymentService $paymentService = new PaymentService(),
+        protected PosterPostingLimitService $posterLimitService = new PosterPostingLimitService(),
+        protected PosterMilestoneNotificationService $milestoneService = new PosterMilestoneNotificationService(),
     ) {}
 
     /**
@@ -211,6 +215,7 @@ class OfferController extends Controller
             'razorpay_amount' => 'nullable|numeric|min:0',
             'credit_amount' => 'nullable|numeric|min:0',
             'mobile_number' => 'nullable|string',
+            'phone_number' => 'nullable|string',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'city' => 'nullable|string',
@@ -223,6 +228,12 @@ class OfferController extends Controller
             'credit_mode' => ['nullable', 'string', 'in:full_upi,semi,full_credit,FULL_UPI,SEMI,FULL_CREDIT'],
             'customer_id' => ['nullable', 'string'],
         ]);
+
+        $mobile = $data['mobile_number'] ?? $data['phone_number'] ?? null;
+        if (!empty($mobile)) {
+            $this->posterLimitService->enforceDailyLimit((string) $mobile, type: 'offer', field: 'mobile_number');
+            $data['mobile_number'] = $mobile;
+        }
 
         return DB::transaction(function () use ($request, $data) {
             // Media handling
@@ -264,6 +275,7 @@ class OfferController extends Controller
     {
         $offer = Offer::findOrFail($id);
         $offer->increment('view_count');
+        $this->milestoneService->checkAndNotifyViewMilestone($offer, 'offer');
         return $offer;
     }
 

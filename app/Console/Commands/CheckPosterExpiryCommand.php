@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Services\PosterExpiryNotificationService;
+use Illuminate\Console\Command;
+
+class CheckPosterExpiryCommand extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'posters:check-expiry {--dry-run : Check without sending notifications or mutating the database}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Check for expired and expiring Job and Offer posters and send Firebase FCM notifications.';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle(PosterExpiryNotificationService $service): int
+    {
+        $dryRun = (bool) $this->option('dry-run');
+
+        $this->info('Starting poster expiry check batch...');
+        if ($dryRun) {
+            $this->warn('Running in DRY-RUN mode. No notifications will be sent and no database records modified.');
+        }
+
+        $result = $service->processExpiringPosters($dryRun);
+
+        if (($result['status'] ?? '') === 'disabled') {
+            $this->warn('Poster expiry notification batch is currently DISABLED in config (POSTER_EXPIRY_NOTIFICATION_ENABLED=false).');
+            return Command::SUCCESS;
+        }
+
+        $this->table(
+            ['Metric', 'Value'],
+            [
+                ['Day-Before-Expiry Jobs Found', $result['day_before_jobs'] ?? 0],
+                ['Day-Before-Expiry Offers Found', $result['day_before_offers'] ?? 0],
+                ['On-Expiry (Expired) Jobs Found', $result['on_expiry_jobs'] ?? 0],
+                ['On-Expiry (Expired) Offers Found', $result['on_expiry_offers'] ?? 0],
+                ['Total FCM Notifications Dispatched', $result['notifications_sent']],
+                ['Posters Skipped (No FCM Token)', $result['skipped_no_token']],
+                ['Dry Run Mode', $result['dry_run'] ? 'Yes' : 'No'],
+            ]
+        );
+
+        $this->info('Poster expiry check batch completed successfully.');
+
+        return Command::SUCCESS;
+    }
+}

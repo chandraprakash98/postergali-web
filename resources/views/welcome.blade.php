@@ -537,7 +537,7 @@
     <div class="footer-bottom-bar">
         <div>© 2026 PosterGali. All rights reserved.</div>
         <div><a href="{{ url('/privacy-policy') }}">Privacy Policy</a></div>
-        <div><a href="{{ url('/privacy-policy') }}">Terms of Service</a></div>
+        <div><a href="{{ url('/terms-and-conditions') }}">Terms of Service</a></div>
     </div>
 </footer>
 
