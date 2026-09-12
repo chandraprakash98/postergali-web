@@ -47,6 +47,8 @@ class CheckPosterExpiryCommand extends Command
                 ['Day-Before-Expiry Offers Found', $result['day_before_offers'] ?? 0],
                 ['On-Expiry (Expired) Jobs Found', $result['on_expiry_jobs'] ?? 0],
                 ['On-Expiry (Expired) Offers Found', $result['on_expiry_offers'] ?? 0],
+                ['View Milestone Notifications Sent', $result['milestones_sent'] ?? 0],
+                ['View Milestones Skipped (No Token)', $result['milestones_skipped'] ?? 0],
                 ['Total FCM Notifications Dispatched', $result['notifications_sent']],
                 ['Posters Skipped (No FCM Token)', $result['skipped_no_token']],
                 ['Dry Run Mode', $result['dry_run'] ? 'Yes' : 'No'],

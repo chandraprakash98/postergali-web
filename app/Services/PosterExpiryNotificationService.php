@@ -171,6 +171,8 @@ class PosterExpiryNotificationService
             'on_expiry_offers' => $onExpiryOffers->count(),
             'jobs_processed'   => $dayBeforeJobs->count() + $onExpiryJobs->count(),
             'offers_processed' => $dayBeforeOffers->count() + $onExpiryOffers->count(),
+            'milestones_sent'  => $milestoneResults['milestones_sent'],
+            'milestones_skipped'=> $milestoneResults['milestones_skipped'],
             'notifications_sent'=> $notificationsSent,
             'skipped_no_token' => $skippedNoToken,
             'dry_run'          => $dryRun,

@@ -73,7 +73,10 @@ return [
     */
 
     'view_milestones' => [
-        'thresholds' => [100, 200, 300, 400, 500, 1000],
+        // Comma-separated thresholds configurable via env (e.g. "100,500" or "100,200,500,1000")
+        'thresholds' => array_values(array_filter(
+            array_map('intval', explode(',', env('POSTER_VIEW_MILESTONE_THRESHOLDS', '100,500')))
+        )),
 
         'title' => env(
             'POSTER_VIEW_MILESTONE_TITLE',
