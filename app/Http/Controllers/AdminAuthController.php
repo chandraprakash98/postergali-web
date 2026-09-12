@@ -295,8 +295,44 @@ class AdminAuthController extends Controller
 
     public function pricingInfo()
     {
-        $plans = Plan::all();
+        $plans = Plan::orderBy('price')->get();
         return view('admin.dashboard', ['active' => 'pricing', 'plans' => $plans, 'stats' => $this->getStats()]);
+    }
+
+    public function createPlan()
+    {
+        return view('admin.plans.form', ['plan' => null]);
+    }
+
+    public function storePlan(Request $request)
+    {
+        $data = $request->validate([
+            'plan_title' => ['required', 'string', 'max:255'],
+            'duration' => ['required', 'string', 'max:100'],
+            'price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        Plan::create($data);
+
+        return redirect()->route('admin.pricingInfo')->with('success', 'Plan created successfully.');
+    }
+
+    public function editPlan(Plan $plan)
+    {
+        return view('admin.plans.form', ['plan' => $plan]);
+    }
+
+    public function updatePlan(Request $request, Plan $plan)
+    {
+        $data = $request->validate([
+            'plan_title' => ['required', 'string', 'max:255'],
+            'duration' => ['required', 'string', 'max:100'],
+            'price' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $plan->update($data);
+
+        return redirect()->route('admin.pricingInfo')->with('success', 'Plan updated successfully.');
     }
 
     public function referrals()

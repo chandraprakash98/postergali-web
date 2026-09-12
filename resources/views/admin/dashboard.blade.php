@@ -287,7 +287,10 @@
                     <div class="table-section">
                         <div class="table-header">
                             <h3>All Plans</h3>
-                            <span class="filter-icon">⚙️</span>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <a href="{{ route('admin.plans.create') }}" class="view-btn" style="text-decoration:none;">➕ Add Plan</a>
+                                <span class="filter-icon">⚙️</span>
+                            </div>
                         </div>
 
                         @if(isset($plans) && count($plans) > 0)
@@ -309,7 +312,7 @@
                                             <td>{{ $plan->duration }}</td>
                                             <td>₹{{ $plan->price }}</td>
                                             <td>
-                                                <button class="view-btn">👁️ View</button>
+                                                <a href="{{ route('admin.plans.edit', $plan->id) }}" class="view-btn" style="text-decoration:none;">✏️ Edit</a>
                                             </td>
                                         </tr>
                                     @endforeach

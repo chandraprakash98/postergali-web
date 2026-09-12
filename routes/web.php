@@ -25,6 +25,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('live-ads', [AdminAuthController::class, 'liveAds'])->name('liveAds');
         Route::get('expired-ads', [AdminAuthController::class, 'expiredAds'])->name('expiredAds');
         Route::get('pricing-info', [AdminAuthController::class, 'pricingInfo'])->name('pricingInfo');
+        Route::get('plans/create', [AdminAuthController::class, 'createPlan'])->name('plans.create');
+        Route::post('plans', [AdminAuthController::class, 'storePlan'])->name('plans.store');
+        Route::get('plans/{plan}/edit', [AdminAuthController::class, 'editPlan'])->name('plans.edit');
+        Route::put('plans/{plan}', [AdminAuthController::class, 'updatePlan'])->name('plans.update');
         Route::get('referrals', [AdminAuthController::class, 'referrals'])->name('referrals');
         Route::get('ads/{type}/{id}', [AdminAuthController::class, 'showAd'])->name('ad.show');
         Route::post('ads/{type}/{id}/status', [AdminAuthController::class, 'updateAdStatus'])->name('ad.status');
