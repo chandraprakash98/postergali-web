@@ -77,15 +77,22 @@
 }
 
 /* Fallback Font Stacks */
-html,
+html {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+}
+
 body {
     font-family: 'GaramondRegular', 'Garamond', 'Times New Roman', serif;
     background: #FAF8E9;
     color: #111;
     overflow-x: hidden;
+    width: 100%;
     max-width: 100%;
     margin: 0;
     padding: 0;
+    position: relative;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -221,7 +228,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    transform: translateX(-20px);
+    transform: translateX(-32px);
 }
 
 .logo-image {
@@ -282,10 +289,10 @@ body {
     border-radius: 999px;
     cursor: pointer;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 600;
     transition: transform 0.2s, background 0.2s;
-    box-shadow: 0 4px 12px rgba(var(--color-primary-terracotta-700-rgb), 0.25);
-    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(var(--color-primary-terracotta-700-rgb), 1.05);
+
 }
 
 .btn-download:hover {
@@ -343,18 +350,15 @@ body {
 
 .hero h1 {
     font-family: "Clash Display", sans-serif;
-    font-size: clamp(20px, 5.5vw, 38px);
-    line-height: 1.02;
-    font-weight: 700;
-    letter-spacing: 1.1px;
-    color: hsla(48, 100%, 53%, 0.989);
+    font-size: clamp(24px, 6.5vw, 46px);
+    line-height: 0.91;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: #F2AD36;
+    text-align: center;
     max-width: 900px;
     margin: 0 auto;
-    /* Black/brown outline */
-    -webkit-text-stroke: 0.5px #060500f9;
-    /* Poster-style depth */
-    text-shadow:
-        1px 1px 0 #2b1b03;
+    text-shadow: -1px 0px 0px #000000;
 }
 
 .hero p {
@@ -849,7 +853,7 @@ body {
     .poster-far-left {
         width: clamp(56px, 15vw, 88px);
         height: clamp(82px, 27vw, 140px);
-        left: calc(0px - clamp(60px, 12vw, 75px) + 6px);
+        left: calc(0px - clamp(60px, 12vw, 75px) + 8px);
         top: calc(clamp(55px, 14vw, 95px) + 36px);
         margin-top: -10px;
         bottom: auto;
@@ -873,31 +877,35 @@ body {
         width: clamp(60px, 16vw, 95px);
         height: clamp(82px, 27vw, 140px);
         left: calc(50% - clamp(168px, 44vw, 230px) - 5px);
-        bottom: calc(clamp(115px, 27vw, 165px) - 90px);
+        bottom: calc(clamp(115px, 27vw, 165px) - 60px);
         z-index: 4;
         margin-top: -4px;
+        transform: rotate(2deg);
     }
 
     /* 4th Poster */
     .poster-right-low {
         width: clamp(58px, 15.5vw, 92px);
         height: clamp(82px, 27vw, 140px);
-        right: calc(50% - clamp(96px, 9vw, 165px) - 20px);
+        right: calc(50% - clamp(96px, 9vw, 165px) - 10px);
         bottom: calc(clamp(50px, 5vw, 50px) - 20px);
         z-index: 3;
         transform: rotate(-3deg);
     }
 
+
+    /* 5th Poster */
     /* 5th Poster */
     .poster-right-high {
         width: clamp(60px, 16vw, 95px);
         height: clamp(82px, 27vw, 140px);
-        right: calc(50% - clamp(168px, 45vw, 230px));
-        top: calc(clamp(55px, 14vw, 95px) + 22px);
+        right: calc(50% - clamp(168px, 45vw, 230px) + 4px);
+        top: calc(clamp(55px, 14vw, 95px) + 50px);
         bottom: auto;
         transform: rotate(2deg);
         z-index: 4;
     }
+
 
     /* 6th Poster */
     .poster-far-right {
@@ -1776,7 +1784,7 @@ body {
     transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.35s ease;
     will-change: transform;
     cursor: default;
-    color: #eb2107;
+    color: var(--color-primary-terracotta-700);
     box-sizing: border-box;
 }
 
@@ -1977,7 +1985,7 @@ body {
     color: #fff;
     position: relative;
     overflow: hidden;
-    
+
 }
 
 .contact-card-green h1 {
@@ -2000,7 +2008,7 @@ body {
 }
 
 .contact-info-pill {
-    
+
     background: transparent;
     border: 2px solid rgba(255, 255, 255, 0.95);
     border-radius: 30px;
@@ -2015,7 +2023,7 @@ body {
     display: flex;
     align-items: center;
     gap: 28px;
-        color: #F1FFF4;
+    color: #F1FFF4;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: clamp(18px, 3vw, 28px);
     line-height: 1.35;
@@ -2180,24 +2188,26 @@ body {
 .footer-section {
     background: var(--color-saffron-100);
     margin-top: 24px;
-    padding: 24px 20px 0;
+    padding: 24px 0 0;
     text-align: center;
     border-top: none;
 }
 
 .footer-sign-wrap {
     margin: 0 auto 10px;
-    width: 170px;
-    height: 150px;
+    width: auto;
+    max-width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .footer-logo-image {
-    width: 260px;
+    width: auto;
+    max-width: min(220px, 60vw);
     height: auto;
     display: block;
+    margin: 0 auto;
 }
 
 .footer-tagline {
@@ -2243,14 +2253,14 @@ body {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
-.footer-section > .app-store-btns {
+.footer-section>.app-store-btns {
     justify-content: flex-start;
     gap: 8px;
     flex-wrap: nowrap;
     margin-bottom: 18px !important;
 }
 
-.footer-section > .app-store-btns .app-store-btn {
+.footer-section>.app-store-btns .app-store-btn {
     min-width: 0;
     width: 50%;
     max-width: none;
@@ -2260,44 +2270,45 @@ body {
     box-shadow: 2px 2px 0 rgba(17, 17, 17, 0.9);
 }
 
-.footer-section > .app-store-btns .btn-text-small {
+.footer-section>.app-store-btns .btn-text-small {
     font-size: 6px;
 }
 
-.footer-section > .app-store-btns .btn-text-large {
+.footer-section>.app-store-btns .btn-text-large {
     font-size: 8px;
 }
 
 .footer-bottom-bar {
     background: #F5AD2F;
     color: #111111;
-    padding: 32px 32px 48px;
+    padding: 16px 0 16px;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: clamp(13px, 2.5vw, 16px);
-    font-weight: 200;
+    font-size: clamp(11px, 2.8vw, 13px);
+    font-weight: 400;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
+    box-sizing: border-box;
     text-align: left;
-    gap: 24px;
-    margin: 50px -20px 20px;
+    gap: 10px;
+    margin: 30px 0 0;
 }
 
-.footer-bottom-bar > div,
+.footer-bottom-bar>div,
 .footer-bottom-bar a {
     width: 100%;
     color: #111111;
     text-decoration: underline;
-    text-underline-offset: 3px;
+    text-underline-offset: 2px;
 }
 
 .footer-bottom-bar a {
     font-size: 1em;
 }
 
-.footer-bottom-bar > div {
-    font-size: 0.78em;
+.footer-bottom-bar>div {
+    font-size: 0.85em;
 }
 
 /* ================= MOBILE FIXED NAVBAR ================= */
@@ -2320,7 +2331,7 @@ body {
     }
 
     .logo-wrap {
-        transform: none;
+        transform: translateX(-8px);
     }
 
     .btn-download {
@@ -2926,31 +2937,42 @@ body {
 
     /* ── FOOTER RESPONSIVENESS ── */
     .footer-section {
-        padding: 35px 16px 0 !important;
+        padding: 28px 16px 0 !important;
         overflow: hidden !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }
 
+    .footer-sign-wrap {
+        width: auto !important;
+        max-width: 100% !important;
+    }
+
+    .footer-logo-image {
+        max-width: min(180px, 55vw) !important;
+        width: auto !important;
+        height: auto !important;
+    }
+
     .footer-section .app-store-btns {
         flex-wrap: wrap !important;
         justify-content: center !important;
-        gap: 12px !important;
+        gap: 10px !important;
     }
 
     .footer-section .app-store-btn {
         min-width: 0 !important;
-        max-width: 180px !important;
-        flex: 1 1 140px !important;
+        max-width: 160px !important;
+        flex: 1 1 130px !important;
     }
 
     .footer-bottom-bar {
-        padding: 24px 16px 40px !important;
-        margin: 30px -16px 0 !important;
-        width: calc(100% + 32px) !important;
+        padding: 12px 0 12px !important;
+        margin: 20px 0 0 !important;
+        width: 100% !important;
         box-sizing: border-box !important;
-        gap: 20px !important;
-        font-size: clamp(16px, 5vw, 22px) !important;
+        gap: 8px !important;
+        font-size: clamp(10px, 3vw, 12px) !important;
     }
 }
 
