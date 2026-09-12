@@ -511,7 +511,7 @@
     </div>
 
     <div class="app-store-btns" style="margin-bottom: 25px;">
-        <a href="#download" class="app-store-btn" style="min-width: 140px;" aria-label="Get on Google Play">
+        <a href="#download" class="app-store-btn" aria-label="Get on Google Play">
             <svg width="18" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
                 <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
@@ -522,7 +522,7 @@
             </div>
         </a>
 
-        <a href="#download" class="app-store-btn" style="min-width: 140px;" aria-label="Download on App Store">
+        <a href="#download" class="app-store-btn" aria-label="Download on App Store">
             <svg width="18" height="20" viewBox="0 0 24 24" fill="#111">
                 <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM15.22 4.93C15.9 4.1 16.36 2.95 16.23 1.8C15.24 1.84 14.04 2.46 13.33 3.29C12.7 4.02 12.15 5.2 12.3 6.33C13.41 6.42 14.54 5.76 15.22 4.93Z"/>
             </svg>
