@@ -297,31 +297,24 @@
     <h2 class="main-section-title">Getting started with PosterGali</h2>
     <p>Follow these simple steps to publish your poster in minutes.</p>
 
-    <!-- Hands Holding Phone Graphic -->
-    <div class="hands-phone-graphic">
-        <svg width="100%" height="100%" viewBox="0 0 180 170" preserveAspectRatio="xMidYMid meet">
-            <!-- Left & Right Hands -->
-            <path d="M 20,130 Q 50,80 65,70 L 60,170 Z" fill="#D99B73"/>
-            <path d="M 160,130 Q 130,80 115,70 L 120,170 Z" fill="#C4885C"/>
-            
-            <!-- Phone mockup -->
-            <rect x="52" y="10" width="76" height="145" rx="14" fill="#111" stroke="var(--color-primary-terracotta-700)" stroke-width="2"/>
-            <rect x="56" y="14" width="68" height="137" rx="10" fill="#FAF8E9"/>
-            
-            <rect x="56" y="14" width="68" height="20" fill="var(--color-primary-terracotta-700)"/>
-            <rect x="60" y="40" width="60" height="25" rx="4" fill="#3B6B4A"/>
-            <image href="poster2.png" x="60" y="70" width="28" height="40" preserveAspectRatio="xMidYMid slice" />
-            <image href="poster2.png" x="92" y="70" width="28" height="40" preserveAspectRatio="xMidYMid slice" />
-        </svg>
-    </div>
-
-    <!-- Stamp Ticket Card -->
-    <div class="stamp-card-container">
-        <div class="stamp-card">
-            <h3>Choose Your Location</h3>
-            <p>Select your shop or service area, and check available promotion options for your area.</p>
+    <!-- Hands Holding Phone Graphic with overlapping instruction cards -->
+    <div class="how-works-visual">
+        <div class="hands-phone-graphic">
+            <img src="{{ asset('images/phhand.png') }}" alt="Hands holding a PosterGali phone" class="hands-phone-image">
         </div>
+
+        <div class="stamp-card-container" aria-label="How PosterGali works">
+            <div class="stamp-card-track">
+                <img class="stamp-slide" src="{{ asset('images/hp1.png') }}" alt="Define your goal">
+                <img class="stamp-slide active" src="{{ asset('images/hp2.png') }}" alt="Choose your location">
+                <img class="stamp-slide" src="{{ asset('images/hp3.png') }}" alt="Create your poster">
+                <img class="stamp-slide" src="{{ asset('images/hp4.png') }}" alt="Publish your poster">
+                <img class="stamp-slide" src="{{ asset('images/hp5.png') }}" alt="Reach your local audience">
+            </div>
+        </div>
+
         <div class="stamp-dots">
+            <span class="stamp-dot"></span>
             <span class="stamp-dot active"></span>
             <span class="stamp-dot"></span>
             <span class="stamp-dot"></span>
@@ -349,7 +342,7 @@
                 </div>
             </div>
             <div class="contact-info-item">
-                <div class="contact-icon-circle">✉️</div>
+                <div class="contact-icon-circle">✉</div>
                 <div>contact@postergali.com</div>
             </div>
         </div>
@@ -365,9 +358,9 @@
             </div>
 
             <div class="form-group">
-                <label>Location</label>
+                <label>Last Name</label>
                 <div class="input-wrapper">
-                    <input type="text" placeholder="Enter your city/area">
+                    <input type="text" placeholder="Enter your last name">
                     <span class="input-icon">📍</span>
                 </div>
             </div>
@@ -376,7 +369,7 @@
                 <label>Email</label>
                 <div class="input-wrapper">
                     <input type="email" placeholder="Enter your email address">
-                    <span class="input-icon">✉️</span>
+                    <span class="input-icon">✉</span>
                 </div>
             </div>
 
@@ -397,7 +390,7 @@
             </div>
         </form>
     </div>
-    <div class="scallop-bottom-edge"></div>
+    
 </section>
 
 <!-- FAQS SECTION -->
@@ -479,26 +472,9 @@
 
 <!-- FOOTER / COMPANY SECTION -->
 <footer class="footer-section" id="company">
-    <!-- Hanging Wooden Signboard Logo -->
     <div class="footer-sign-wrap">
         <a href="#hero" style="text-decoration: none; display: inline-block;">
-            <svg width="170" height="110" viewBox="0 0 170 110">
-                <!-- Hanging String -->
-                <line x1="85" y1="5" x2="35" y2="35" stroke="#795548" stroke-width="2"/>
-                <line x1="85" y1="5" x2="135" y2="35" stroke="#795548" stroke-width="2"/>
-                <circle cx="85" cy="5" r="4" fill="#5D4037"/>
-
-                <!-- Wooden Board Frame -->
-                <rect x="15" y="32" width="140" height="70" rx="8" fill="#FFF9E6" stroke="#8D6E63" stroke-width="3"/>
-                <rect x="18" y="35" width="134" height="64" rx="6" fill="none" stroke="#D7CCC8" stroke-width="1.5"/>
-
-                <!-- Logo Text inside Wooden Signboard -->
-                <g transform="translate(30, 48)">
-                    <text x="0" y="24" fill="var(--color-primary-terracotta-700)" font-weight="900" font-size="22" font-family="Impact">POSTER</text>
-                    <text x="24" y="48" fill="#E88F2A" font-weight="900" font-size="22" font-family="Garamond">गली</text>
-                    <circle cx="48" cy="10" r="3" fill="var(--color-primary-terracotta-700)"/>
-                </g>
-            </svg>
+            <img src="{{ asset('images/logo.png') }}" alt="PosterGali" class="footer-logo-image">
         </a>
     </div>
 
@@ -538,6 +514,7 @@
         <div>© 2026 PosterGali. All rights reserved.</div>
         <div><a href="{{ url('/privacy-policy') }}">Privacy Policy</a></div>
         <div><a href="{{ url('/terms-and-conditions') }}">Terms of Service</a></div>
+        <div>Developed by Chandra Prakash &amp; MadeInCode.in team</div>
     </div>
 </footer>
 
@@ -648,6 +625,44 @@
         personaDots.forEach((dot, dotIndex) => dot.addEventListener('click', () => showPersona(dotIndex)));
         showPersona(0);
         setInterval(() => showPersona(personaIndex + 1), 5000);
+    }
+
+    // How-it-works image slider
+    const stampContainer = document.querySelector('.stamp-card-container');
+    const stampTrack = document.querySelector('.stamp-card-track');
+    const stampSlides = stampTrack ? Array.from(stampTrack.querySelectorAll('.stamp-slide')) : [];
+    const stampDots = stampContainer ? Array.from(document.querySelectorAll('.stamp-dot')) : [];
+    let stampIndex = 1;
+    let stampTouchStart = 0;
+
+    function positionStampSlider() {
+        if (!stampContainer || !stampTrack || !stampSlides.length) return;
+        const slideWidth = stampSlides[0].getBoundingClientRect().width;
+        const gap = parseFloat(getComputedStyle(stampTrack).gap) || 0;
+        const offset = (stampContainer.clientWidth - slideWidth) / 2 - (stampIndex * (slideWidth + gap));
+        stampTrack.style.transform = `translateX(${offset}px)`;
+    }
+
+    function showStampSlide(index) {
+        if (!stampSlides.length) return;
+        stampIndex = (index + stampSlides.length) % stampSlides.length;
+        stampSlides.forEach((slide, slideIndex) => slide.classList.toggle('active', slideIndex === stampIndex));
+        stampDots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === stampIndex));
+        positionStampSlider();
+    }
+
+    if (stampTrack) {
+        stampDots.forEach((dot, dotIndex) => dot.addEventListener('click', () => showStampSlide(dotIndex)));
+        stampContainer.addEventListener('touchstart', event => {
+            stampTouchStart = event.changedTouches[0].clientX;
+        }, { passive: true });
+        stampContainer.addEventListener('touchend', event => {
+            const distance = event.changedTouches[0].clientX - stampTouchStart;
+            if (Math.abs(distance) > 40) showStampSlide(stampIndex + (distance < 0 ? 1 : -1));
+        }, { passive: true });
+        window.addEventListener('resize', positionStampSlider);
+        showStampSlide(1);
+        setInterval(() => showStampSlide(stampIndex + 1), 4500);
     }
 
     // ── Mobile Navigation Drawer ──
