@@ -120,6 +120,10 @@
                     <span class="menu-icon">🤝</span>
                     Referrals
                 </a>
+                <a href="{{ route('admin.batch.monitor') }}" class="menu-item {{ ($active ?? null) === 'batch' ? 'active' : '' }}">
+                    <span class="menu-icon">🔔</span>
+                    Batch Monitor
+                </a>
             </div>
             <div class="sidebar-footer">
                 <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;">

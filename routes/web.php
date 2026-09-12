@@ -34,6 +34,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('plans/{plan}/edit', [AdminAuthController::class, 'editPlan'])->name('plans.edit');
         Route::put('plans/{plan}', [AdminAuthController::class, 'updatePlan'])->name('plans.update');
         Route::get('referrals', [AdminAuthController::class, 'referrals'])->name('referrals');
+        Route::get('batch-monitor', [AdminAuthController::class, 'batchMonitor'])->name('batch.monitor');
         Route::get('ads/{type}/{id}', [AdminAuthController::class, 'showAd'])->name('ad.show');
         Route::post('ads/{type}/{id}/status', [AdminAuthController::class, 'updateAdStatus'])->name('ad.status');
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');

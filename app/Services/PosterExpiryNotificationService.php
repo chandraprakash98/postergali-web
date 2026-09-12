@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BatchRunLog;
 use App\Models\Customer;
 use App\Models\Job;
 use App\Models\Notification;
@@ -23,16 +24,30 @@ class PosterExpiryNotificationService
      */
     public function processExpiringPosters(bool $dryRun = false): array
     {
+        $startTime = microtime(true);
         $enabled = (bool) config('posters.expiry_notification.enabled', true);
         if (!$enabled) {
-            return [
-                'status' => 'disabled',
-                'day_before_jobs' => 0,
+            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+            BatchRunLog::create([
+                'ran_at'            => now(),
+                'status'            => 'disabled',
+                'dry_run'           => $dryRun,
+                'day_before_jobs'   => 0,
                 'day_before_offers' => 0,
-                'on_expiry_jobs' => 0,
-                'on_expiry_offers' => 0,
-                'notifications_sent' => 0,
-                'skipped_no_token' => 0,
+                'on_expiry_jobs'    => 0,
+                'on_expiry_offers'  => 0,
+                'notifications_sent'=> 0,
+                'skipped_no_token'  => 0,
+                'duration_ms'       => $durationMs,
+            ]);
+            return [
+                'status'            => 'disabled',
+                'day_before_jobs'   => 0,
+                'day_before_offers' => 0,
+                'on_expiry_jobs'    => 0,
+                'on_expiry_offers'  => 0,
+                'notifications_sent'=> 0,
+                'skipped_no_token'  => 0,
             ];
         }
 
@@ -140,18 +155,35 @@ class PosterExpiryNotificationService
             }
         }
 
-        return [
-            'status' => 'success',
-            'day_before_jobs' => $dayBeforeJobs->count(),
-            'day_before_offers' => $dayBeforeOffers->count(),
-            'on_expiry_jobs' => $onExpiryJobs->count(),
+        $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+
+        $result = [
+            'status'           => 'success',
+            'day_before_jobs'  => $dayBeforeJobs->count(),
+            'day_before_offers'=> $dayBeforeOffers->count(),
+            'on_expiry_jobs'   => $onExpiryJobs->count(),
             'on_expiry_offers' => $onExpiryOffers->count(),
-            'jobs_processed' => $dayBeforeJobs->count() + $onExpiryJobs->count(),
+            'jobs_processed'   => $dayBeforeJobs->count() + $onExpiryJobs->count(),
             'offers_processed' => $dayBeforeOffers->count() + $onExpiryOffers->count(),
-            'notifications_sent' => $notificationsSent,
+            'notifications_sent'=> $notificationsSent,
             'skipped_no_token' => $skippedNoToken,
-            'dry_run' => $dryRun,
+            'dry_run'          => $dryRun,
         ];
+
+        BatchRunLog::create([
+            'ran_at'            => now(),
+            'status'            => 'success',
+            'dry_run'           => $dryRun,
+            'day_before_jobs'   => $result['day_before_jobs'],
+            'day_before_offers' => $result['day_before_offers'],
+            'on_expiry_jobs'    => $result['on_expiry_jobs'],
+            'on_expiry_offers'  => $result['on_expiry_offers'],
+            'notifications_sent'=> $result['notifications_sent'],
+            'skipped_no_token'  => $result['skipped_no_token'],
+            'duration_ms'       => $durationMs,
+        ]);
+
+        return $result;
     }
 
     /**

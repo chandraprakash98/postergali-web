@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdSubcategory;
+use App\Models\BatchRunLog;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Referral;
@@ -450,6 +451,46 @@ class AdminAuthController extends Controller
         }
 
         return $approvedAt->copy()->addDay();
+    }
+
+    public function batchMonitor()
+    {
+        $enabled     = (bool) config('posters.expiry_notification.enabled', true);
+        $schedule    = config('posters.expiry_notification.schedule', '*/2 * * * *');
+        $windowHours = (int) config('posters.expiry_notification.window_hours', 24);
+
+        $totalRuns         = BatchRunLog::count();
+        $lastRun           = BatchRunLog::latest('ran_at')->first();
+        $totalNotifications= BatchRunLog::sum('notifications_sent');
+        $totalSkipped      = BatchRunLog::sum('skipped_no_token');
+        $recentRuns        = BatchRunLog::latest('ran_at')->limit(50)->get();
+
+        // Compute next run from cron expression (simple approximation)
+        $nextRun = null;
+        try {
+            $parts = explode(' ', trim($schedule));
+            if (count($parts) === 5 && preg_match('/^\*\/(\d+)$/', $parts[0], $m)) {
+                $intervalMinutes = (int) $m[1];
+                $now = now();
+                $minutesPast = $now->minute % $intervalMinutes;
+                $minutesUntilNext = $minutesPast === 0 ? $intervalMinutes : ($intervalMinutes - $minutesPast);
+                $nextRun = $now->copy()->addMinutes($minutesUntilNext)->seconds(0);
+            }
+        } catch (\Throwable) {}
+
+        return view('admin.batch-monitor', [
+            'active'             => 'batch',
+            'enabled'            => $enabled,
+            'schedule'           => $schedule,
+            'windowHours'        => $windowHours,
+            'totalRuns'          => $totalRuns,
+            'lastRun'            => $lastRun,
+            'totalNotifications' => $totalNotifications,
+            'totalSkipped'       => $totalSkipped,
+            'recentRuns'         => $recentRuns,
+            'nextRun'            => $nextRun,
+            'stats'              => $this->getStats(),
+        ]);
     }
 
     public function logout()

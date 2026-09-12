@@ -53,8 +53,8 @@ return [
     */
 
     'expiry_notification' => [
-        // Cron schedule expression (Default: every 15 minutes)
-        'schedule' => env('POSTER_EXPIRY_CRON_SCHEDULE', '*/15 * * * *'),
+        // Cron schedule expression (Default: every 2 minutes)
+        'schedule' => env('POSTER_EXPIRY_CRON_SCHEDULE', '*/2 * * * *'),
 
         // Number of hours ahead to detect posters expiring tomorrow (Default: 24 hours)
         'window_hours' => (int) env('POSTER_EXPIRING_WINDOW_HOURS', 24),

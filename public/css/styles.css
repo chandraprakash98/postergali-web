@@ -872,53 +872,54 @@ body {
         margin-top: -14px;
         transform: rotate(-3deg);
     }
-/* 6th Poster - Left Low */
-/* 6th Poster - Left Low */
-.poster-left-low {
-    width: clamp(60px, 16vw, 95px);
-    height: clamp(82px, 27vw, 140px);
 
-    left: calc(50% - clamp(168px, 44vw, 230px) - 5px);
+    /* 6th Poster - Left Low */
+    /* 6th Poster - Left Low */
+    .poster-left-low {
+        width: clamp(60px, 16vw, 95px);
+        height: clamp(82px, 27vw, 140px);
 
-    /* ⬆️ UP: increase negative value, e.g. -70px */
-    /* ⬇️ DOWN: decrease negative value, e.g. -30px */
-    bottom: calc(clamp(115px, 27vw, 165px) - 80px);
+        left: calc(50% - clamp(168px, 44vw, 230px) - 5px);
 
-    z-index: 4;
-    margin-top: -4px;
-    transform: rotate(2deg);
-}
+        /* ⬆️ UP: increase negative value, e.g. -70px */
+        /* ⬇️ DOWN: decrease negative value, e.g. -30px */
+        bottom: calc(clamp(115px, 27vw, 165px) - 80px);
+
+        z-index: 4;
+        margin-top: -4px;
+        transform: rotate(2deg);
+    }
 
 
-   /* 4th Poster */
-.poster-right-low {
-    width: clamp(58px, 15.5vw, 92px);
-    height: clamp(82px, 27vw, 140px);
+    /* 4th Poster */
+    .poster-right-low {
+        width: clamp(58px, 15.5vw, 92px);
+        height: clamp(82px, 27vw, 140px);
 
-    /* ⬅️ LEFT: -10px ko aur negative karo */
-    /* ➡️ RIGHT: -10px ko -8px karo */
-    right: calc(50% - clamp(96px, 9vw, 165px) - 15px);
+        /* ⬅️ LEFT: -10px ko aur negative karo */
+        /* ➡️ RIGHT: -10px ko -8px karo */
+        right: calc(50% - clamp(96px, 9vw, 165px) - 15px);
 
-    bottom: calc(clamp(50px, 5vw, 50px) - 20px);
-    z-index: 3;
-    transform: rotate(-3deg);
-}
+        bottom: calc(clamp(50px, 5vw, 50px) - 20px);
+        z-index: 3;
+        transform: rotate(-3deg);
+    }
 
 
     /* 5th Poster */
-.poster-right-high {
-    width: clamp(60px, 16vw, 95px);
-    height: clamp(82px, 27vw, 140px);
-    right: calc(50% - clamp(168px, 45vw, 230px) + 4px);
+    .poster-right-high {
+        width: clamp(60px, 16vw, 95px);
+        height: clamp(82px, 27vw, 140px);
+        right: calc(50% - clamp(168px, 45vw, 230px) + 4px);
 
-    /* ⬆️ UP: value kam karo */
-    /* ⬇️ DOWN: value badhao */
-    top: calc(clamp(55px, 14vw, 95px) + 27px);
+        /* ⬆️ UP: value kam karo */
+        /* ⬇️ DOWN: value badhao */
+        top: calc(clamp(55px, 14vw, 95px) + 27px);
 
-    bottom: auto;
-    transform: rotate(2deg);
-    z-index: 4;
-}
+        bottom: auto;
+        transform: rotate(2deg);
+        z-index: 4;
+    }
 
 
 
@@ -2307,7 +2308,7 @@ body {
     box-sizing: border-box;
     text-align: left;
     gap: 10px;
-   
+
 }
 
 .footer-bottom-bar>div,
@@ -3018,5 +3019,216 @@ body {
 
     .stack-card.card-5 {
         transform: rotate(-0.6deg) !important;
+    }
+}
+
+/* ================= 393×852 DEVICE (iPhone 14/15 Pro) ================= */
+@media (max-width: 393px) {
+
+    /* Prevent any horizontal overflow / zoom-trigger */
+    html,
+    body {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    /* ── FOOTER: force full-width for every child ── */
+    .footer-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 24px 0 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .footer-sign-wrap,
+    .footer-tagline,
+    .follow-title,
+    .social-icons {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .footer-tagline {
+        font-size: 10px !important;
+        padding: 0 16px !important;
+        max-width: none !important;
+    }
+
+    /* App-store buttons row in footer — stretch edge-to-edge */
+    .footer-section>.app-store-btns {
+        width: 100% !important;
+        padding: 0 12px !important;
+        box-sizing: border-box !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+
+    .footer-section>.app-store-btns .app-store-btn {
+        flex: 1 1 140px !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        padding: 8px 10px !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Bottom golden bar — must span full width */
+    .footer-bottom-bar {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 12px 14px !important;
+        box-sizing: border-box !important;
+        margin: 16px 0 0 !important;
+        font-size: 10px !important;
+        gap: 6px !important;
+    }
+
+    .footer-bottom-bar>div,
+    .footer-bottom-bar a {
+        width: 100% !important;
+        font-size: 10px !important;
+        word-break: break-word !important;
+    }
+
+    /* ── Contact card — keep inside viewport ── */
+    .contact-card-green {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 36px 18px 44px !important;
+        box-sizing: border-box !important;
+        border-radius: 0 !important;
+    }
+
+    .contact-info-pill {
+        padding: 18px 16px !important;
+        gap: 18px !important;
+        margin-bottom: 40px !important;
+    }
+
+    .contact-info-item {
+        font-size: 15px !important;
+        gap: 14px !important;
+    }
+
+    .form-group label {
+        font-size: 15px !important;
+    }
+
+    .input-wrapper input,
+    .input-wrapper textarea {
+        font-size: 14px !important;
+        min-height: 50px !important;
+        padding: 12px 46px 12px 16px !important;
+    }
+
+    /* ── Hero section text ── */
+    .hero h1 {
+        font-size: clamp(22px, 8vw, 32px) !important;
+    }
+
+    .hero p {
+        font-size: 14px !important;
+        padding: 0 12px !important;
+    }
+
+    /* ── FAQ section ── */
+    .faq-accordion-box {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* ── Hero Phone + Poster Stage (same as 900px, tuned for 393px) ── */
+    .hero-cta-btn {
+        display: none !important;
+    }
+
+    .phone-section {
+        max-width: 100% !important;
+        height: clamp(330px, 85vw, 370px) !important;
+        overflow: hidden !important;
+        margin-top: -24px !important;
+        margin-bottom: 18px !important;
+    }
+
+    .phone {
+        width: clamp(150px, 38vw, 165px) !important;
+        height: clamp(280px, 72vw, 310px) !important;
+        z-index: 10 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+
+    .poster-card {
+        padding: 0 !important;
+    }
+
+    /* 1st Poster — Far Left */
+    .poster-far-left {
+        width: clamp(54px, 14vw, 72px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        left: calc(0px - clamp(55px, 11vw, 68px) + 8px) !important;
+        top: calc(clamp(55px, 14vw, 85px) + 36px) !important;
+        margin-top: -10px !important;
+        bottom: auto !important;
+        z-index: 2 !important;
+        transform: rotate(-2deg) !important;
+    }
+
+    /* 2nd Poster — Left High */
+    .poster-left-high {
+        width: clamp(56px, 14.5vw, 74px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        left: calc(50% - clamp(118px, 30vw, 158px) + 20px - 5px) !important;
+        top: calc(clamp(55px, 14vw, 85px) + 36px) !important;
+        bottom: auto !important;
+        z-index: 2 !important;
+        margin-top: -14px !important;
+        transform: rotate(-3deg) !important;
+    }
+
+    /* 3rd Poster — Left Low */
+    .poster-left-low {
+        width: clamp(58px, 15vw, 78px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        left: calc(50% - clamp(162px, 42vw, 200px) - 5px) !important;
+        bottom: calc(clamp(115px, 27vw, 148px) - 60px) !important;
+        z-index: 4 !important;
+        margin-top: -4px !important;
+        transform: rotate(2deg) !important;
+    }
+
+
+    /* 4th Poster — Right Low */
+    .poster-right-low {
+        width: clamp(56px, 14.5vw, 74px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        right: calc(50% - clamp(90px, 8vw, 148px) - 15px) !important;
+        bottom: calc(clamp(50px, 5vw, 50px) - 20px) !important;
+        z-index: 3 !important;
+        transform: rotate(-3deg) !important;
+    }
+
+    /* 5th Poster — Right High */
+    .poster-right-high {
+        width: clamp(58px, 15vw, 78px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        right: calc(50% - clamp(162px, 43vw, 200px) + 4px) !important;
+        top: calc(clamp(55px, 14vw, 85px) + 27px) !important;
+        bottom: auto !important;
+        transform: rotate(2deg) !important;
+        z-index: 4 !important;
+    }
+
+    /* 6th Poster — Far Right */
+    .poster-far-right {
+        width: clamp(54px, 14vw, 72px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        right: calc(0px - clamp(56px, 13vw, 72px) + 10px) !important;
+        bottom: calc(clamp(15px, 14vw, 40px) - 10px) !important;
+        z-index: 2 !important;
+        transform: rotate(-2deg) !important;
     }
 }
