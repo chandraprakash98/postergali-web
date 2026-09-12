@@ -28,6 +28,8 @@ class CheckPosterExpiryCommand extends Command
     {
         $dryRun = (bool) $this->option('dry-run');
 
+        \Illuminate\Support\Facades\Log::info("🚀 [Batch:posters:check-expiry] Started (dryRun=" . ($dryRun ? 'true' : 'false') . ")");
+
         $this->info('Starting poster expiry check batch...');
         if ($dryRun) {
             $this->warn('Running in DRY-RUN mode. No notifications will be sent and no database records modified.');
@@ -37,8 +39,11 @@ class CheckPosterExpiryCommand extends Command
 
         if (($result['status'] ?? '') === 'disabled') {
             $this->warn('Poster expiry notification batch is currently DISABLED in config (POSTER_EXPIRY_NOTIFICATION_ENABLED=false).');
+            \Illuminate\Support\Facades\Log::warning("⚠️ [Batch:posters:check-expiry] Skipped - batch is DISABLED in config.");
             return Command::SUCCESS;
         }
+
+        \Illuminate\Support\Facades\Log::info("✅ [Batch:posters:check-expiry] Finished. Sent={$result['notifications_sent']}, Skipped={$result['skipped_no_token']}, MilestonesSent={$result['milestones_sent']}");
 
         $this->table(
             ['Metric', 'Value'],

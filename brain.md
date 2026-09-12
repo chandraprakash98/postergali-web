@@ -244,7 +244,8 @@ Customers have an account tied to their mobile number (`Customer`) and a wallet 
 | `MAX_POSTERS_PER_DAY_PER_PHONE` | `2` | Maximum posters a phone number can create in a single calendar day (0 = disabled) |
 | `POSTER_DAILY_LIMIT_MODE` | `combined` | Limit mode: `combined` (jobs + offers) or `per_type` |
 | `POSTER_DAILY_LIMIT_MESSAGE` | *Standard limit text* | Template for validation error on limit reach |
-| `POSTER_EXPIRY_CRON_SCHEDULE` | `*/15 * * * *` | Cron schedule expression for the poster expiry notification batch |
+| `POSTER_EXPIRY_CRON_SCHEDULE` | `0 6 * * *` | Cron schedule expression for the poster expiry notification batch (everyday at 6:00 AM) |
+| `POSTER_EXPIRY_TIMEZONE` | `Asia/Kolkata` | Timezone for the scheduled batch execution (Indian Standard Time) |
 | `POSTER_EXPIRING_WINDOW_HOURS` | `24` | Lookahead window in hours to detect posters expiring today |
 | `POSTER_EXPIRY_NOTIFICATION_ENABLED` | `true` | Master switch to enable/disable automated expiry notifications |
 | `DB_CONNECTION` | `mysql` | Database driver (`sqlite` in phpunit testing) |

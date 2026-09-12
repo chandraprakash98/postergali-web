@@ -12,6 +12,7 @@ use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Plan;
 use App\Models\Notification;
+use App\Services\PosterExpiryNotificationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -460,16 +461,18 @@ class AdminAuthController extends Controller
 
     private function getBatchStatus(): array
     {
-        $enabled     = (bool) config('posters.expiry_notification.enabled', true);
-        $schedule    = config('posters.expiry_notification.schedule', '*/2 * * * *');
-        $windowHours = (int) config('posters.expiry_notification.window_hours', 24);
+        $enabled       = (bool) config('posters.expiry_notification.enabled', true);
+        $schedule      = PosterExpiryNotificationService::getSchedule();
+        $timezone      = PosterExpiryNotificationService::getTimezone();
+        $scheduleHuman = PosterExpiryNotificationService::getScheduleHuman();
+        $windowHours   = (int) config('posters.expiry_notification.window_hours', 24);
 
         $totalRuns          = BatchRunLog::count();
         $lastRun            = BatchRunLog::latest('ran_at')->first();
         $totalNotifications = (int) BatchRunLog::sum('notifications_sent');
         $totalSkipped       = (int) BatchRunLog::sum('skipped_no_token');
 
-        // Step minutes from cron (default every 2 minutes)
+        // Dynamic step minutes for periodic intervals if applicable
         $stepMinutes = 2;
         if (preg_match('/^\*\/(\d+)/', trim($schedule), $matches)) {
             $stepMinutes = max(1, (int) $matches[1]);
@@ -477,23 +480,19 @@ class AdminAuthController extends Controller
             $stepMinutes = 1;
         }
 
-        $nowIst = Carbon::now('Asia/Kolkata');
-        $currentMinute = (int) $nowIst->minute;
-        $remainder = $currentMinute % $stepMinutes;
-        $minutesToAdd = $stepMinutes - $remainder;
-        if ($minutesToAdd === 0) {
-            $minutesToAdd = $stepMinutes;
-        }
-        $nextRunIst = $nowIst->copy()->addMinutes($minutesToAdd)->second(0);
+        $nowIst     = Carbon::now($timezone);
+        $nextRunIst = PosterExpiryNotificationService::getNextRunIst();
 
         // Convert lastRun ran_at to India Timezone (Asia/Kolkata)
         $lastRunIst = $lastRun && $lastRun->ran_at
-            ? $lastRun->ran_at->copy()->timezone('Asia/Kolkata')
+            ? $lastRun->ran_at->copy()->timezone($timezone)
             : null;
 
         return [
             'enabled'              => $enabled,
             'schedule'             => $schedule,
+            'scheduleHuman'        => $scheduleHuman,
+            'timezone'             => $timezone,
             'windowHours'          => $windowHours,
             'stepMinutes'          => $stepMinutes,
             'totalRuns'            => $totalRuns,

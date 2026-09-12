@@ -11,6 +11,70 @@ use Illuminate\Support\Facades\Log;
 
 class PosterExpiryNotificationService
 {
+    /**
+     * Centralized Batch Timer & Schedule Constants
+     * Single source of truth for the default batch schedule and timezone.
+     */
+    public const DEFAULT_SCHEDULE = '0 6 * * *'; // Everyday at 6:00 AM IST
+    public const DEFAULT_TIMEZONE = 'Asia/Kolkata'; // Indian Standard Time (IST)
+
+    /**
+     * Get the configured batch cron schedule.
+     */
+    public static function getSchedule(): string
+    {
+        return (string) config('posters.expiry_notification.schedule', self::DEFAULT_SCHEDULE);
+    }
+
+    /**
+     * Get the configured batch timezone.
+     */
+    public static function getTimezone(): string
+    {
+        return (string) config('posters.expiry_notification.timezone', self::DEFAULT_TIMEZONE);
+    }
+
+    /**
+     * Calculate the next scheduled run as a Carbon instance in India Timezone (Asia/Kolkata).
+     */
+    public static function getNextRunIst(): \Carbon\Carbon
+    {
+        $schedule = self::getSchedule();
+        $timezone = self::getTimezone();
+
+        try {
+            $cron = new \Cron\CronExpression($schedule);
+            $nextDate = $cron->getNextRunDate(
+                new \DateTime('now', new \DateTimeZone($timezone)),
+                0,
+                false,
+                $timezone
+            );
+            return \Carbon\Carbon::instance($nextDate)->setTimezone($timezone);
+        } catch (\Throwable $e) {
+            // Fallback: tomorrow at 6:00 AM IST
+            return \Carbon\Carbon::now($timezone)->addDay()->setTime(6, 0, 0);
+        }
+    }
+
+    /**
+     * Human-friendly description of the configured batch schedule.
+     */
+    public static function getScheduleHuman(): string
+    {
+        $schedule = trim(self::getSchedule());
+        if ($schedule === '0 6 * * *') {
+            return 'Everyday at 6:00 AM IST';
+        }
+        if (preg_match('/^\*\/(\d+)/', $schedule, $m)) {
+            return "Every {$m[1]} mins";
+        }
+        if ($schedule === '* * * * *') {
+            return 'Every minute';
+        }
+        return "Custom ({$schedule})";
+    }
+
     public function __construct(
         protected FirebaseNotificationService $firebaseService = new FirebaseNotificationService(),
         protected PosterPostingLimitService $limitService = new PosterPostingLimitService(),

@@ -8,9 +8,14 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Configurable poster expiry check batch (Default: runs every 2 minutes)
-$expirySchedule = config('posters.expiry_notification.schedule', '*/2 * * * *');
+use App\Services\PosterExpiryNotificationService;
+
+// Centralized configurable poster expiry check batch (Default: runs everyday at 6:00 AM India Standard Time)
+$expirySchedule = PosterExpiryNotificationService::getSchedule();
+$expiryTimezone = PosterExpiryNotificationService::getTimezone();
+
 Schedule::command('posters:check-expiry')
     ->cron($expirySchedule)
+    ->timezone($expiryTimezone)
     ->withoutOverlapping()
     ->runInBackground();

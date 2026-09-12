@@ -18,19 +18,29 @@ The system runs **one unified master batch command** that handles 3 notification
 
 ## 2. Schedule & Cadence
 
-- **Default Schedule:** Runs **every 2 minutes** (`*/2 * * * *`)
-- **Configurable via `.env`:**
+- **Default Schedule:** Runs **everyday at 6:00 AM India Standard Time** (`0 6 * * *` in `Asia/Kolkata`)
+- **Single Source of Truth (Constants):**
+  - Defined on [`PosterExpiryNotificationService`](file:///c:/xampp/htdocs/postergali-web/app/Services/PosterExpiryNotificationService.php):
+    ```php
+    public const DEFAULT_SCHEDULE = '0 6 * * *'; // Everyday at 6:00 AM IST
+    public const DEFAULT_TIMEZONE = 'Asia/Kolkata'; // Indian Standard Time (IST)
+    ```
+- **Configurable in one place via `config/posters.php` or `.env`:**
   ```env
-  POSTER_EXPIRY_CRON_SCHEDULE="*/2 * * * *"
+  POSTER_EXPIRY_CRON_SCHEDULE="0 6 * * *"
+  POSTER_EXPIRY_TIMEZONE="Asia/Kolkata"
   POSTER_EXPIRING_WINDOW_HOURS=24
   POSTER_EXPIRY_NOTIFICATION_ENABLED=true
-  POSTER_VIEW_MILESTONE_THRESHOLDS="100,500"
+  POSTER_VIEW_MILESTONE_THRESHOLDS="100,200,500"
   ```
-- Defined in [`routes/console.php`](file:///c:/xampp/htdocs/postergali-web/routes/console.php):
+- Registered centrally in [`routes/console.php`](file:///c:/xampp/htdocs/postergali-web/routes/console.php):
   ```php
-  $expirySchedule = config('posters.expiry_notification.schedule', '*/2 * * * *');
+  $expirySchedule = PosterExpiryNotificationService::getSchedule();
+  $expiryTimezone = PosterExpiryNotificationService::getTimezone();
+
   Schedule::command('posters:check-expiry')
       ->cron($expirySchedule)
+      ->timezone($expiryTimezone)
       ->withoutOverlapping()
       ->runInBackground();
   ```
@@ -153,7 +163,7 @@ http://your-server-domain/admin/batch-monitor
 ### What you see on the Batch Monitor:
 1. **Status Bar:**
    - **System Status:** Active (Green) / Inactive
-   - **Schedule:** Every 2 min (`*/2 * * * *`)
+   - **Schedule:** Everyday at 6:00 AM IST (`0 6 * * *`)
    - **Last Batch Run:** Time in Indian Standard Time (IST) & Relative Time (e.g. `1 min ago`)
    - **Next Scheduled Run:** Precise IST timestamp & live animated countdown timer (`in 01:45`)
    - **Current Server Time:** Synced in IST (`Asia/Kolkata`)

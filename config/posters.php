@@ -53,8 +53,11 @@ return [
     */
 
     'expiry_notification' => [
-        // Cron schedule expression (Default: every 2 minutes)
-        'schedule' => env('POSTER_EXPIRY_CRON_SCHEDULE', '*/2 * * * *'),
+        // Cron schedule expression (Default: everyday at 6:00 AM India Standard Time)
+        'schedule' => env('POSTER_EXPIRY_CRON_SCHEDULE', \App\Services\PosterExpiryNotificationService::DEFAULT_SCHEDULE),
+
+        // Timezone for the scheduled batch execution (Default: Asia/Kolkata / IST)
+        'timezone' => env('POSTER_EXPIRY_TIMEZONE', \App\Services\PosterExpiryNotificationService::DEFAULT_TIMEZONE),
 
         // Number of hours ahead to detect posters expiring tomorrow (Default: 24 hours)
         'window_hours' => (int) env('POSTER_EXPIRING_WINDOW_HOURS', 24),
@@ -75,7 +78,7 @@ return [
     'view_milestones' => [
         // Comma-separated thresholds configurable via env (e.g. "100,500" or "100,200,500,1000")
         'thresholds' => array_values(array_filter(
-            array_map('intval', explode(',', env('POSTER_VIEW_MILESTONE_THRESHOLDS', '100,500')))
+            array_map('intval', explode(',', env('POSTER_VIEW_MILESTONE_THRESHOLDS', '100,200,500')))
         )),
 
         'title' => env(

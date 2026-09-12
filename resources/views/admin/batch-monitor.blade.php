@@ -335,7 +335,7 @@
                         <span>{{ $enabled ? 'BATCH ACTIVE' : 'BATCH DISABLED' }}</span>
                     </span>
                     <div style="font-size:12px; color:#8b8179; margin-top:6px; font-weight:600;">
-                        Schedule: <code>Every {{ $stepMinutes }} mins</code> · Window: {{ $windowHours }}h
+                        Schedule: <code>{{ $scheduleHuman ?? $schedule }} ({{ $schedule }})</code> · Window: {{ $windowHours }}h
                     </div>
                 </div>
 
@@ -534,9 +534,14 @@
         }
 
         const totalSec = Math.floor(diffMs / 1000);
-        const mins = Math.floor(totalSec / 60);
+        const hours = Math.floor(totalSec / 3600);
+        const mins = Math.floor((totalSec % 3600) / 60);
         const secs = totalSec % 60;
-        const formatted = (mins < 10 ? '0' : '') + mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
+        let formatted = '';
+        if (hours > 0) {
+            formatted += (hours < 10 ? '0' : '') + hours + 'h ';
+        }
+        formatted += (mins < 10 ? '0' : '') + mins + 'm ' + (secs < 10 ? '0' : '') + secs + 's';
 
         countdownEls.forEach(el => {
             el.classList.remove('running');
