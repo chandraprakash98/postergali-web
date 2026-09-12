@@ -116,12 +116,13 @@ class FirebaseNotificationService
                 ->withData($stringData);
 
             $result = $messaging->send($message);
+            $messageId = is_array($result) ? json_encode($result) : (string) $result;
 
-            Log::info("FCM Notification sent successfully to {$token}. Message ID: {$result}");
+            Log::info("FCM Notification sent successfully to {$token}. Message ID: {$messageId}");
 
             return [
                 'success' => true,
-                'message_id' => $result,
+                'message_id' => $messageId,
             ];
         } catch (\Throwable $e) {
             Log::error("FCM Notification failed to send to {$token}: " . $e->getMessage(), [

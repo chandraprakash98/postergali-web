@@ -46,18 +46,21 @@ class TestFcmCommand extends Command
 
         if (!file_exists($credentialsPath)) {
             $this->error("❌ Credentials file NOT found at: {$credentialsPath}");
-            $this->warn("To fix this:");
-            $this->warn("1. Upload your 'firebase-service-account.json' to the VPS at:");
-            $this->warn("   /var/www/postergali-web/storage/app/firebase/firebase-service-account.json");
-            $this->warn("2. Run: chmod 644 storage/app/firebase/firebase-service-account.json");
-            $this->warn("3. Run: chown www-data:www-data storage/app/firebase/firebase-service-account.json");
-            return 1;
-        }
-
-        if (!is_readable($credentialsPath)) {
+            if (!$this->option('check-pending')) {
+                $this->warn("To fix this:");
+                $this->warn("1. Upload your 'firebase-service-account.json' to the VPS at:");
+                $this->warn("   /var/www/postergali-web/storage/app/firebase/firebase-service-account.json");
+                $this->warn("2. Run: chmod 644 storage/app/firebase/firebase-service-account.json");
+                $this->warn("3. Run: chown www-data:www-data storage/app/firebase/firebase-service-account.json");
+                return 1;
+            }
+            $this->warn("Proceeding in DB-inspection only mode (dry-run) for --check-pending...");
+        } elseif (!is_readable($credentialsPath)) {
             $this->error("❌ Credentials file exists but is NOT readable by PHP!");
-            $this->warn("Run: chmod 644 {$credentialsPath}");
-            return 1;
+            if (!$this->option('check-pending')) {
+                $this->warn("Run: chmod 644 {$credentialsPath}");
+                return 1;
+            }
         }
 
         $this->info("✅ Firebase credentials file is valid and readable!");

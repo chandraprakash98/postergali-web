@@ -72,7 +72,7 @@ class PosterMilestoneNotificationService
 
         if ($token) {
             if (!$dryRun) {
-                $this->firebaseService->sendToToken($token, $title, $combinedBody, [
+                $sendResult = $this->firebaseService->sendToToken($token, $title, $combinedBody, [
                     'type' => 'view_milestone',
                     'item_type' => $type,
                     'item_id' => $poster->id,
@@ -80,6 +80,11 @@ class PosterMilestoneNotificationService
                     'milestone_views' => (string) $achievedMilestone,
                     'current_views' => (string) $currentViews,
                 ]);
+
+                if (!($sendResult['success'] ?? false)) {
+                    Log::error("Milestone {$achievedMilestone} FCM send failed for {$type} #{$poster->id}: " . ($sendResult['error'] ?? $sendResult['reason'] ?? 'unknown'));
+                    return null;
+                }
 
                 // Mark milestone as notified only when successfully dispatched
                 $poster->last_view_milestone_notified = $achievedMilestone;
@@ -89,7 +94,7 @@ class PosterMilestoneNotificationService
             return $achievedMilestone;
         }
 
-        Log::info("Milestone {$achievedMilestone} views reached for {$type} #{$poster->id}, but no FCM token found.");
+        Log::warning("Milestone {$achievedMilestone} views reached for {$type} #{$poster->id} (phone: {$phone}, device_id: {$poster->device_id}), but NO matching FCM token could be found.");
         return null;
     }
 
