@@ -8,7 +8,7 @@
 <!-- Google Fonts for Modern Display & Geometric Typography -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700,800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
 </head>
@@ -267,7 +267,7 @@
 
         <div class="stack-card card-2">
             <div class="card-num">02</div>
-            <h4>No favourites—everyone equal</h4>
+            <h4>No favourites-everyone equal</h4>
             <p>Every poster gets equal visibility in your area.</p>
         </div>
 
