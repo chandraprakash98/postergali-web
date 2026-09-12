@@ -872,39 +872,54 @@ body {
         margin-top: -14px;
         transform: rotate(-3deg);
     }
+/* 6th Poster - Left Low */
+/* 6th Poster - Left Low */
+.poster-left-low {
+    width: clamp(60px, 16vw, 95px);
+    height: clamp(82px, 27vw, 140px);
 
-    .poster-left-low {
-        width: clamp(60px, 16vw, 95px);
-        height: clamp(82px, 27vw, 140px);
-        left: calc(50% - clamp(168px, 44vw, 230px) - 5px);
-        bottom: calc(clamp(115px, 27vw, 165px) - 60px);
-        z-index: 4;
-        margin-top: -4px;
-        transform: rotate(2deg);
-    }
+    left: calc(50% - clamp(168px, 44vw, 230px) - 5px);
 
-    /* 4th Poster */
-    .poster-right-low {
-        width: clamp(58px, 15.5vw, 92px);
-        height: clamp(82px, 27vw, 140px);
-        right: calc(50% - clamp(96px, 9vw, 165px) - 10px);
-        bottom: calc(clamp(50px, 5vw, 50px) - 20px);
-        z-index: 3;
-        transform: rotate(-3deg);
-    }
+    /* ⬆️ UP: increase negative value, e.g. -70px */
+    /* ⬇️ DOWN: decrease negative value, e.g. -30px */
+    bottom: calc(clamp(115px, 27vw, 165px) - 80px);
+
+    z-index: 4;
+    margin-top: -4px;
+    transform: rotate(2deg);
+}
+
+
+   /* 4th Poster */
+.poster-right-low {
+    width: clamp(58px, 15.5vw, 92px);
+    height: clamp(82px, 27vw, 140px);
+
+    /* ⬅️ LEFT: -10px ko aur negative karo */
+    /* ➡️ RIGHT: -10px ko -8px karo */
+    right: calc(50% - clamp(96px, 9vw, 165px) - 15px);
+
+    bottom: calc(clamp(50px, 5vw, 50px) - 20px);
+    z-index: 3;
+    transform: rotate(-3deg);
+}
 
 
     /* 5th Poster */
-    /* 5th Poster */
-    .poster-right-high {
-        width: clamp(60px, 16vw, 95px);
-        height: clamp(82px, 27vw, 140px);
-        right: calc(50% - clamp(168px, 45vw, 230px) + 4px);
-        top: calc(clamp(55px, 14vw, 95px) + 50px);
-        bottom: auto;
-        transform: rotate(2deg);
-        z-index: 4;
-    }
+.poster-right-high {
+    width: clamp(60px, 16vw, 95px);
+    height: clamp(82px, 27vw, 140px);
+    right: calc(50% - clamp(168px, 45vw, 230px) + 4px);
+
+    /* ⬆️ UP: value kam karo */
+    /* ⬇️ DOWN: value badhao */
+    top: calc(clamp(55px, 14vw, 95px) + 27px);
+
+    bottom: auto;
+    transform: rotate(2deg);
+    z-index: 4;
+}
+
 
 
     /* 6th Poster */
@@ -2292,7 +2307,7 @@ body {
     box-sizing: border-box;
     text-align: left;
     gap: 10px;
-    margin: 30px 0 0;
+   
 }
 
 .footer-bottom-bar>div,
