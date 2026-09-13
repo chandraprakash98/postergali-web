@@ -84,7 +84,9 @@ class BatchMonitorService
 
                 // Upcoming run details
                 'upcomingFormatted' => $upcomingIst ? $upcomingIst->format('d M Y, h:i A') . ' IST' : 'N/A',
+                'upcomingTimeOnly'  => $upcomingIst ? $upcomingIst->format('h:i A') . ' IST' : 'N/A',
                 'upcomingHuman'     => $upcomingIst ? $upcomingIst->diffForHumans() : 'Disabled',
+                'upcomingIso'       => $upcomingIst ? $upcomingIst->toIso8601String() : null,
             ];
         }
 
