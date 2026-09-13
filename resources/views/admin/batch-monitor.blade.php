@@ -23,62 +23,62 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
             background: var(--bg);
             color: var(--muted);
-            font-size: 13px;
+            font-size: 14px;
         }
 
         .container { display: flex; min-height: 100vh; }
 
-        /* ── Sidebar ── */
-        .sidebar { width: 220px; background: var(--sidebar); color: #fff; padding: 22px 16px; position: fixed; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
-        .logo { font-size: 18px; font-weight: 800; margin-bottom: 22px; }
-        .logo .menu-icon { background: #fff; color: var(--sidebar); padding: 6px; border-radius: 6px; display: inline-block; font-size: 14px; }
-        .menu-items { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .sidebar-footer { margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.12); }
-        .menu-item { color: rgba(255,255,255,0.92); text-decoration: none; padding: 8px 12px; border-radius: 8px; display: flex; gap: 10px; align-items: center; font-weight: 600; font-size: 12.5px; }
+        /* ── Sidebar (matches Dashboard exactly) ── */
+        .sidebar { width: 240px; background: var(--sidebar); color: #fff; padding: 28px 22px; position: fixed; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+        .logo { font-size: 20px; font-weight: 800; margin-bottom: 30px; }
+        .logo .menu-icon { background: #fff; color: var(--sidebar); padding: 8px; border-radius: 8px; display: inline-block; }
+        .menu-items { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.12); }
+        .menu-item { color: rgba(255,255,255,0.95); text-decoration: none; padding: 12px 14px; border-radius: 10px; display: flex; gap: 12px; align-items: center; font-weight: 600; }
         .menu-item:hover { background: rgba(255,255,255,0.06); }
         .menu-item.active { background: rgba(255,255,255,0.14); }
-        .logout-btn { background: var(--accent); color: #fff; border: none; padding: 6px 12px; border-radius: 14px; cursor: pointer; font-weight: 700; font-size: 12px; }
+        .logout-btn { background: var(--accent); color: #fff; border: none; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 13px; }
 
-        /* ── Main ── */
-        .main-content { flex: 1; margin-left: 220px; }
-        .topbar { padding: 18px 32px 12px; display: flex; justify-content: space-between; align-items: center; }
-        .page-heading h2 { font-size: 19px; color: #302b27; margin: 0; font-weight: 800; }
-        .page-heading p { color: #8b8179; margin: 2px 0 0; font-size: 12px; }
-        .content { padding: 0 32px 40px; }
+        /* ── Main Content & Topbar ── */
+        .main-content { flex: 1; margin-left: 240px; }
+        .topbar { padding: 28px 40px 18px; display: flex; justify-content: space-between; align-items: center; }
+        .page-heading h2 { font-size: 22px; color: #302b27; margin: 0; font-weight: 800; }
+        .page-heading p { color: #8b8179; margin: 4px 0 0; font-size: 14px; }
+        .content { padding: 0 40px 60px; }
 
-        /* ── Compact Schedule Info Strip ── */
+        /* ── Schedule Info Strip ── */
         .schedule-info {
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 14px;
-            margin-bottom: 16px;
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 11.5px;
+            font-size: 13px;
             color: #79706b;
             font-weight: 600;
         }
         .schedule-info strong { color: #2f2a26; }
 
-        /* ── Compact Batch Grid ── */
+        /* ── Batch Grid ── */
         .batch-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 20px;
         }
 
-        /* ── Super Compact Batch Card ── */
+        /* ── Compact & Clean Batch Card ── */
         .batch-card {
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            box-shadow: 0 2px 8px rgba(43,30,24,0.03);
+            border-radius: 14px;
+            padding: 18px 22px;
+            box-shadow: 0 4px 14px rgba(43,30,24,0.04);
             display: flex;
             flex-direction: column;
         }
@@ -87,75 +87,74 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
-            padding-bottom: 6px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #f2ece3;
         }
 
         .batch-title {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 800;
             color: #2f2a26;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
         .batch-desc {
-            font-size: 11px;
+            font-size: 12px;
             color: #9b9188;
-            margin-top: 1px;
+            margin-top: 2px;
             font-weight: 500;
         }
 
-        /* ── Header Right: Timer Left to Active Button ── */
+        /* ── Header Actions (Timer pill directly left to Active button) ── */
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-shrink: 0;
         }
 
-        /* ── Clean, Small Timer Div ── */
         .timer-pill {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             background: var(--info-bg);
             border: 1px solid var(--info-border);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 12px;
             color: var(--info-text);
             font-weight: 600;
         }
         .timer-pill .timer-label {
             color: #6298be;
-            font-size: 10px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
         .timer-pill .timer-time {
             color: #114c72;
             font-weight: 800;
-            font-size: 11.5px;
+            font-size: 13px;
         }
         .timer-pill .timer-countdown {
             background: #fff;
             color: var(--info-text);
             border: 1px solid #bcdcf5;
-            padding: 1px 6px;
-            border-radius: 10px;
-            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 12px;
+            font-size: 11px;
             font-weight: 700;
         }
 
         .status-badge {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            padding: 3px 8px;
+            gap: 6px;
+            padding: 4px 12px;
             border-radius: 999px;
-            font-size: 10.5px;
+            font-size: 12px;
             font-weight: 700;
             flex-shrink: 0;
         }
@@ -170,7 +169,7 @@
             border: 1px solid #e5b4b4;
         }
         .pulse-dot {
-            width: 6px; height: 6px; border-radius: 50%;
+            width: 7px; height: 7px; border-radius: 50%;
             background: var(--success);
             animation: pulse 2s infinite;
         }
@@ -183,47 +182,47 @@
         .task-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            margin-bottom: 8px;
+            gap: 6px;
+            margin-bottom: 12px;
         }
         .task-tag {
-            font-size: 10px;
+            font-size: 11.5px;
             font-weight: 600;
             color: #635b54;
             background: #f8f4ec;
             border: 1px solid #ede5d8;
-            padding: 2px 6px;
-            border-radius: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
         }
 
         /* ── Compact Stat Rows ── */
         .stat-rows {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             margin-top: auto;
             border-top: 1px dashed #ede5d8;
-            padding-top: 6px;
+            padding-top: 8px;
         }
 
         .stat-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 11px;
+            font-size: 12.5px;
         }
 
         .stat-row-label {
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.5px;
             color: #9b9188;
-            font-size: 9.5px;
+            font-size: 11px;
         }
         .stat-row-value {
             font-weight: 700;
             color: #2f2a26;
-            font-size: 11.5px;
+            font-size: 13px;
             text-align: right;
         }
         .stat-row-value.green { color: var(--success); }
@@ -234,8 +233,8 @@
             .main-content { margin-left: 0; }
             .sidebar { display: none; }
             .content { padding: 0 16px 40px; }
-            .topbar { padding: 14px 16px; }
-            .header-actions { flex-direction: column; align-items: flex-end; gap: 4px; }
+            .topbar { padding: 18px 16px; }
+            .header-actions { flex-direction: column; align-items: flex-end; gap: 6px; }
         }
     </style>
 </head>
@@ -266,7 +265,7 @@
         </div>
     </div>
 
-    <!-- Main -->
+    <!-- Main Content -->
     <div class="main-content">
         <div class="topbar">
             <div class="page-heading">
@@ -277,7 +276,7 @@
 
         <div class="content">
 
-            {{-- Compact Summary Bar --}}
+            {{-- Summary Bar --}}
             <div class="schedule-info">
                 <div>
                     ⚡ <strong>B1:</strong> Every 2 min (Expired, Expiring, Milestones)
@@ -289,22 +288,22 @@
                 </div>
             </div>
 
-            {{-- Compact Batch Grid --}}
+            {{-- Batch Cards Grid --}}
             <div class="batch-grid">
                 @foreach($batchStatus['batches'] as $batch)
                 <div class="batch-card" id="card-{{ strtolower($batch['name']) }}">
 
-                    <!-- Card Header: Title on Left, Timer + Active Button on Right -->
+                    <!-- Card Header -->
                     <div class="batch-card-header">
                         <div>
                             <div class="batch-title">
                                 {{ $batch['label'] }}
-                                <code style="font-size:10px; color:#888; font-weight:normal; background:#f0eae0; padding:1px 5px; border-radius:4px;">{{ $batch['schedule'] }}</code>
+                                <code style="font-size:11px; color:#888; font-weight:normal; background:#f0eae0; padding:2px 6px; border-radius:4px;">{{ $batch['schedule'] }}</code>
                             </div>
                             <div class="batch-desc">{{ $batch['description'] }}</div>
                         </div>
 
-                        <!-- Right: Small Clean Timer Div directly to the left of Active Button -->
+                        <!-- Right: Next Run Timer directly left to Active button -->
                         <div class="header-actions">
                             <div class="timer-pill">
                                 <span>⏰</span>
@@ -322,14 +321,14 @@
                         </div>
                     </div>
 
-                    <!-- Tasks List (Compact Tags) -->
+                    <!-- Tasks List Tags -->
                     <div class="task-tags">
                         @foreach($batch['tasks'] as $task)
                             <span class="task-tag">{{ $task }}</span>
                         @endforeach
                     </div>
 
-                    <!-- Compact Stat Rows -->
+                    <!-- Stat Rows -->
                     <div class="stat-rows">
                         <div class="stat-row">
                             <span class="stat-row-label">Schedule</span>
@@ -341,7 +340,7 @@
                             <span class="stat-row-value {{ $batch['lastRunStatus'] ? '' : 'muted' }}">
                                 {{ $batch['lastRunFormatted'] }}
                                 @if($batch['lastRunHuman'])
-                                    <span style="font-size:10px; color:#9b9188; font-weight:normal;">({{ $batch['lastRunHuman'] }})</span>
+                                    <span style="font-size:11px; color:#9b9188; font-weight:normal;">({{ $batch['lastRunHuman'] }})</span>
                                 @endif
                             </span>
                         </div>
@@ -350,7 +349,7 @@
                             <span class="stat-row-label">Notifications Sent</span>
                             <span class="stat-row-value {{ $batch['totalSent'] > 0 ? 'green' : 'muted' }}">
                                 📲 {{ $batch['totalSent'] }} sent
-                                <span style="font-size:10px; color:#888; font-weight:normal;">({{ $batch['totalRuns'] }} runs)</span>
+                                <span style="font-size:11px; color:#888; font-weight:normal;">({{ $batch['totalRuns'] }} runs)</span>
                             </span>
                         </div>
                     </div>
