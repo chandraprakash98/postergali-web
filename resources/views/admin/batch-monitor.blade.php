@@ -31,7 +31,7 @@
 
         .container { display: flex; min-height: 100vh; }
 
-        /* ── Sidebar (matches Dashboard exactly) ── */
+        /* ── Sidebar (matches Admin Dashboard) ── */
         .sidebar { width: 240px; background: var(--sidebar); color: #fff; padding: 28px 22px; position: fixed; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
         .logo { font-size: 20px; font-weight: 800; margin-bottom: 30px; }
         .logo .menu-icon { background: #fff; color: var(--sidebar); padding: 8px; border-radius: 8px; display: inline-block; }
@@ -65,31 +65,47 @@
         }
         .schedule-info strong { color: #2f2a26; }
 
-        /* ── Batch Grid ── */
+        /* ── Batch Cards Grid ── */
         .batch-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        /* ── Compact & Clean Batch Card ── */
+        /* ── Base Batch Card ── */
         .batch-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
             border-radius: 14px;
-            padding: 18px 22px;
+            padding: 20px 24px;
             box-shadow: 0 4px 14px rgba(43,30,24,0.04);
             display: flex;
             flex-direction: column;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
         }
 
+        /* ── B1 Special: Very Soft, Subtle Red Background ── */
+        .batch-card.batch-b1 {
+            background: #fff8f7;
+            border: 1.5px solid #f6dedc;
+            box-shadow: 0 4px 16px rgba(180, 50, 40, 0.05);
+        }
+        .batch-card.batch-b1:hover {
+            box-shadow: 0 6px 20px rgba(180, 50, 40, 0.08);
+        }
+
+        /* ── B2 Card: Clean Warm Neutral Background ── */
+        .batch-card.batch-b2 {
+            background: var(--panel);
+            border: 1px solid var(--border);
+        }
+
+        /* ── Header ── */
         .batch-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #f2ece3;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f0e7dd;
         }
 
         .batch-title {
@@ -98,16 +114,10 @@
             color: #2f2a26;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-        .batch-desc {
-            font-size: 12px;
-            color: #9b9188;
-            margin-top: 2px;
-            font-weight: 500;
+            gap: 6px;
         }
 
-        /* ── Header Actions (Timer pill directly left to Active button) ── */
+        /* ── Header Actions (Next run + Active) ── */
         .header-actions {
             display: flex;
             align-items: center;
@@ -115,6 +125,7 @@
             flex-shrink: 0;
         }
 
+        /* ── Clean Timer Pill ── */
         .timer-pill {
             display: inline-flex;
             align-items: center;
@@ -128,15 +139,12 @@
             font-weight: 600;
         }
         .timer-pill .timer-label {
-            color: #6298be;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+            font-weight: 700;
+            font-size: 11.5px;
         }
         .timer-pill .timer-time {
-            color: #114c72;
             font-weight: 800;
-            font-size: 13px;
+            font-size: 12.5px;
         }
         .timer-pill .timer-countdown {
             background: #fff;
@@ -148,6 +156,22 @@
             font-weight: 700;
         }
 
+        /* B1 Red-tinted timer pill */
+        .batch-b1 .timer-pill {
+            background: #fdf0ee;
+            border: 1px solid #f7d2cd;
+            color: #a8332a;
+        }
+        .batch-b1 .timer-pill .timer-time {
+            color: #8c261e;
+        }
+        .batch-b1 .timer-pill .timer-countdown {
+            background: #fff;
+            color: #a8332a;
+            border: 1px solid #f7d2cd;
+        }
+
+        /* ── Status Badge ── */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -178,55 +202,40 @@
             50% { box-shadow: 0 0 0 4px rgba(47,143,107,0.08); }
         }
 
-        /* ── Compact Task Tags ── */
-        .task-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-        .task-tag {
-            font-size: 11.5px;
-            font-weight: 600;
-            color: #635b54;
-            background: #f8f4ec;
-            border: 1px solid #ede5d8;
-            padding: 3px 8px;
-            border-radius: 6px;
-        }
-
-        /* ── Compact Stat Rows ── */
-        .stat-rows {
+        /* ── Clean Content Rows ── */
+        .batch-details {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin-top: auto;
-            border-top: 1px dashed #ede5d8;
-            padding-top: 8px;
+            gap: 10px;
         }
 
-        .stat-row {
+        .detail-row {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12.5px;
+            align-items: flex-start;
+            font-size: 13px;
+            line-height: 1.45;
         }
 
-        .stat-row-label {
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #9b9188;
-            font-size: 11px;
-        }
-        .stat-row-value {
+        .detail-label {
             font-weight: 700;
-            color: #2f2a26;
-            font-size: 13px;
-            text-align: right;
+            color: #3b3531;
+            min-width: 140px;
+            flex-shrink: 0;
         }
-        .stat-row-value.green { color: var(--success); }
-        .stat-row-value.muted { color: #a09890; font-weight: 500; }
+
+        .detail-value {
+            color: #554d48;
+            font-weight: 600;
+        }
+        .detail-value.green { color: var(--success); }
+        .detail-value.muted { color: #9b9188; font-weight: normal; }
+
+        .detail-sub {
+            font-size: 11.5px;
+            color: #9b9188;
+            font-weight: normal;
+            margin-left: 4px;
+        }
 
         @media (max-width: 860px) {
             .batch-grid { grid-template-columns: 1fr; }
@@ -235,6 +244,8 @@
             .content { padding: 0 16px 40px; }
             .topbar { padding: 18px 16px; }
             .header-actions { flex-direction: column; align-items: flex-end; gap: 6px; }
+            .detail-row { flex-direction: column; gap: 2px; }
+            .detail-label { min-width: auto; }
         }
     </style>
 </head>
@@ -291,27 +302,24 @@
             {{-- Batch Cards Grid --}}
             <div class="batch-grid">
                 @foreach($batchStatus['batches'] as $batch)
-                <div class="batch-card" id="card-{{ strtolower($batch['name']) }}">
+                <div class="batch-card batch-{{ strtolower($batch['name']) }}" id="card-{{ strtolower($batch['name']) }}">
 
-                    <!-- Card Header -->
+                    <!-- Card Header: Title on Left, Timer + Active Button on Right -->
                     <div class="batch-card-header">
-                        <div>
-                            <div class="batch-title">
-                                {{ $batch['label'] }}
-                                <code style="font-size:11px; color:#888; font-weight:normal; background:#f0eae0; padding:2px 6px; border-radius:4px;">{{ $batch['schedule'] }}</code>
-                            </div>
-                            <div class="batch-desc">{{ $batch['description'] }}</div>
+                        <div class="batch-title">
+                            {{ $batch['label'] }}
                         </div>
 
-                        <!-- Right: Next Run Timer directly left to Active button -->
                         <div class="header-actions">
+                            <!-- Next Run -->
                             <div class="timer-pill">
                                 <span>⏰</span>
-                                <span class="timer-label">Next:</span>
+                                <span class="timer-label">Next run :</span>
                                 <span class="timer-time">{{ $batch['upcomingTimeOnly'] ?? $batch['upcomingFormatted'] }}</span>
                                 <span class="timer-countdown" id="countdown-{{ strtolower($batch['name']) }}">⏳ {{ $batch['upcomingHuman'] }}</span>
                             </div>
 
+                            <!-- Active Button -->
                             <span class="status-badge {{ $batch['enabled'] ? 'active' : 'disabled' }}">
                                 @if($batch['enabled'])
                                     <span class="pulse-dot"></span>
@@ -321,35 +329,28 @@
                         </div>
                     </div>
 
-                    <!-- Tasks List Tags -->
-                    <div class="task-tags">
-                        @foreach($batch['tasks'] as $task)
-                            <span class="task-tag">{{ $task }}</span>
-                        @endforeach
-                    </div>
-
-                    <!-- Stat Rows -->
-                    <div class="stat-rows">
-                        <div class="stat-row">
-                            <span class="stat-row-label">Schedule</span>
-                            <span class="stat-row-value">⏱️ {{ $batch['scheduleHuman'] }}</span>
+                    <!-- Card Body: Only the requested clean items -->
+                    <div class="batch-details">
+                        <div class="detail-row">
+                            <span class="detail-label">About :</span>
+                            <span class="detail-value">{{ $batch['description'] }}</span>
                         </div>
 
-                        <div class="stat-row">
-                            <span class="stat-row-label">Last Run</span>
-                            <span class="stat-row-value {{ $batch['lastRunStatus'] ? '' : 'muted' }}">
+                        <div class="detail-row">
+                            <span class="detail-label">Last Run :</span>
+                            <span class="detail-value {{ $batch['lastRunStatus'] ? '' : 'muted' }}">
                                 {{ $batch['lastRunFormatted'] }}
                                 @if($batch['lastRunHuman'])
-                                    <span style="font-size:11px; color:#9b9188; font-weight:normal;">({{ $batch['lastRunHuman'] }})</span>
+                                    <span class="detail-sub">({{ $batch['lastRunHuman'] }})</span>
                                 @endif
                             </span>
                         </div>
 
-                        <div class="stat-row">
-                            <span class="stat-row-label">Notifications Sent</span>
-                            <span class="stat-row-value {{ $batch['totalSent'] > 0 ? 'green' : 'muted' }}">
+                        <div class="detail-row">
+                            <span class="detail-label">Notifications Sent :</span>
+                            <span class="detail-value {{ $batch['totalSent'] > 0 ? 'green' : 'muted' }}">
                                 📲 {{ $batch['totalSent'] }} sent
-                                <span style="font-size:11px; color:#888; font-weight:normal;">({{ $batch['totalRuns'] }} runs)</span>
+                                <span class="detail-sub">({{ $batch['totalRuns'] }} runs)</span>
                             </span>
                         </div>
                     </div>
