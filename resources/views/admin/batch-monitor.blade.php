@@ -17,6 +17,7 @@
             --danger: #d9534f;
             --warning: #b77400;
             --border: #e9e1d5;
+            --info: #2a6f97;
         }
 
         body {
@@ -45,7 +46,7 @@
         .page-heading p { color: #8b8179; margin: 4px 0 0; font-size: 14px; }
         .content { padding: 0 40px 80px; }
 
-        /* ── Schedule Info ── */
+        /* ── Schedule Info Strip ── */
         .schedule-info {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -54,18 +55,18 @@
             margin-bottom: 28px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: space-between;
             font-size: 13px;
             color: #79706b;
             font-weight: 600;
         }
         .schedule-info strong { color: #2f2a26; }
 
-        /* ── Batch Cards ── */
+        /* ── Batch Grid ── */
         .batch-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 22px;
         }
 
         .batch-card {
@@ -74,17 +75,21 @@
             border-radius: 16px;
             padding: 24px 26px;
             box-shadow: 0 4px 16px rgba(43,30,24,0.04);
+            display: flex;
+            flex-direction: column;
         }
 
         .batch-card-header {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #f1eae0;
+            padding-bottom: 14px;
         }
 
-        .batch-label {
-            font-size: 17px;
+        .batch-title {
+            font-size: 18px;
             font-weight: 800;
             color: #2f2a26;
         }
@@ -99,7 +104,7 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 5px 12px;
+            padding: 4px 12px;
             border-radius: 999px;
             font-size: 12px;
             font-weight: 700;
@@ -109,6 +114,11 @@
             background: #eaf7ef;
             color: #1a6147;
             border: 1px solid #b7dfcd;
+        }
+        .status-badge.disabled {
+            background: #f7eaea;
+            color: #a32a2a;
+            border: 1px solid #e5b4b4;
         }
         .pulse-dot {
             width: 8px; height: 8px; border-radius: 50%;
@@ -120,15 +130,35 @@
             50% { box-shadow: 0 0 0 5px rgba(47,143,107,0.08); }
         }
 
+        /* ── Task Pills ── */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 18px;
+            background: #fbf8f2;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px dashed var(--border);
+        }
+        .task-item {
+            font-size: 12px;
+            font-weight: 600;
+            color: #554d48;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         /* ── Stat Rows ── */
-        .stat-rows { display: flex; flex-direction: column; gap: 12px; }
+        .stat-rows { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
 
         .stat-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #f1eae0;
+            padding: 8px 0;
+            border-bottom: 1px solid #f6f0e7;
         }
         .stat-row:last-child { border-bottom: none; }
 
@@ -140,15 +170,16 @@
             color: #9b9188;
         }
         .stat-row-value {
-            font-size: 14px;
-            font-weight: 800;
+            font-size: 13px;
+            font-weight: 700;
             color: #2f2a26;
+            text-align: right;
         }
         .stat-row-value.green { color: var(--success); }
-        .stat-row-value.orange { color: var(--warning); }
+        .stat-row-value.blue { color: var(--info); }
         .stat-row-value.muted { color: #a09890; font-weight: 600; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 860px) {
             .batch-grid { grid-template-columns: 1fr; }
             .main-content { margin-left: 0; }
             .sidebar { display: none; }
@@ -188,66 +219,86 @@
     <div class="main-content">
         <div class="topbar">
             <div class="page-heading">
-                <h2>🔔 Batch Monitor</h2>
-                <p>Scheduled FCM notification batches running daily at 6:00 AM IST</p>
+                <h2>🔔 Batch Monitor (B1 & B2)</h2>
+                <p>Scheduled automated notification batches running via Laravel Scheduler</p>
             </div>
         </div>
 
         <div class="content">
 
-            {{-- Schedule info strip --}}
+            {{-- Summary Info Strip --}}
             <div class="schedule-info">
-                🕐 <strong>Schedule:</strong> {{ $batchStatus['schedule'] }}
-                &nbsp;·&nbsp;
-                🚀 <strong>2 active batches</strong> running automatically via Laravel Scheduler
+                <div>
+                    ⚡ <strong>B1:</strong> Every 2 min (Expired, Expiring, Milestones)
+                    &nbsp;·&nbsp;
+                    🌙 <strong>B2:</strong> Daily at 7:00 PM IST (Milestones)
+                </div>
+                <div>
+                    🌐 <strong>Timezone:</strong> {{ $batchStatus['timezone'] ?? 'Asia/Kolkata' }}
+                </div>
             </div>
 
-            {{-- Batch Cards --}}
+            {{-- Batch Cards List --}}
             <div class="batch-grid">
                 @foreach($batchStatus['batches'] as $batch)
                 <div class="batch-card">
                     <div class="batch-card-header">
                         <div>
-                            <div class="batch-label">{{ $batch['label'] }}</div>
+                            <div class="batch-title">{{ $batch['label'] }}</div>
                             <div class="batch-desc">{{ $batch['description'] }}</div>
                         </div>
-                        <span class="status-badge active">
-                            <span class="pulse-dot"></span>
-                            Active
+                        <span class="status-badge {{ $batch['enabled'] ? 'active' : 'disabled' }}">
+                            @if($batch['enabled'])
+                                <span class="pulse-dot"></span>
+                            @endif
+                            {{ $batch['status'] }}
                         </span>
                     </div>
 
+                    {{-- Tasks Performed in this Batch --}}
+                    <div class="task-list">
+                        @foreach($batch['tasks'] as $task)
+                            <div class="task-item">{{ $task }}</div>
+                        @endforeach
+                    </div>
+
+                    {{-- Schedule, Last Run, Upcoming Run --}}
                     <div class="stat-rows">
                         <div class="stat-row">
-                            <span class="stat-row-label">Total Runs</span>
-                            <span class="stat-row-value">{{ $batch['totalRuns'] }}</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-row-label">Total Notifications Sent</span>
-                            <span class="stat-row-value {{ $batch['totalSent'] > 0 ? 'green' : 'muted' }}">
-                                📲 {{ $batch['totalSent'] }}
+                            <span class="stat-row-label">Schedule</span>
+                            <span class="stat-row-value">
+                                ⏱️ {{ $batch['scheduleHuman'] }}
+                                <code style="font-size:11px; color:#888; margin-left:4px;">({{ $batch['schedule'] }})</code>
                             </span>
                         </div>
+
                         <div class="stat-row">
                             <span class="stat-row-label">Last Run</span>
                             <span class="stat-row-value {{ $batch['lastRunStatus'] ? '' : 'muted' }}">
                                 {{ $batch['lastRunFormatted'] }}
                                 @if($batch['lastRunHuman'])
-                                    <span style="font-size:11px; color:#9b9188; font-weight:600;">({{ $batch['lastRunHuman'] }})</span>
+                                    <span style="font-size:11px; color:#9b9188;">({{ $batch['lastRunHuman'] }})</span>
                                 @endif
                             </span>
                         </div>
-                        @if($batch['lastRunStatus'])
+
                         <div class="stat-row">
-                            <span class="stat-row-label">Last Run — Sent</span>
-                            <span class="stat-row-value {{ $batch['lastRunSent'] > 0 ? 'green' : 'muted' }}">
-                                {{ $batch['lastRunSent'] }} sent
-                                @if($batch['lastRunSkipped'] > 0)
-                                    <span class="orange" style="font-size:12px; margin-left:6px;">⚠️ {{ $batch['lastRunSkipped'] }} skipped</span>
+                            <span class="stat-row-label">Upcoming Run</span>
+                            <span class="stat-row-value blue">
+                                📅 {{ $batch['upcomingFormatted'] }}
+                                @if($batch['upcomingHuman'])
+                                    <span style="font-size:11px; color:#2a6f97;">({{ $batch['upcomingHuman'] }})</span>
                                 @endif
                             </span>
                         </div>
-                        @endif
+
+                        <div class="stat-row">
+                            <span class="stat-row-label">Total Notifications Sent</span>
+                            <span class="stat-row-value {{ $batch['totalSent'] > 0 ? 'green' : 'muted' }}">
+                                📲 {{ $batch['totalSent'] }} sent
+                                <span style="font-size:11px; color:#888; font-weight:normal;">({{ $batch['totalRuns'] }} runs)</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
                 @endforeach

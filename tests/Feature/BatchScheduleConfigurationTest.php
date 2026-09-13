@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Services\Batches\BatchB1Service;
+use App\Services\Batches\BatchB2Service;
+use App\Services\Batches\BatchHelper;
 use App\Services\PosterExpiryNotificationService;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
@@ -9,61 +12,55 @@ use Tests\TestCase;
 
 class BatchScheduleConfigurationTest extends TestCase
 {
-    public function test_batch_schedule_constants_are_defined_for_everyday_6am_ist(): void
+    public function test_batch_b1_and_b2_constants_are_defined(): void
     {
-        $this->assertSame('0 6 * * *', PosterExpiryNotificationService::DEFAULT_SCHEDULE);
-        $this->assertSame('Asia/Kolkata', PosterExpiryNotificationService::DEFAULT_TIMEZONE);
+        $this->assertSame('*/2 * * * *', BatchB1Service::DEFAULT_SCHEDULE);
+        $this->assertSame('0 19 * * *', BatchB2Service::DEFAULT_SCHEDULE);
+        $this->assertSame('Asia/Kolkata', BatchB1Service::DEFAULT_TIMEZONE);
     }
 
-    public function test_get_schedule_returns_configured_schedule_or_constant_default(): void
+    public function test_batch_helper_computes_human_schedule_and_future_runs(): void
     {
-        $this->assertSame('0 6 * * *', PosterExpiryNotificationService::getSchedule());
-        $this->assertSame('Asia/Kolkata', PosterExpiryNotificationService::getTimezone());
-        $this->assertSame('Everyday at 6:00 AM IST', PosterExpiryNotificationService::getScheduleHuman());
-    }
+        $this->assertSame('Every 2 minutes', BatchHelper::getScheduleHuman('*/2 * * * *'));
+        $this->assertSame('Every evening at 7:00 PM IST', BatchHelper::getScheduleHuman('0 19 * * *'));
 
-    public function test_get_next_run_ist_calculates_next_6am_india_time(): void
-    {
-        $nextRun = PosterExpiryNotificationService::getNextRunIst();
+        $nextB1 = BatchHelper::getNextRun('*/2 * * * *', 'Asia/Kolkata');
+        $this->assertTrue($nextB1->isFuture());
+        $this->assertSame('Asia/Kolkata', $nextB1->timezoneName);
 
-        $this->assertSame('Asia/Kolkata', $nextRun->timezoneName);
-        $this->assertSame(6, (int) $nextRun->hour);
-        $this->assertSame(0, (int) $nextRun->minute);
-        $this->assertSame(0, (int) $nextRun->second);
-        $this->assertTrue($nextRun->isFuture());
+        $nextB2 = BatchHelper::getNextRun('0 19 * * *', 'Asia/Kolkata');
+        $this->assertTrue($nextB2->isFuture());
+        $this->assertSame('Asia/Kolkata', $nextB2->timezoneName);
     }
 
     public function test_batch_schedule_is_configurable_via_config(): void
     {
-        config(['posters.expiry_notification.schedule' => '*/15 * * * *']);
+        config(['posters.batches.b1.schedule' => '*/5 * * * *']);
+        $this->assertSame('*/5 * * * *', config('posters.batches.b1.schedule'));
 
-        $this->assertSame('*/15 * * * *', PosterExpiryNotificationService::getSchedule());
-        $this->assertSame('Every 15 mins', PosterExpiryNotificationService::getScheduleHuman());
-
-        $nextRun = PosterExpiryNotificationService::getNextRunIst();
+        $nextRun = BatchHelper::getNextRun(config('posters.batches.b1.schedule'), 'Asia/Kolkata');
         $this->assertTrue($nextRun->isFuture());
     }
 
-    public function test_laravel_scheduler_registers_expiry_batches_with_india_timezone(): void
+    public function test_laravel_scheduler_registers_b1_and_b2_batches_with_india_timezone(): void
     {
         $schedule = $this->app->make(Schedule::class);
         $events = collect($schedule->events());
 
-        $expiringEvent = $events->first(function ($event) {
-            return str_contains($event->command, 'posters:notify-expiring');
+        $b1Event = $events->first(function ($event) {
+            return str_contains($event->command, 'batch:b1');
         });
 
-        $expiredEvent = $events->first(function ($event) {
-            return str_contains($event->command, 'posters:notify-expired');
+        $b2Event = $events->first(function ($event) {
+            return str_contains($event->command, 'batch:b2');
         });
 
-        $this->assertNotNull($expiringEvent, 'Expected posters:notify-expiring command to be registered in scheduler.');
-        $this->assertSame(PosterExpiryNotificationService::getSchedule(), $expiringEvent->expression);
-        $this->assertSame('Asia/Kolkata', $expiringEvent->timezone);
+        $this->assertNotNull($b1Event, 'Expected batch:b1 command to be registered in scheduler.');
+        $this->assertSame(config('posters.batches.b1.schedule', '*/2 * * * *'), $b1Event->expression);
+        $this->assertSame('Asia/Kolkata', $b1Event->timezone);
 
-        $this->assertNotNull($expiredEvent, 'Expected posters:notify-expired command to be registered in scheduler.');
-        $this->assertSame(PosterExpiryNotificationService::getSchedule(), $expiredEvent->expression);
-        $this->assertSame('Asia/Kolkata', $expiredEvent->timezone);
+        $this->assertNotNull($b2Event, 'Expected batch:b2 command to be registered in scheduler.');
+        $this->assertSame(config('posters.batches.b2.schedule', '0 19 * * *'), $b2Event->expression);
+        $this->assertSame('Asia/Kolkata', $b2Event->timezone);
     }
 }
-

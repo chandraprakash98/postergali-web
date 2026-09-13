@@ -14,6 +14,7 @@ use App\Models\Plan;
 use App\Models\Notification;
 
 use Carbon\Carbon;
+use App\Services\Batches\BatchMonitorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -461,48 +462,7 @@ class AdminAuthController extends Controller
 
     private function getBatchStatus(): array
     {
-        $timezone = 'Asia/Kolkata';
-        $batches  = [
-            [
-                'name'        => 'notify-expiring',
-                'label'       => '⏰ Expiring Soon',
-                'description' => 'Sends reminder to customers whose poster expires within 1 day',
-            ],
-            [
-                'name'        => 'notify-expired',
-                'label'       => '⚠️ Poster Expired',
-                'description' => 'Sends notification to customers whose poster has expired',
-            ],
-        ];
-
-        $result = [];
-        foreach ($batches as $batch) {
-            $lastRun = BatchRunLog::where('batch_name', $batch['name'])
-                ->latest('ran_at')
-                ->first();
-
-            $lastRunIst = $lastRun && $lastRun->ran_at
-                ? $lastRun->ran_at->copy()->timezone($timezone)
-                : null;
-
-            $result[] = [
-                'name'           => $batch['name'],
-                'label'          => $batch['label'],
-                'description'    => $batch['description'],
-                'totalRuns'      => BatchRunLog::where('batch_name', $batch['name'])->count(),
-                'totalSent'      => (int) BatchRunLog::where('batch_name', $batch['name'])->sum('notifications_sent'),
-                'lastRunFormatted' => $lastRunIst ? $lastRunIst->format('d M Y, h:i A') . ' IST' : 'Never ran',
-                'lastRunHuman'   => $lastRun && $lastRun->ran_at ? $lastRun->ran_at->diffForHumans() : null,
-                'lastRunStatus'  => $lastRun ? ucfirst($lastRun->status) : null,
-                'lastRunSent'    => $lastRun ? (int) $lastRun->notifications_sent : 0,
-                'lastRunSkipped' => $lastRun ? (int) $lastRun->skipped_no_token : 0,
-            ];
-        }
-
-        return [
-            'batches'  => $result,
-            'schedule' => '0 6 * * * (Daily at 6:00 AM IST)',
-        ];
+        return (new BatchMonitorService())->getBatchStatuses();
     }
 
     public function batchStatus()

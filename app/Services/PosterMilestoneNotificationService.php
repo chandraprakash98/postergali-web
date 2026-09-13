@@ -10,8 +10,11 @@ class PosterMilestoneNotificationService
 {
     public function __construct(
         protected FirebaseNotificationService $firebaseService = new FirebaseNotificationService(),
-        protected PosterExpiryNotificationService $expiryService = new PosterExpiryNotificationService(),
-    ) {}
+        protected ?FcmTokenResolver $tokenResolver = null,
+        protected ?PosterExpiryNotificationService $expiryService = null,
+    ) {
+        $this->tokenResolver = $tokenResolver ?? new FcmTokenResolver();
+    }
 
     /**
      * Check if a poster has crossed any view milestones (e.g. 100, 200, 300)
@@ -44,7 +47,7 @@ class PosterMilestoneNotificationService
 
         // Resolve FCM token
         $phone = $type === 'job' ? $poster->phone_number : $poster->mobile_number;
-        $token = $this->expiryService->resolveFcmToken($phone, $poster->device_id);
+        $token = $this->tokenResolver->resolve($phone, $poster->device_id);
 
         $title = config(
             'posters.view_milestones.title',

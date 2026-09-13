@@ -44,13 +44,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Poster Expiry Notification Batch Settings
+    | Notification Batches Configuration (B1 & B2)
     |--------------------------------------------------------------------------
     |
-    | Configuration for the automated batch job that checks for expired/expiring
-    | posters and dispatches multilingual Firebase FCM push notifications.
+    | B1: Runs every 2 minutes. Checks expired posters, expiring in 1 day, and view milestones.
+    | B2: Runs every evening at 7 PM IST. Checks view milestones and evening alerts.
     |
     */
+
+    'batches' => [
+        'timezone' => env('BATCH_TIMEZONE', 'Asia/Kolkata'),
+
+        'b1' => [
+            'name'        => 'B1',
+            'schedule'    => env('BATCH_B1_SCHEDULE', '*/2 * * * *'),
+            'enabled'     => (bool) env('BATCH_B1_ENABLED', true),
+        ],
+
+        'b2' => [
+            'name'        => 'B2',
+            'schedule'    => env('BATCH_B2_SCHEDULE', '0 19 * * *'),
+            'enabled'     => (bool) env('BATCH_B2_ENABLED', true),
+        ],
+    ],
 
     'expiry_notification' => [
         // Cron schedule expression (Default: everyday at 6:00 AM India Standard Time)
