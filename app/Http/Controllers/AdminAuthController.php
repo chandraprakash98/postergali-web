@@ -12,7 +12,7 @@ use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Plan;
 use App\Models\Notification;
-use App\Services\PosterExpiryNotificationService;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -461,60 +461,47 @@ class AdminAuthController extends Controller
 
     private function getBatchStatus(): array
     {
-        $enabled       = (bool) config('posters.expiry_notification.enabled', true);
-        $schedule      = PosterExpiryNotificationService::getSchedule();
-        $timezone      = PosterExpiryNotificationService::getTimezone();
-        $scheduleHuman = PosterExpiryNotificationService::getScheduleHuman();
-        $windowHours   = (int) config('posters.expiry_notification.window_hours', 24);
+        $timezone = 'Asia/Kolkata';
+        $batches  = [
+            [
+                'name'        => 'notify-expiring',
+                'label'       => '⏰ Expiring Soon',
+                'description' => 'Sends reminder to customers whose poster expires within 1 day',
+            ],
+            [
+                'name'        => 'notify-expired',
+                'label'       => '⚠️ Poster Expired',
+                'description' => 'Sends notification to customers whose poster has expired',
+            ],
+        ];
 
-        $totalRuns          = BatchRunLog::count();
-        $lastRun            = BatchRunLog::latest('ran_at')->first();
-        $totalNotifications = (int) BatchRunLog::sum('notifications_sent');
-        $totalSkipped       = (int) BatchRunLog::sum('skipped_no_token');
+        $result = [];
+        foreach ($batches as $batch) {
+            $lastRun = BatchRunLog::where('batch_name', $batch['name'])
+                ->latest('ran_at')
+                ->first();
 
-        // Dynamic step minutes for periodic intervals if applicable
-        $stepMinutes = 2;
-        if (preg_match('/^\*\/(\d+)/', trim($schedule), $matches)) {
-            $stepMinutes = max(1, (int) $matches[1]);
-        } elseif (str_starts_with(trim($schedule), '* * * * *')) {
-            $stepMinutes = 1;
+            $lastRunIst = $lastRun && $lastRun->ran_at
+                ? $lastRun->ran_at->copy()->timezone($timezone)
+                : null;
+
+            $result[] = [
+                'name'           => $batch['name'],
+                'label'          => $batch['label'],
+                'description'    => $batch['description'],
+                'totalRuns'      => BatchRunLog::where('batch_name', $batch['name'])->count(),
+                'totalSent'      => (int) BatchRunLog::where('batch_name', $batch['name'])->sum('notifications_sent'),
+                'lastRunFormatted' => $lastRunIst ? $lastRunIst->format('d M Y, h:i A') . ' IST' : 'Never ran',
+                'lastRunHuman'   => $lastRun && $lastRun->ran_at ? $lastRun->ran_at->diffForHumans() : null,
+                'lastRunStatus'  => $lastRun ? ucfirst($lastRun->status) : null,
+                'lastRunSent'    => $lastRun ? (int) $lastRun->notifications_sent : 0,
+                'lastRunSkipped' => $lastRun ? (int) $lastRun->skipped_no_token : 0,
+            ];
         }
 
-        $nowIst     = Carbon::now($timezone);
-        $nextRunIst = PosterExpiryNotificationService::getNextRunIst();
-
-        // Convert lastRun ran_at to India Timezone (Asia/Kolkata)
-        $lastRunIst = $lastRun && $lastRun->ran_at
-            ? $lastRun->ran_at->copy()->timezone($timezone)
-            : null;
-
         return [
-            'enabled'              => $enabled,
-            'schedule'             => $schedule,
-            'scheduleHuman'        => $scheduleHuman,
-            'timezone'             => $timezone,
-            'windowHours'          => $windowHours,
-            'stepMinutes'          => $stepMinutes,
-            'totalRuns'            => $totalRuns,
-            'totalNotifications'   => $totalNotifications,
-            'totalSkipped'         => $totalSkipped,
-            'lastRun'              => $lastRun,
-            'lastRunIst'           => $lastRunIst,
-            'lastRunFormatted'     => $lastRunIst ? $lastRunIst->format('d M Y, h:i:s A') . ' IST' : 'No runs yet',
-            'lastRunDate'          => $lastRunIst ? $lastRunIst->format('d M Y') : '—',
-            'lastRunTimeOnly'      => $lastRunIst ? $lastRunIst->format('h:i:s A') . ' IST' : 'Never',
-            'lastRunHuman'         => $lastRun && $lastRun->ran_at ? $lastRun->ran_at->diffForHumans() : 'Never',
-            'lastRunSent'          => $lastRun ? (int) $lastRun->notifications_sent : 0,
-            'lastRunSkipped'       => $lastRun ? (int) $lastRun->skipped_no_token : 0,
-            'lastRunDuration'      => $lastRun ? (int) $lastRun->duration_ms : 0,
-            'lastRunStatus'        => $lastRun ? ($lastRun->dry_run ? 'Dry Run' : ucfirst($lastRun->status)) : 'None',
-            'nextRun'              => $nextRunIst,
-            'nextRunIst'           => $nextRunIst,
-            'nextRunFormatted'     => $nextRunIst->format('h:i:s A') . ' IST',
-            'nextRunFullFormatted' => $nextRunIst->format('d M Y, h:i:s A') . ' IST',
-            'nextRunTimestampMs'   => $nextRunIst->getTimestamp() * 1000,
-            'serverNowTimestampMs' => $nowIst->getTimestamp() * 1000,
-            'currentIstTime'       => $nowIst->format('h:i:s A') . ' IST',
+            'batches'  => $result,
+            'schedule' => '0 6 * * * (Daily at 6:00 AM IST)',
         ];
     }
 
@@ -525,15 +512,11 @@ class AdminAuthController extends Controller
 
     public function batchMonitor()
     {
-        $batchStatus = $this->getBatchStatus();
-        $recentRuns  = BatchRunLog::latest('ran_at')->limit(50)->get();
-
-        return view('admin.batch-monitor', array_merge($batchStatus, [
+        return view('admin.batch-monitor', [
             'active'      => 'batch',
-            'batchStatus' => $batchStatus,
-            'recentRuns'  => $recentRuns,
+            'batchStatus' => $this->getBatchStatus(),
             'stats'       => $this->getStats(),
-        ]));
+        ]);
     }
 
     public function logout()

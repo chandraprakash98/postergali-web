@@ -156,7 +156,7 @@ class PosterThreeNotificationsTest extends TestCase
             'expires_at' => now()->subMinutes(15), // Expired 15 mins ago
         ]);
 
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expired')->assertExitCode(0);
 
         $sent = FirebaseNotificationService::getSentMessages();
         $this->assertCount(1, $sent);
@@ -165,15 +165,15 @@ class PosterThreeNotificationsTest extends TestCase
         $this->assertSame('fcm_expired_token', $msg['token']);
         $this->assertStringContainsString('Poster Expired', $msg['title']);
         $this->assertStringContainsString('Express Logistics', $msg['body']);
-        $this->assertStringContainsString('has expired today', $msg['body']);
-        $this->assertStringContainsString('की अवधि आज समाप्त हो गई है', $msg['body']);
+        $this->assertStringContainsString('has expired', $msg['body']);
+        $this->assertStringContainsString('की अवधि समाप्त हो गई', $msg['body']);
 
         $job->refresh();
         $this->assertNotNull($job->expired_notified_at);
         $this->assertSame('expired', $job->status);
 
         // Next batch run: no duplicate notification
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expired')->assertExitCode(0);
         $this->assertCount(1, FirebaseNotificationService::getSentMessages());
     }
 
@@ -204,7 +204,7 @@ class PosterThreeNotificationsTest extends TestCase
             'expires_at' => now()->addHours(20), // Expiring in 20 hours (tomorrow)
         ]);
 
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expiring')->assertExitCode(0);
 
         $sent = FirebaseNotificationService::getSentMessages();
         $this->assertCount(1, $sent);
@@ -221,7 +221,7 @@ class PosterThreeNotificationsTest extends TestCase
         $this->assertNull($offer->expired_notified_at);
 
         // Next batch run: no duplicate notification
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expiring')->assertExitCode(0);
         $this->assertCount(1, FirebaseNotificationService::getSentMessages());
     }
 
@@ -253,7 +253,7 @@ class PosterThreeNotificationsTest extends TestCase
         ]);
 
         // 1st batch run: receives "Day Before Expiry"
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expiring')->assertExitCode(0);
 
         $sent = FirebaseNotificationService::getSentMessages();
         $this->assertCount(1, $sent);
@@ -267,13 +267,13 @@ class PosterThreeNotificationsTest extends TestCase
         $job->update(['expires_at' => now()->subHour()]);
 
         // 2nd batch run: receives "On Expiry"
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expired')->assertExitCode(0);
 
         $sentAfterExpiry = FirebaseNotificationService::getSentMessages();
         $this->assertCount(2, $sentAfterExpiry);
 
         $msgOnExpiry = $sentAfterExpiry[1];
-        $this->assertStringContainsString('has expired today', $msgOnExpiry['body']);
+        $this->assertStringContainsString('has expired', $msgOnExpiry['body']);
 
         $job->refresh();
         $this->assertNotNull($job->expired_notified_at);

@@ -44,17 +44,26 @@ class BatchScheduleConfigurationTest extends TestCase
         $this->assertTrue($nextRun->isFuture());
     }
 
-    public function test_laravel_scheduler_registers_expiry_batch_with_india_timezone(): void
+    public function test_laravel_scheduler_registers_expiry_batches_with_india_timezone(): void
     {
         $schedule = $this->app->make(Schedule::class);
         $events = collect($schedule->events());
 
-        $expiryEvent = $events->first(function ($event) {
-            return str_contains($event->command, 'posters:check-expiry');
+        $expiringEvent = $events->first(function ($event) {
+            return str_contains($event->command, 'posters:notify-expiring');
         });
 
-        $this->assertNotNull($expiryEvent, 'Expected posters:check-expiry command to be registered in scheduler.');
-        $this->assertSame(PosterExpiryNotificationService::getSchedule(), $expiryEvent->expression);
-        $this->assertSame('Asia/Kolkata', $expiryEvent->timezone);
+        $expiredEvent = $events->first(function ($event) {
+            return str_contains($event->command, 'posters:notify-expired');
+        });
+
+        $this->assertNotNull($expiringEvent, 'Expected posters:notify-expiring command to be registered in scheduler.');
+        $this->assertSame(PosterExpiryNotificationService::getSchedule(), $expiringEvent->expression);
+        $this->assertSame('Asia/Kolkata', $expiringEvent->timezone);
+
+        $this->assertNotNull($expiredEvent, 'Expected posters:notify-expired command to be registered in scheduler.');
+        $this->assertSame(PosterExpiryNotificationService::getSchedule(), $expiredEvent->expression);
+        $this->assertSame('Asia/Kolkata', $expiredEvent->timezone);
     }
 }
+

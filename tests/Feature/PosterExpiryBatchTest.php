@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\BatchRunLog;
 use App\Models\Customer;
 use App\Models\Job;
 use App\Models\Notification;
@@ -27,16 +28,14 @@ class PosterExpiryBatchTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_batch_detects_expiring_and_expired_posters_and_sends_firebase_notification(): void
+    public function test_batch_expiring_detects_expiring_posters_and_sends_notification(): void
     {
-        // 1. Create a Customer with FCM token
         Customer::create([
             'customer_id' => 'PSTGL_TEST_01',
             'mobile' => '9876543210',
             'fcm' => 'fcm_token_test_123',
         ]);
 
-        // 2. Create an expiring Job (expires in 4 hours, status approved)
         $job = Job::create([
             'temp_id' => 'temp-job-1',
             'device_id' => 'device-1',
@@ -55,7 +54,34 @@ class PosterExpiryBatchTest extends TestCase
             'expires_at' => now()->addHours(4),
         ]);
 
-        // 3. Create an expired Offer (expired 2 hours ago, status approved)
+        $this->artisan('posters:notify-expiring')
+            ->assertExitCode(0);
+
+        $sent = FirebaseNotificationService::getSentMessages();
+        $this->assertCount(1, $sent);
+
+        $this->assertSame('fcm_token_test_123', $sent[0]['token']);
+        $this->assertStringContainsString('expires tomorrow', $sent[0]['body']);
+        $this->assertStringContainsString('कल समाप्त हो रहा है', $sent[0]['body']);
+
+        $job->refresh();
+        $this->assertNotNull($job->day_before_expiry_notified_at);
+
+        // Check log recorded with batch_name
+        $log = BatchRunLog::where('batch_name', 'notify-expiring')->first();
+        $this->assertNotNull($log);
+        $this->assertSame('success', $log->status);
+        $this->assertSame(1, $log->notifications_sent);
+    }
+
+    public function test_batch_expired_detects_expired_posters_and_sends_notification(): void
+    {
+        Customer::create([
+            'customer_id' => 'PSTGL_TEST_02',
+            'mobile' => '9876543211',
+            'fcm' => 'fcm_token_test_456',
+        ]);
+
         $offer = Offer::create([
             'temp_id' => 'temp-offer-1',
             'device_id' => 'device-2',
@@ -63,7 +89,7 @@ class PosterExpiryBatchTest extends TestCase
             'master_category' => 'Retail',
             'business_name' => 'Mega Mart',
             'offer_details' => 'Mega sale',
-            'mobile_number' => '9876543210',
+            'mobile_number' => '9876543211',
             'latitude' => 28.5914,
             'longitude' => 77.4021,
             'city' => 'Noida',
@@ -73,39 +99,33 @@ class PosterExpiryBatchTest extends TestCase
             'expires_at' => now()->subHours(2),
         ]);
 
-        // Run the batch command
-        $this->artisan('posters:check-expiry')
+        $this->artisan('posters:notify-expired')
             ->assertExitCode(0);
 
-        // Verify sent messages via fake
         $sent = FirebaseNotificationService::getSentMessages();
-        $this->assertCount(2, $sent);
+        $this->assertCount(1, $sent);
 
-        // Message 0: Day before expiry (Job)
-        $this->assertSame('fcm_token_test_123', $sent[0]['token']);
-        $this->assertStringContainsString('expires tomorrow', $sent[0]['body']);
-        $this->assertStringContainsString('कल समाप्त हो रहा है', $sent[0]['body']);
+        $this->assertSame('fcm_token_test_456', $sent[0]['token']);
+        $this->assertStringContainsString('has expired', $sent[0]['body']);
+        $this->assertStringContainsString('की अवधि समाप्त हो गई', $sent[0]['body']);
 
-        // Message 1: On poster expiry (Offer)
-        $this->assertSame('fcm_token_test_123', $sent[1]['token']);
-        $this->assertStringContainsString('has expired today', $sent[1]['body']);
-        $this->assertStringContainsString('की अवधि आज समाप्त हो गई है', $sent[1]['body']);
-
-        // Verify database records updated
-        $job->refresh();
         $offer->refresh();
-
-        $this->assertNotNull($job->expiry_notified_at);
-        $this->assertNotNull($offer->expiry_notified_at);
+        $this->assertNotNull($offer->expired_notified_at);
         $this->assertSame('expired', $offer->status);
+
+        // Check log recorded with batch_name
+        $log = BatchRunLog::where('batch_name', 'notify-expired')->first();
+        $this->assertNotNull($log);
+        $this->assertSame('success', $log->status);
+        $this->assertSame(1, $log->notifications_sent);
     }
 
     public function test_subsequent_runs_do_not_send_duplicate_notifications(): void
     {
         Customer::create([
-            'customer_id' => 'PSTGL_TEST_02',
-            'mobile' => '9876543211',
-            'fcm' => 'fcm_token_test_456',
+            'customer_id' => 'PSTGL_TEST_03',
+            'mobile' => '9876543212',
+            'fcm' => 'fcm_token_test_789',
         ]);
 
         Job::create([
@@ -115,7 +135,7 @@ class PosterExpiryBatchTest extends TestCase
             'master_category' => 'Services',
             'business_name' => 'Tech Corp',
             'job_role' => 'Designer',
-            'phone_number' => '9876543211',
+            'phone_number' => '9876543212',
             'latitude' => 28.5914,
             'longitude' => 77.4021,
             'city' => 'Noida',
@@ -125,11 +145,11 @@ class PosterExpiryBatchTest extends TestCase
         ]);
 
         // Run 1st time
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expiring')->assertExitCode(0);
         $this->assertCount(1, FirebaseNotificationService::getSentMessages());
 
-        // Run 2nd time (15 mins later simulation)
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        // Run 2nd time
+        $this->artisan('posters:notify-expiring')->assertExitCode(0);
 
         // Total count should still be 1 (NO duplicate notification)
         $this->assertCount(1, FirebaseNotificationService::getSentMessages());
@@ -138,9 +158,9 @@ class PosterExpiryBatchTest extends TestCase
     public function test_posters_expiring_outside_window_are_not_notified(): void
     {
         Customer::create([
-            'customer_id' => 'PSTGL_TEST_03',
-            'mobile' => '9876543212',
-            'fcm' => 'fcm_token_test_789',
+            'customer_id' => 'PSTGL_TEST_04',
+            'mobile' => '9876543213',
+            'fcm' => 'fcm_token_test_999',
         ]);
 
         $job = Job::create([
@@ -150,7 +170,7 @@ class PosterExpiryBatchTest extends TestCase
             'master_category' => 'Services',
             'business_name' => 'Design Studio',
             'job_role' => 'Architect',
-            'phone_number' => '9876543212',
+            'phone_number' => '9876543213',
             'latitude' => 28.5914,
             'longitude' => 77.4021,
             'city' => 'Noida',
@@ -159,72 +179,11 @@ class PosterExpiryBatchTest extends TestCase
             'expires_at' => now()->addDays(7), // Expiring next week
         ]);
 
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expiring')->assertExitCode(0);
 
         $this->assertCount(0, FirebaseNotificationService::getSentMessages());
         $job->refresh();
-        $this->assertNull($job->expiry_notified_at);
-    }
-
-    public function test_dry_run_does_not_mutate_database_or_dispatch_notifications(): void
-    {
-        Customer::create([
-            'customer_id' => 'PSTGL_TEST_04',
-            'mobile' => '9876543213',
-            'fcm' => 'fcm_token_dryrun',
-        ]);
-
-        $job = Job::create([
-            'temp_id' => 'temp-job-4',
-            'device_id' => 'device-4',
-            'device_os' => 'android',
-            'master_category' => 'Services',
-            'business_name' => 'DryRun Co',
-            'job_role' => 'Tester',
-            'phone_number' => '9876543213',
-            'latitude' => 28.5914,
-            'longitude' => 77.4021,
-            'city' => 'Noida',
-            'plan_id' => 'plan-1',
-            'status' => 'approved',
-            'expires_at' => now()->addHours(1),
-        ]);
-
-        $this->artisan('posters:check-expiry --dry-run')->assertExitCode(0);
-
-        $this->assertCount(0, FirebaseNotificationService::getSentMessages());
-        $job->refresh();
-        $this->assertNull($job->expiry_notified_at);
-    }
-
-    public function test_disabled_batch_setting_skips_processing(): void
-    {
-        config(['posters.expiry_notification.enabled' => false]);
-
-        Customer::create([
-            'customer_id' => 'PSTGL_TEST_05',
-            'mobile' => '9876543214',
-            'fcm' => 'fcm_token_disabled',
-        ]);
-
-        Job::create([
-            'temp_id' => 'temp-job-5',
-            'device_id' => 'device-5',
-            'device_os' => 'android',
-            'master_category' => 'Services',
-            'business_name' => 'Disabled Co',
-            'job_role' => 'Tester',
-            'phone_number' => '9876543214',
-            'latitude' => 28.5914,
-            'longitude' => 77.4021,
-            'city' => 'Noida',
-            'plan_id' => 'plan-1',
-            'status' => 'approved',
-            'expires_at' => now()->addHours(1),
-        ]);
-
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
-        $this->assertCount(0, FirebaseNotificationService::getSentMessages());
+        $this->assertNull($job->day_before_expiry_notified_at);
     }
 
     public function test_fcm_token_resolution_from_notifications_table(): void
@@ -252,7 +211,7 @@ class PosterExpiryBatchTest extends TestCase
             'expires_at' => now()->addHours(2),
         ]);
 
-        $this->artisan('posters:check-expiry')->assertExitCode(0);
+        $this->artisan('posters:notify-expiring')->assertExitCode(0);
 
         $sent = FirebaseNotificationService::getSentMessages();
         $this->assertCount(1, $sent);

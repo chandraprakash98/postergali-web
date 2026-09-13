@@ -9,6 +9,7 @@ class BatchRunLog extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'batch_name',
         'ran_at',
         'status',
         'dry_run',

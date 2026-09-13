@@ -7,354 +7,317 @@ use App\Models\Customer;
 use App\Models\Job;
 use App\Models\Notification;
 use App\Models\Offer;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class PosterExpiryNotificationService
 {
-    /**
-     * Centralized Batch Timer & Schedule Constants
-     * Single source of truth for the default batch schedule and timezone.
-     */
-    public const DEFAULT_SCHEDULE = '0 6 * * *'; // Everyday at 6:00 AM IST
-    public const DEFAULT_TIMEZONE = 'Asia/Kolkata'; // Indian Standard Time (IST)
+    // ── Schedule constants (used by console.php & admin UI) ──────────────────
+    public const DEFAULT_SCHEDULE = '0 6 * * *'; // Every day at 6:00 AM IST
+    public const DEFAULT_TIMEZONE = 'Asia/Kolkata';
 
-    /**
-     * Get the configured batch cron schedule.
-     */
     public static function getSchedule(): string
     {
         return (string) config('posters.expiry_notification.schedule', self::DEFAULT_SCHEDULE);
     }
 
-    /**
-     * Get the configured batch timezone.
-     */
     public static function getTimezone(): string
     {
         return (string) config('posters.expiry_notification.timezone', self::DEFAULT_TIMEZONE);
     }
 
     /**
-     * Calculate the next scheduled run as a Carbon instance in India Timezone (Asia/Kolkata).
-     */
-    public static function getNextRunIst(): \Carbon\Carbon
-    {
-        $schedule = self::getSchedule();
-        $timezone = self::getTimezone();
-
-        try {
-            $cron = new \Cron\CronExpression($schedule);
-            $nextDate = $cron->getNextRunDate(
-                new \DateTime('now', new \DateTimeZone($timezone)),
-                0,
-                false,
-                $timezone
-            );
-            return \Carbon\Carbon::instance($nextDate)->setTimezone($timezone);
-        } catch (\Throwable $e) {
-            // Fallback: tomorrow at 6:00 AM IST
-            return \Carbon\Carbon::now($timezone)->addDay()->setTime(6, 0, 0);
-        }
-    }
-
-    /**
-     * Human-friendly description of the configured batch schedule.
+     * Return a human-readable description of the configured cron schedule.
+     * Handles the two common cases used in this project; falls back to the
+     * raw cron expression for anything else.
      */
     public static function getScheduleHuman(): string
     {
-        $schedule = trim(self::getSchedule());
-        if ($schedule === '0 6 * * *') {
-            return 'Everyday at 6:00 AM IST';
-        }
-        if (preg_match('/^\*\/(\d+)/', $schedule, $m)) {
-            return "Every {$m[1]} mins";
-        }
-        if ($schedule === '* * * * *') {
-            return 'Every minute';
-        }
-        return "Custom ({$schedule})";
+        $cron = self::getSchedule();
+
+        $knownLabels = [
+            '0 6 * * *'   => 'Everyday at 6:00 AM IST',
+            '*/15 * * * *' => 'Every 15 mins',
+            '* * * * *'   => 'Every minute',
+        ];
+
+        return $knownLabels[$cron] ?? $cron;
     }
+
+    /**
+     * Calculate the next scheduled run time in the configured IST timezone.
+     * Always returns a future Carbon instance.
+     */
+    public static function getNextRunIst(): Carbon
+    {
+        $timezone = self::getTimezone();
+        $cron     = self::getSchedule();
+        $now      = Carbon::now($timezone);
+
+        // For the default daily-at-6am schedule, compute precisely
+        if ($cron === self::DEFAULT_SCHEDULE) {
+            $next = $now->copy()->setTime(6, 0, 0);
+            if (!$next->isFuture()) {
+                $next->addDay();
+            }
+            return $next;
+        }
+
+        // For */15 every-15-min schedule
+        if ($cron === '*/15 * * * *') {
+            $next = $now->copy()->addMinutes(15 - ($now->minute % 15))->setSecond(0);
+            if (!$next->isFuture()) {
+                $next->addMinutes(15);
+            }
+            return $next;
+        }
+
+        // Generic fallback: just add 1 minute so it is always in the future
+        return $now->copy()->addMinute();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     public function __construct(
         protected FirebaseNotificationService $firebaseService = new FirebaseNotificationService(),
         protected PosterPostingLimitService $limitService = new PosterPostingLimitService(),
     ) {}
 
+    // =========================================================================
+    // BATCH 1 — Posters expiring within 1 day
+    // =========================================================================
+
     /**
-     * Process both "Day Before Expiry" and "On Poster Expiry" notifications.
-     *
-     * @param bool $dryRun If true, does not mutate the database or send real network requests
-     * @return array Summary statistics of the batch run
+     * Find approved posters expiring within 24 hours and send a reminder FCM notification.
+     * Marks each poster with `day_before_expiry_notified_at` so it is never double-notified.
      */
-    public function processExpiringPosters(bool $dryRun = false): array
+    public function sendExpiringNotifications(bool $dryRun = false): array
     {
+        if (!config('posters.expiry_notification.enabled', true)) {
+            Log::info('Expiring notifications disabled in config.');
+            return ['found' => 0, 'sent' => 0, 'skipped' => 0];
+        }
+
         $startTime = microtime(true);
-        $enabled = (bool) config('posters.expiry_notification.enabled', true);
-        if (!$enabled) {
-            $durationMs = (int) round((microtime(true) - $startTime) * 1000);
-            BatchRunLog::create([
-                'ran_at'            => now(),
-                'status'            => 'disabled',
-                'dry_run'           => $dryRun,
-                'day_before_jobs'   => 0,
-                'day_before_offers' => 0,
-                'on_expiry_jobs'    => 0,
-                'on_expiry_offers'  => 0,
-                'notifications_sent'=> 0,
-                'skipped_no_token'  => 0,
-                'duration_ms'       => $durationMs,
-            ]);
-            return [
-                'status'            => 'disabled',
-                'day_before_jobs'   => 0,
-                'day_before_offers' => 0,
-                'on_expiry_jobs'    => 0,
-                'on_expiry_offers'  => 0,
-                'notifications_sent'=> 0,
-                'skipped_no_token'  => 0,
-            ];
-        }
+        $cutoff    = now()->addHours(
+            (int) config('posters.expiry_notification.window_hours', 24)
+        );
 
-        $windowHours = (int) config('posters.expiry_notification.window_hours', 24);
-        $dayBeforeCutoff = now()->addHours($windowHours);
-
-        $notificationsSent = 0;
-        $skippedNoToken = 0;
-
-        // =========================================================================
-        // 1. DAY BEFORE EXPIRY (expires_at > now() && expires_at <= cutoff)
-        // =========================================================================
-        $dayBeforeJobs = Job::whereNotNull('expires_at')
+        $expiringJobs = Job::whereNotNull('expires_at')
             ->whereNull('day_before_expiry_notified_at')
-            ->where('status', '!=', 'rejected')
+            ->where('status', 'approved')
             ->where('expires_at', '>', now())
-            ->where('expires_at', '<=', $dayBeforeCutoff)
+            ->where('expires_at', '<=', $cutoff)
             ->get();
 
-        $dayBeforeOffers = Offer::whereNotNull('expires_at')
+        $expiringOffers = Offer::whereNotNull('expires_at')
             ->whereNull('day_before_expiry_notified_at')
-            ->where('status', '!=', 'rejected')
+            ->where('status', 'approved')
             ->where('expires_at', '>', now())
-            ->where('expires_at', '<=', $dayBeforeCutoff)
+            ->where('expires_at', '<=', $cutoff)
             ->get();
 
-        foreach ($dayBeforeJobs as $job) {
-            $sent = $this->notifyDayBefore($job, 'job', $dryRun);
-            if ($sent) {
-                $notificationsSent++;
-            } else {
-                $skippedNoToken++;
-            }
+        $sent    = 0;
+        $skipped = 0;
 
+        foreach ($expiringJobs as $job) {
             if (!$dryRun) {
+                if ($this->sendExpiringFcm($job, 'job')) {
+                    $sent++;
+                } else {
+                    $skipped++;
+                }
                 $job->day_before_expiry_notified_at = now();
-                $job->expiry_notified_at = now();
                 $job->save();
+            } else {
+                $skipped++;
             }
         }
 
-        foreach ($dayBeforeOffers as $offer) {
-            $sent = $this->notifyDayBefore($offer, 'offer', $dryRun);
-            if ($sent) {
-                $notificationsSent++;
-            } else {
-                $skippedNoToken++;
-            }
-
+        foreach ($expiringOffers as $offer) {
             if (!$dryRun) {
+                if ($this->sendExpiringFcm($offer, 'offer')) {
+                    $sent++;
+                } else {
+                    $skipped++;
+                }
                 $offer->day_before_expiry_notified_at = now();
-                $offer->expiry_notified_at = now();
                 $offer->save();
-            }
-        }
-
-        // =========================================================================
-        // 2. ON POSTER EXPIRY (expires_at <= now())
-        // =========================================================================
-        $onExpiryJobs = Job::whereNotNull('expires_at')
-            ->whereNull('expired_notified_at')
-            ->where('status', '!=', 'rejected')
-            ->where('expires_at', '<=', now())
-            ->get();
-
-        $onExpiryOffers = Offer::whereNotNull('expires_at')
-            ->whereNull('expired_notified_at')
-            ->where('status', '!=', 'rejected')
-            ->where('expires_at', '<=', now())
-            ->get();
-
-        foreach ($onExpiryJobs as $job) {
-            $sent = $this->notifyOnExpiry($job, 'job', $dryRun);
-            if ($sent) {
-                $notificationsSent++;
             } else {
-                $skippedNoToken++;
-            }
-
-            if (!$dryRun) {
-                $job->expired_notified_at = now();
-                $job->expiry_notified_at = now();
-                if ($job->status === 'approved') {
-                    $job->status = 'expired';
-                }
-                $job->save();
+                $skipped++;
             }
         }
 
-        foreach ($onExpiryOffers as $offer) {
-            $sent = $this->notifyOnExpiry($offer, 'offer', $dryRun);
-            if ($sent) {
-                $notificationsSent++;
-            } else {
-                $skippedNoToken++;
-            }
-
-            if (!$dryRun) {
-                $offer->expired_notified_at = now();
-                $offer->expiry_notified_at = now();
-                if ($offer->status === 'approved') {
-                    $offer->status = 'expired';
-                }
-                $offer->save();
-            }
-        }
-
-        // 3. Process any pending view milestones (e.g. view_count increased directly in DB)
-        $milestoneService = new PosterMilestoneNotificationService($this->firebaseService, $this);
-        $milestoneResults = $milestoneService->checkAllPendingMilestones($dryRun);
-        $notificationsSent += $milestoneResults['milestones_sent'];
-        $skippedNoToken    += $milestoneResults['milestones_skipped'];
-
+        $found      = $expiringJobs->count() + $expiringOffers->count();
         $durationMs = (int) round((microtime(true) - $startTime) * 1000);
 
-        $result = [
-            'status'           => 'success',
-            'day_before_jobs'  => $dayBeforeJobs->count(),
-            'day_before_offers'=> $dayBeforeOffers->count(),
-            'on_expiry_jobs'   => $onExpiryJobs->count(),
-            'on_expiry_offers' => $onExpiryOffers->count(),
-            'jobs_processed'   => $dayBeforeJobs->count() + $onExpiryJobs->count(),
-            'offers_processed' => $dayBeforeOffers->count() + $onExpiryOffers->count(),
-            'milestones_sent'  => $milestoneResults['milestones_sent'],
-            'milestones_skipped'=> $milestoneResults['milestones_skipped'],
-            'notifications_sent'=> $notificationsSent,
-            'skipped_no_token' => $skippedNoToken,
-            'dry_run'          => $dryRun,
-        ];
+        if (!$dryRun) {
+            BatchRunLog::create([
+                'batch_name'         => 'notify-expiring',
+                'ran_at'             => now(),
+                'status'             => 'success',
+                'dry_run'            => false,
+                'day_before_jobs'    => $expiringJobs->count(),
+                'day_before_offers'  => $expiringOffers->count(),
+                'on_expiry_jobs'     => 0,
+                'on_expiry_offers'   => 0,
+                'notifications_sent' => $sent,
+                'skipped_no_token'   => $skipped,
+                'duration_ms'        => $durationMs,
+            ]);
+        }
 
-        BatchRunLog::create([
-            'ran_at'            => now(),
-            'status'            => 'success',
-            'dry_run'           => $dryRun,
-            'day_before_jobs'   => $result['day_before_jobs'],
-            'day_before_offers' => $result['day_before_offers'],
-            'on_expiry_jobs'    => $result['on_expiry_jobs'],
-            'on_expiry_offers'  => $result['on_expiry_offers'],
-            'notifications_sent'=> $result['notifications_sent'],
-            'skipped_no_token'  => $result['skipped_no_token'],
-            'duration_ms'       => $durationMs,
+        return compact('found', 'sent', 'skipped');
+    }
+
+    // =========================================================================
+    // BATCH 2 — Posters that have already expired
+    // =========================================================================
+
+    /**
+     * Find approved posters whose expiry date has passed and send an "expired" FCM notification.
+     * Marks each poster with `expired_notified_at` and updates status to 'expired'.
+     */
+    public function sendExpiredNotifications(bool $dryRun = false): array
+    {
+        if (!config('posters.expiry_notification.enabled', true)) {
+            Log::info('Expired notifications disabled in config.');
+            return ['found' => 0, 'sent' => 0, 'skipped' => 0];
+        }
+
+        $startTime = microtime(true);
+
+        $expiredJobs = Job::whereNotNull('expires_at')
+            ->whereNull('expired_notified_at')
+            ->where('status', 'approved')
+            ->where('expires_at', '<=', now())
+            ->get();
+
+        $expiredOffers = Offer::whereNotNull('expires_at')
+            ->whereNull('expired_notified_at')
+            ->where('status', 'approved')
+            ->where('expires_at', '<=', now())
+            ->get();
+
+        $sent    = 0;
+        $skipped = 0;
+
+        foreach ($expiredJobs as $job) {
+            if (!$dryRun) {
+                if ($this->sendExpiredFcm($job, 'job')) {
+                    $sent++;
+                } else {
+                    $skipped++;
+                }
+                $job->expired_notified_at = now();
+                $job->status              = 'expired';
+                $job->save();
+            } else {
+                $skipped++;
+            }
+        }
+
+        foreach ($expiredOffers as $offer) {
+            if (!$dryRun) {
+                if ($this->sendExpiredFcm($offer, 'offer')) {
+                    $sent++;
+                } else {
+                    $skipped++;
+                }
+                $offer->expired_notified_at = now();
+                $offer->status              = 'expired';
+                $offer->save();
+            } else {
+                $skipped++;
+            }
+        }
+
+        $found      = $expiredJobs->count() + $expiredOffers->count();
+        $durationMs = (int) round((microtime(true) - $startTime) * 1000);
+
+        if (!$dryRun) {
+            BatchRunLog::create([
+                'batch_name'         => 'notify-expired',
+                'ran_at'             => now(),
+                'status'             => 'success',
+                'dry_run'            => false,
+                'day_before_jobs'    => 0,
+                'day_before_offers'  => 0,
+                'on_expiry_jobs'     => $expiredJobs->count(),
+                'on_expiry_offers'   => $expiredOffers->count(),
+                'notifications_sent' => $sent,
+                'skipped_no_token'   => $skipped,
+                'duration_ms'        => $durationMs,
+            ]);
+        }
+
+        return compact('found', 'sent', 'skipped');
+    }
+
+    // =========================================================================
+    // Private FCM Helpers
+    // =========================================================================
+
+    private function sendExpiringFcm(Job|Offer $poster, string $type): bool
+    {
+        $phone = $type === 'job' ? $poster->phone_number : $poster->mobile_number;
+        $token = $this->resolveFcmToken($phone, $poster->device_id);
+
+        if (!$token) {
+            Log::info("No FCM token for expiring {$type} #{$poster->id}");
+            return false;
+        }
+
+        $title = '⏰ Poster Expires Tomorrow | पोस्टर कल समाप्त हो रहा है';
+        $body  = "⏰ Your poster \"{$poster->business_name}\" expires tomorrow! Create a new poster on PosterGali to keep your business live.\n"
+               . "⏰ आपका पोस्टर \"{$poster->business_name}\" कल समाप्त हो रहा है! PosterGali पर नया पोस्टर बनाएं।";
+
+        $this->firebaseService->sendToToken($token, $title, $body, [
+            'type'          => 'day_before_expiry',
+            'item_type'     => $type,
+            'item_id'       => (string) $poster->id,
+            'business_name' => (string) $poster->business_name,
+            'expires_at'    => $poster->expires_at?->toIso8601String() ?? '',
         ]);
 
-        return $result;
+        return true;
     }
 
-    /**
-     * Dispatch Day Before Expiry Notification.
-     */
-    protected function notifyDayBefore(Job|Offer $poster, string $type, bool $dryRun): bool
+    private function sendExpiredFcm(Job|Offer $poster, string $type): bool
     {
         $phone = $type === 'job' ? $poster->phone_number : $poster->mobile_number;
         $token = $this->resolveFcmToken($phone, $poster->device_id);
 
         if (!$token) {
-            Log::info("No FCM token found for Day Before Expiry on {$type} #{$poster->id}");
+            Log::info("No FCM token for expired {$type} #{$poster->id}");
             return false;
         }
 
-        $title = config(
-            'posters.day_before_expiry_notification.title',
-            '⏰ Poster Expires Tomorrow | पोस्टर कल समाप्त हो रहा है'
-        );
+        $title = '⚠️ Poster Expired | पोस्टर समाप्त हो गया';
+        $body  = "⚠️ Your poster \"{$poster->business_name}\" has expired. Create a new poster on PosterGali and keep reaching more people.\n"
+               . "⚠️ आपके पोस्टर \"{$poster->business_name}\" की अवधि समाप्त हो गई। PosterGali पर नया पोस्टर बनाएं।";
 
-        $bodyEn = config(
-            'posters.day_before_expiry_notification.body_en',
-            '⏰ Reminder: Your poster ":business_name" expires tomorrow! Create a new poster on PosterGali to keep your business live without interruption.'
-        );
-
-        $bodyHi = config(
-            'posters.day_before_expiry_notification.body_hi',
-            '⏰ सूचना: आपका पोस्टर ":business_name" कल समाप्त हो रहा है! अपना प्रचार बिना रुके जारी रखने के लिए PosterGali पर नया पोस्टर बनाएं।'
-        );
-
-        $replacements = [':business_name' => (string) $poster->business_name];
-        $combinedBody = strtr($bodyEn, $replacements) . "\n" . strtr($bodyHi, $replacements);
-
-        if (!$dryRun) {
-            $this->firebaseService->sendToToken($token, $title, $combinedBody, [
-                'type' => 'day_before_expiry',
-                'item_type' => $type,
-                'item_id' => $poster->id,
-                'business_name' => $poster->business_name,
-                'expires_at' => $poster->expires_at?->toIso8601String() ?? '',
-            ]);
-        }
+        $this->firebaseService->sendToToken($token, $title, $body, [
+            'type'          => 'on_expiry',
+            'item_type'     => $type,
+            'item_id'       => (string) $poster->id,
+            'business_name' => (string) $poster->business_name,
+            'expires_at'    => $poster->expires_at?->toIso8601String() ?? '',
+        ]);
 
         return true;
     }
 
-    /**
-     * Dispatch On Poster Expiry Notification.
-     */
-    protected function notifyOnExpiry(Job|Offer $poster, string $type, bool $dryRun): bool
-    {
-        $phone = $type === 'job' ? $poster->phone_number : $poster->mobile_number;
-        $token = $this->resolveFcmToken($phone, $poster->device_id);
+    // =========================================================================
+    // FCM Token Resolution (unchanged logic)
+    // =========================================================================
 
-        if (!$token) {
-            Log::info("No FCM token found for On Expiry on {$type} #{$poster->id}");
-            return false;
-        }
-
-        $title = config(
-            'posters.on_expiry_notification.title',
-            '⚠️ Poster Expired | पोस्टर समाप्त हो गया'
-        );
-
-        $bodyEn = config(
-            'posters.on_expiry_notification.body_en',
-            '⚠️ Your poster ":business_name" has expired today. Create a new poster on PosterGali and keep reaching more people online.'
-        );
-
-        $bodyHi = config(
-            'posters.on_expiry_notification.body_hi',
-            '⚠️ आपके पोस्टर ":business_name" की अवधि आज समाप्त हो गई है। नया पोस्टर बनाएं और PosterGali पर अधिक लोगों तक पहुंचना जारी रखें।'
-        );
-
-        $replacements = [':business_name' => (string) $poster->business_name];
-        $combinedBody = strtr($bodyEn, $replacements) . "\n" . strtr($bodyHi, $replacements);
-
-        if (!$dryRun) {
-            $this->firebaseService->sendToToken($token, $title, $combinedBody, [
-                'type' => 'on_expiry',
-                'item_type' => $type,
-                'item_id' => $poster->id,
-                'business_name' => $poster->business_name,
-                'expires_at' => $poster->expires_at?->toIso8601String() ?? '',
-            ]);
-        }
-
-        return true;
-    }
-
-    /**
-     * Resolve the FCM device token using the poster phone number or device ID.
-     */
     public function resolveFcmToken(?string $phoneNumber, ?string $deviceId): ?string
     {
         $phoneNumber = trim((string) $phoneNumber);
-        $deviceId = trim((string) $deviceId);
+        $deviceId    = trim((string) $deviceId);
 
-        // 1. Search in Customer model by phone variants
+        // 1. Customer table by phone
         if (!empty($phoneNumber)) {
             $variants = $this->limitService->getPhoneVariants($phoneNumber);
             if (!empty($variants)) {
@@ -362,22 +325,20 @@ class PosterExpiryNotificationService
                     ->whereNotNull('fcm')
                     ->where('fcm', '!=', '')
                     ->value('fcm');
-
                 if ($customerToken) {
                     return $customerToken;
                 }
             }
         }
 
-        // 2. Search in Notification table by phone or device_id
+        // 2. Notification table by phone or device_id
         if (!empty($phoneNumber) || !empty($deviceId)) {
             $query = Notification::whereNotNull('fcm_tocken')->where('fcm_tocken', '!=', '');
 
             if (!empty($phoneNumber) && !empty($deviceId)) {
                 $variants = $this->limitService->getPhoneVariants($phoneNumber);
                 $query->where(function ($q) use ($variants, $deviceId) {
-                    $q->whereIn('mobile', $variants)
-                      ->orWhere('device_id', $deviceId);
+                    $q->whereIn('mobile', $variants)->orWhere('device_id', $deviceId);
                 });
             } elseif (!empty($phoneNumber)) {
                 $variants = $this->limitService->getPhoneVariants($phoneNumber);
@@ -392,7 +353,7 @@ class PosterExpiryNotificationService
             }
         }
 
-        // 3. Fallback: Check if device_id itself is an FCM token (FCM tokens typically 80+ chars)
+        // 3. device_id itself may be an FCM token (80+ chars, no spaces)
         if (strlen($deviceId) >= 80 && !str_contains($deviceId, ' ')) {
             return $deviceId;
         }
