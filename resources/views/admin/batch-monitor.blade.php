@@ -17,9 +17,9 @@
             --danger: #d9534f;
             --warning: #b77400;
             --border: #e9e1d5;
-            --info-bg: #e8f4fd;
+            --info-bg: #eef6fc;
             --info-text: #1d6fa5;
-            --info-border: #bcdcf5;
+            --info-border: #cce4f7;
         }
 
         body {
@@ -72,12 +72,12 @@
             gap: 16px;
         }
 
-        /* ── Reduced Height Batch Card ── */
+        /* ── Super Compact Batch Card ── */
         .batch-card {
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 14px 16px;
+            padding: 12px 16px;
             box-shadow: 0 2px 8px rgba(43,30,24,0.03);
             display: flex;
             flex-direction: column;
@@ -107,11 +107,53 @@
             font-weight: 500;
         }
 
+        /* ── Header Right: Timer Left to Active Button ── */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* ── Clean, Small Timer Div ── */
+        .timer-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--info-bg);
+            border: 1px solid var(--info-border);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--info-text);
+            font-weight: 600;
+        }
+        .timer-pill .timer-label {
+            color: #6298be;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .timer-pill .timer-time {
+            color: #114c72;
+            font-weight: 800;
+            font-size: 11.5px;
+        }
+        .timer-pill .timer-countdown {
+            background: #fff;
+            color: var(--info-text);
+            border: 1px solid #bcdcf5;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
         .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 999px;
             font-size: 10.5px;
             font-weight: 700;
@@ -121,6 +163,11 @@
             background: #eaf7ef;
             color: #1a6147;
             border: 1px solid #b7dfcd;
+        }
+        .status-badge.disabled {
+            background: #f7eaea;
+            color: #a32a2a;
+            border: 1px solid #e5b4b4;
         }
         .pulse-dot {
             width: 6px; height: 6px; border-radius: 50%;
@@ -132,62 +179,28 @@
             50% { box-shadow: 0 0 0 4px rgba(47,143,107,0.08); }
         }
 
-        /* ── Highlighted Next Coming Run Banner ── */
-        .next-run-banner {
-            background: var(--info-bg);
-            border: 1px solid var(--info-border);
-            border-radius: 8px;
-            padding: 7px 10px;
-            margin-bottom: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .next-run-left {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            color: var(--info-text);
-            font-weight: 600;
-        }
-        .next-run-time {
-            font-size: 12.5px;
-            font-weight: 800;
-            color: #144f77;
-        }
-        .next-run-countdown {
-            font-size: 10.5px;
-            font-weight: 700;
-            background: #fff;
-            color: var(--info-text);
-            padding: 2px 7px;
-            border-radius: 12px;
-            border: 1px solid var(--info-border);
-        }
-
         /* ── Compact Task Tags ── */
         .task-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
-            margin-bottom: 9px;
+            margin-bottom: 8px;
         }
         .task-tag {
-            font-size: 10.5px;
+            font-size: 10px;
             font-weight: 600;
             color: #635b54;
             background: #f8f4ec;
             border: 1px solid #ede5d8;
-            padding: 2px 7px;
-            border-radius: 5px;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
         /* ── Compact Stat Rows ── */
         .stat-rows {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
             margin-top: auto;
             border-top: 1px dashed #ede5d8;
             padding-top: 6px;
@@ -205,7 +218,7 @@
             text-transform: uppercase;
             letter-spacing: 0.4px;
             color: #9b9188;
-            font-size: 10px;
+            font-size: 9.5px;
         }
         .stat-row-value {
             font-weight: 700;
@@ -222,6 +235,7 @@
             .sidebar { display: none; }
             .content { padding: 0 16px 40px; }
             .topbar { padding: 14px 16px; }
+            .header-actions { flex-direction: column; align-items: flex-end; gap: 4px; }
         }
     </style>
 </head>
@@ -280,7 +294,7 @@
                 @foreach($batchStatus['batches'] as $batch)
                 <div class="batch-card" id="card-{{ strtolower($batch['name']) }}">
 
-                    <!-- Card Header -->
+                    <!-- Card Header: Title on Left, Timer + Active Button on Right -->
                     <div class="batch-card-header">
                         <div>
                             <div class="batch-title">
@@ -289,24 +303,23 @@
                             </div>
                             <div class="batch-desc">{{ $batch['description'] }}</div>
                         </div>
-                        <span class="status-badge {{ $batch['enabled'] ? 'active' : 'disabled' }}">
-                            @if($batch['enabled'])
-                                <span class="pulse-dot"></span>
-                            @endif
-                            {{ $batch['status'] }}
-                        </span>
-                    </div>
 
-                    <!-- Prominent Next Coming Run Banner -->
-                    <div class="next-run-banner">
-                        <div class="next-run-left">
-                            <span>⏰</span>
-                            <span>Next Run:</span>
-                            <span class="next-run-time">{{ $batch['upcomingTimeOnly'] ?? $batch['upcomingFormatted'] }}</span>
+                        <!-- Right: Small Clean Timer Div directly to the left of Active Button -->
+                        <div class="header-actions">
+                            <div class="timer-pill">
+                                <span>⏰</span>
+                                <span class="timer-label">Next:</span>
+                                <span class="timer-time">{{ $batch['upcomingTimeOnly'] ?? $batch['upcomingFormatted'] }}</span>
+                                <span class="timer-countdown" id="countdown-{{ strtolower($batch['name']) }}">⏳ {{ $batch['upcomingHuman'] }}</span>
+                            </div>
+
+                            <span class="status-badge {{ $batch['enabled'] ? 'active' : 'disabled' }}">
+                                @if($batch['enabled'])
+                                    <span class="pulse-dot"></span>
+                                @endif
+                                {{ $batch['status'] }}
+                            </span>
                         </div>
-                        <span class="next-run-countdown" id="countdown-{{ strtolower($batch['name']) }}">
-                            ⏳ {{ $batch['upcomingHuman'] }}
-                        </span>
                     </div>
 
                     <!-- Tasks List (Compact Tags) -->
@@ -351,7 +364,7 @@
 </div>
 
 <script>
-    // Live countdown update for B1 upcoming run
+    // Live countdown update for upcoming runs
     document.addEventListener('DOMContentLoaded', function () {
         @foreach($batchStatus['batches'] as $batch)
             @if(!empty($batch['upcomingIso']))
