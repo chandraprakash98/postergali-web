@@ -29,10 +29,19 @@
         .logo{ font-size:20px; font-weight:800; margin-bottom:30px; }
         .logo .menu-icon{ background:#fff; color:var(--sidebar); padding:8px; border-radius:8px; display:inline-block; }
         .menu-items{ display:flex; flex-direction:column; gap:14px; flex:1; }
-        .sidebar-footer{ margin-top:auto; padding-top:20px; border-top:1px solid rgba(255,255,255,0.12); }
+        .sidebar-footer{ margin-top:auto; padding-top:20px; border-top:1px solid rgba(255,255,255,0.12); display:flex; flex-direction:column; gap:14px; }
         .menu-item{ color: rgba(255,255,255,0.95); text-decoration:none; padding:12px 14px; border-radius:10px; display:flex; gap:12px; align-items:center; font-weight:600; }
         .menu-item:hover{ background: rgba(255,255,255,0.06); }
         .menu-item.active{ background: rgba(255,255,255,0.12); }
+        /* Batch status mini-widget */
+        .batch-widget{ background: rgba(0,0,0,0.18); border-radius:10px; padding:10px 12px; font-size:12px; color:rgba(255,255,255,0.85); display:flex; flex-direction:column; gap:5px; }
+        .batch-widget-row{ display:flex; align-items:center; justify-content:space-between; gap:6px; }
+        .batch-widget-label{ color:rgba(255,255,255,0.5); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.4px; }
+        .batch-widget-val{ font-weight:700; color:#fff; font-size:12px; }
+        .batch-run-dot{ width:7px; height:7px; border-radius:50%; display:inline-block; flex-shrink:0; }
+        .batch-run-dot.running{ background:#4ade80; box-shadow:0 0 0 0 rgba(74,222,128,0.7); animation:bpulse 1.8s infinite; }
+        .batch-run-dot.stopped{ background:#f87171; }
+        @keyframes bpulse{ 0%{box-shadow:0 0 0 0 rgba(74,222,128,0.7);} 70%{box-shadow:0 0 0 6px rgba(74,222,128,0);} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0);} }
 
         .main-content{ flex:1; margin-left:240px; }
         .topbar{ padding:28px 40px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
@@ -120,12 +129,30 @@
                     <span class="menu-icon">🤝</span>
                     Referrals
                 </a>
-                <a href="{{ route('admin.batch.monitor') }}" class="menu-item {{ ($active ?? null) === 'batch' ? 'active' : '' }}">
-                    <span class="menu-icon">🔔</span>
-                    Batch Monitor
-                </a>
             </div>
             <div class="sidebar-footer">
+                {{-- Batch Status Mini Widget --}}
+                <div class="batch-widget" id="batch-widget">
+                    <div class="batch-widget-row">
+                        <span class="batch-widget-label">🔔 Batch</span>
+                        <span class="batch-widget-val" id="bw-name" style="font-family:monospace;font-size:11px;">postergali-alpha</span>
+                    </div>
+                    <div class="batch-widget-row">
+                        <span class="batch-widget-label">Engine</span>
+                        <span style="display:inline-flex;align-items:center;gap:5px;">
+                            <span class="batch-run-dot running" id="bw-dot"></span>
+                            <span class="batch-widget-val" id="bw-running">Running</span>
+                        </span>
+                    </div>
+                    <div class="batch-widget-row">
+                        <span class="batch-widget-label">Schedule</span>
+                        <span class="batch-widget-val" id="bw-schedule" style="font-size:11px;">6:00 AM IST</span>
+                    </div>
+                    <div class="batch-widget-row">
+                        <span class="batch-widget-label">Notifs Sent</span>
+                        <span class="batch-widget-val" id="bw-sent">—</span>
+                    </div>
+                </div>
                 <form method="POST" action="{{ route('admin.logout') }}" style="margin:0;">
                     @csrf
                     <button type="submit" class="logout-btn">Logout</button>
@@ -371,6 +398,33 @@ document.addEventListener('DOMContentLoaded', function(){
         btnOffers.addEventListener('click', function(){ setActive(btnOffers); filter('offers'); });
     }
 });
+</script>
+
+<script>
+// Batch status sidebar widget
+(function() {
+    function loadBatchStatus() {
+        fetch('{{ route("admin.batch.status") }}', { headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.json())
+            .then(d => {
+                const name   = document.getElementById('bw-name');
+                const dot    = document.getElementById('bw-dot');
+                const run    = document.getElementById('bw-running');
+                const sched  = document.getElementById('bw-schedule');
+                const sent   = document.getElementById('bw-sent');
+
+                if (name)  name.textContent  = d.batch_name  || 'postergali-alpha';
+                if (sched) sched.textContent = d.schedule_human || '6:00 AM IST';
+                if (sent)  sent.textContent  = d.total_sent  != null ? d.total_sent : '—';
+
+                const running = d.enabled !== false;
+                if (dot) { dot.className = 'batch-run-dot ' + (running ? 'running' : 'stopped'); }
+                if (run) { run.textContent = running ? 'Running' : 'Stopped'; }
+            })
+            .catch(() => {}); // silently fail – widget shows defaults
+    }
+    loadBatchStatus();
+})();
 </script>
 </body>
 </html>
