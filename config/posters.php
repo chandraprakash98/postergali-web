@@ -44,38 +44,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Notification Batches Configuration (B1 & B2)
+    | Automated Batch Configuration (postergali-alpha)
     |--------------------------------------------------------------------------
     |
-    | B1: Runs every 2 minutes. Checks expired posters, expiring in 1 day, and view milestones.
-    | B2: Runs every evening at 7 PM IST. Checks view milestones and evening alerts.
+    | postergali-alpha runs automatically via Laravel Scheduler.
+    | Function 1: Day 1 before expiry notification (expires within 24h window).
+    | Function 2: Expiring today / expired notification and status update.
+    |
+    | Run time can be customized via POSTERGALI_ALPHA_SCHEDULE in .env.
     |
     */
 
-    'batches' => [
-        'timezone' => env('BATCH_TIMEZONE', 'Asia/Kolkata'),
-
-        'b1' => [
-            'name'        => 'B1',
-            'schedule'    => env('BATCH_B1_SCHEDULE', '*/2 * * * *'),
-            'enabled'     => (bool) env('BATCH_B1_ENABLED', true),
-        ],
-
-        'b2' => [
-            'name'        => 'B2',
-            'schedule'    => env('BATCH_B2_SCHEDULE', '0 19 * * *'),
-            'enabled'     => (bool) env('BATCH_B2_ENABLED', true),
+    'batch' => [
+        'alpha' => [
+            'name'     => 'postergali-alpha',
+            'schedule' => env('POSTERGALI_ALPHA_SCHEDULE', '0 6 * * *'), // Default: Everyday at 6:00 AM IST
+            'timezone' => env('POSTERGALI_ALPHA_TIMEZONE', 'Asia/Kolkata'),
+            'enabled'  => (bool) env('POSTERGALI_ALPHA_ENABLED', true),
         ],
     ],
 
     'expiry_notification' => [
-        // Cron schedule expression (Default: everyday at 6:00 AM India Standard Time)
-        'schedule' => env('POSTER_EXPIRY_CRON_SCHEDULE', \App\Services\PosterExpiryNotificationService::DEFAULT_SCHEDULE),
-
-        // Timezone for the scheduled batch execution (Default: Asia/Kolkata / IST)
-        'timezone' => env('POSTER_EXPIRY_TIMEZONE', \App\Services\PosterExpiryNotificationService::DEFAULT_TIMEZONE),
-
-        // Number of hours ahead to detect posters expiring tomorrow (Default: 24 hours)
+        // Hours ahead to detect posters expiring tomorrow (Default: 24 hours)
         'window_hours' => (int) env('POSTER_EXPIRING_WINDOW_HOURS', 24),
 
         // Master toggle for automated expiry notifications

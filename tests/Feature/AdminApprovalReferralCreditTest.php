@@ -7,12 +7,25 @@ use App\Models\CustomerCredit;
 use App\Models\Job;
 use App\Models\Referral;
 use App\Models\User;
+use App\Services\FirebaseNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AdminApprovalReferralCreditTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        FirebaseNotificationService::fake();
+    }
+
+    protected function tearDown(): void
+    {
+        FirebaseNotificationService::resetFake();
+        parent::tearDown();
+    }
 
     public function test_admin_approval_adds_credit_and_marks_referral_success(): void
     {
@@ -22,6 +35,7 @@ class AdminApprovalReferralCreditTest extends TestCase
 
         $referrer = Customer::create([
             'mobile' => '9560213952',
+            'fcm'    => 'fcm_referrer_token_xyz',
         ]);
 
         CustomerCredit::create([
@@ -73,5 +87,11 @@ class AdminApprovalReferralCreditTest extends TestCase
             'referral_mobile' => '9560213954',
             'status' => 'Success',
         ]);
+
+        // Verify push notification sent to referrer
+        $sentMessages = FirebaseNotificationService::getSentMessages();
+        $this->assertCount(1, $sentMessages);
+        $this->assertSame('fcm_referrer_token_xyz', $sentMessages[0]['token']);
+        $this->assertStringContainsString('Congratulations! 100 Poster Credits have been added to your account', $sentMessages[0]['body']);
     }
 }

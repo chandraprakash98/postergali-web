@@ -14,10 +14,13 @@ use App\Models\Plan;
 use App\Models\Notification;
 
 use Carbon\Carbon;
-use App\Services\Batches\BatchMonitorService;
+use App\Services\PostergaliAlphaBatchService;
+use App\Services\FirebaseNotificationService;
+use App\Services\FcmTokenResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FcmNotification;
@@ -429,6 +432,41 @@ class AdminAuthController extends Controller
 
         $referral->status = 'Success';
         $referral->save();
+
+        // Dispatch congratulations push notification to the referrer customer
+        $this->sendReferralRewardNotification($referrerCustomer, (float) $credit->balance);
+    }
+
+    /**
+     * Dispatch FCM notification to referrer customer upon successful referral reward.
+     */
+    private function sendReferralRewardNotification(Customer $referrerCustomer, float $newBalance): void
+    {
+        try {
+            $token = (new FcmTokenResolver())->resolve($referrerCustomer->mobile, $referrerCustomer->device_id ?? null);
+            if (!$token && !empty($referrerCustomer->fcm)) {
+                $token = $referrerCustomer->fcm;
+            }
+
+            if ($token) {
+                $firebaseService = new FirebaseNotificationService();
+                $title = '🎉 Referral Reward! | रेफरल इनाम';
+                $body  = '🎉 Congratulations! 100 Poster Credits have been added to your account.';
+
+                $firebaseService->sendToToken($token, $title, $body, [
+                    'type'          => 'referral_credit',
+                    'customer_id'   => (string) $referrerCustomer->customer_id,
+                    'credits_added' => '100',
+                    'balance'       => (string) $newBalance,
+                ]);
+
+                Log::info("Referral reward FCM sent to customer #{$referrerCustomer->customer_id}");
+            } else {
+                Log::info("No FCM token found for referrer customer #{$referrerCustomer->customer_id}");
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Failed to send referral reward notification: {$e->getMessage()}");
+        }
     }
 
     private function calculateExpiryFromDuration($approvedAt, string $duration)
@@ -462,7 +500,7 @@ class AdminAuthController extends Controller
 
     private function getBatchStatus(): array
     {
-        return (new BatchMonitorService())->getBatchStatuses();
+        return (new PostergaliAlphaBatchService())->getStatus();
     }
 
     public function batchStatus()

@@ -2,68 +2,62 @@
 
 namespace App\Services;
 
-use App\Services\Batches\Actions\CheckExpiredPostersAction;
-use App\Services\Batches\Actions\CheckExpiringSoonPostersAction;
-use App\Services\Batches\BatchHelper;
+use App\Models\BatchRunLog;
 use Carbon\Carbon;
 
+/**
+ * Backward compatibility wrapper for PostergaliAlphaBatchService.
+ */
 class PosterExpiryNotificationService
 {
-    // ── Schedule constants (kept for backward compatibility) ─────────────────
-    public const DEFAULT_SCHEDULE = '0 6 * * *';
-    public const DEFAULT_TIMEZONE = 'Asia/Kolkata';
+    public const DEFAULT_SCHEDULE = PostergaliAlphaBatchService::DEFAULT_SCHEDULE;
+    public const DEFAULT_TIMEZONE = PostergaliAlphaBatchService::DEFAULT_TIMEZONE;
 
     public static function getSchedule(): string
     {
-        return (string) config('posters.expiry_notification.schedule', self::DEFAULT_SCHEDULE);
+        return PostergaliAlphaBatchService::getSchedule();
     }
 
     public static function getTimezone(): string
     {
-        return (string) config('posters.expiry_notification.timezone', self::DEFAULT_TIMEZONE);
+        return PostergaliAlphaBatchService::getTimezone();
     }
 
     public static function getScheduleHuman(): string
     {
-        return BatchHelper::getScheduleHuman(self::getSchedule());
+        return PostergaliAlphaBatchService::getScheduleHuman(self::getSchedule());
     }
 
     public static function getNextRunIst(): Carbon
     {
-        return BatchHelper::getNextRun(self::getSchedule(), self::getTimezone());
+        return PostergaliAlphaBatchService::getNextRun(self::getSchedule(), self::getTimezone());
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-
     public function __construct(
-        protected FirebaseNotificationService $firebaseService = new FirebaseNotificationService(),
-        protected PosterPostingLimitService $limitService = new PosterPostingLimitService(),
+        protected ?PostergaliAlphaBatchService $alphaService = null,
         protected ?FcmTokenResolver $tokenResolver = null,
-        protected ?CheckExpiringSoonPostersAction $expiringAction = null,
-        protected ?CheckExpiredPostersAction $expiredAction = null,
     ) {
-        $this->tokenResolver  = $tokenResolver ?? new FcmTokenResolver($this->limitService);
-        $this->expiringAction = $expiringAction ?? new CheckExpiringSoonPostersAction($this->firebaseService, $this->tokenResolver);
-        $this->expiredAction  = $expiredAction ?? new CheckExpiredPostersAction($this->firebaseService, $this->tokenResolver);
+        $this->alphaService  = $alphaService ?? new PostergaliAlphaBatchService();
+        $this->tokenResolver = $tokenResolver ?? new FcmTokenResolver();
     }
 
     /**
-     * Legacy wrapper: Find approved posters expiring within 24 hours and send reminder.
+     * Legacy wrapper: Find approved posters expiring within 24 hours and send reminder (Function 1).
      */
     public function sendExpiringNotifications(bool $dryRun = false): array
     {
         $startTime = microtime(true);
-        $result = $this->expiringAction->execute($dryRun);
+        $result = $this->alphaService->sendDayBeforeExpiryNotifications($dryRun);
         $durationMs = (int) round((microtime(true) - $startTime) * 1000);
 
         if (!$dryRun) {
-            \App\Models\BatchRunLog::create([
+            BatchRunLog::create([
                 'batch_name'         => 'notify-expiring',
                 'ran_at'             => now(),
                 'status'             => 'success',
                 'dry_run'            => false,
-                'day_before_jobs'    => $result['found'] ?? 0,
-                'day_before_offers'  => 0,
+                'day_before_jobs'    => $result['jobs_found'] ?? 0,
+                'day_before_offers'  => $result['offers_found'] ?? 0,
                 'on_expiry_jobs'     => 0,
                 'on_expiry_offers'   => 0,
                 'notifications_sent' => $result['sent'] ?? 0,
@@ -76,24 +70,24 @@ class PosterExpiryNotificationService
     }
 
     /**
-     * Legacy wrapper: Find approved posters whose expiry has passed and send notification.
+     * Legacy wrapper: Find approved posters whose expiry has passed and send notification (Function 2).
      */
     public function sendExpiredNotifications(bool $dryRun = false): array
     {
         $startTime = microtime(true);
-        $result = $this->expiredAction->execute($dryRun);
+        $result = $this->alphaService->sendExpiringTodayNotifications($dryRun);
         $durationMs = (int) round((microtime(true) - $startTime) * 1000);
 
         if (!$dryRun) {
-            \App\Models\BatchRunLog::create([
+            BatchRunLog::create([
                 'batch_name'         => 'notify-expired',
                 'ran_at'             => now(),
                 'status'             => 'success',
                 'dry_run'            => false,
                 'day_before_jobs'    => 0,
                 'day_before_offers'  => 0,
-                'on_expiry_jobs'     => $result['found'] ?? 0,
-                'on_expiry_offers'   => 0,
+                'on_expiry_jobs'     => $result['jobs_found'] ?? 0,
+                'on_expiry_offers'   => $result['offers_found'] ?? 0,
                 'notifications_sent' => $result['sent'] ?? 0,
                 'skipped_no_token'   => $result['skipped'] ?? 0,
                 'duration_ms'        => $durationMs,

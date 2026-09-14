@@ -12,14 +12,12 @@
             --sidebar: #9b342b;
             --accent: #e58b6a;
             --panel: #fffdf8;
+            --text-dark: #2f2a26;
             --muted: #79706b;
             --success: #2f8f6b;
             --danger: #d9534f;
             --warning: #b77400;
             --border: #e9e1d5;
-            --info-bg: #eef6fc;
-            --info-text: #1d6fa5;
-            --info-border: #cce4f7;
         }
 
         body {
@@ -31,30 +29,65 @@
 
         .container { display: flex; min-height: 100vh; }
 
-        /* ── Sidebar (matches Admin Dashboard) ── */
-        .sidebar { width: 240px; background: var(--sidebar); color: #fff; padding: 28px 22px; position: fixed; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; }
+        /* ── Sidebar ── */
+        .sidebar {
+            width: 240px;
+            background: var(--sidebar);
+            color: #fff;
+            padding: 28px 22px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
         .logo { font-size: 20px; font-weight: 800; margin-bottom: 30px; }
         .logo .menu-icon { background: #fff; color: var(--sidebar); padding: 8px; border-radius: 8px; display: inline-block; }
         .menu-items { display: flex; flex-direction: column; gap: 14px; flex: 1; }
         .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.12); }
-        .menu-item { color: rgba(255,255,255,0.95); text-decoration: none; padding: 12px 14px; border-radius: 10px; display: flex; gap: 12px; align-items: center; font-weight: 600; }
-        .menu-item:hover { background: rgba(255,255,255,0.06); }
-        .menu-item.active { background: rgba(255,255,255,0.14); }
-        .logout-btn { background: var(--accent); color: #fff; border: none; padding: 8px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 13px; }
+        .menu-item {
+            color: rgba(255,255,255,0.95);
+            text-decoration: none;
+            padding: 12px 14px;
+            border-radius: 10px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.15s ease;
+        }
+        .menu-item:hover { background: rgba(255,255,255,0.08); }
+        .menu-item.active { background: rgba(255,255,255,0.16); }
+        .logout-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            width: 100%;
+        }
 
-        /* ── Main Content & Topbar ── */
+        /* ── Main Content ── */
         .main-content { flex: 1; margin-left: 240px; }
-        .topbar { padding: 28px 40px 18px; display: flex; justify-content: space-between; align-items: center; }
-        .page-heading h2 { font-size: 22px; color: #302b27; margin: 0; font-weight: 800; }
+        .topbar {
+            padding: 28px 40px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-heading h2 { font-size: 22px; color: var(--text-dark); margin: 0; font-weight: 800; }
         .page-heading p { color: #8b8179; margin: 4px 0 0; font-size: 14px; }
         .content { padding: 0 40px 60px; }
 
-        /* ── Schedule Info Strip ── */
-        .schedule-info {
+        /* ── Top Info Strip ── */
+        .info-strip {
             background: var(--panel);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 12px 18px;
+            padding: 14px 20px;
             margin-bottom: 22px;
             display: flex;
             align-items: center;
@@ -63,189 +96,238 @@
             color: #79706b;
             font-weight: 600;
         }
-        .schedule-info strong { color: #2f2a26; }
+        .info-strip strong { color: var(--text-dark); }
 
-        /* ── Batch Cards Grid ── */
-        .batch-grid {
+        /* ── Alpha Batch Card ── */
+        .alpha-card {
+            background: var(--panel);
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 28px;
+            box-shadow: 0 4px 18px rgba(43,30,24,0.04);
+            margin-bottom: 28px;
+        }
+
+        .alpha-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+        }
+
+        .alpha-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alpha-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-dark);
+            font-family: monospace;
+            background: #fbf5ee;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #ebdcd0;
+        }
+
+        .alpha-badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .alpha-badge.active {
+            background: #e6f6ee;
+            color: #1e7b54;
+            border: 1px solid #bde6d1;
+        }
+        .alpha-badge.disabled {
+            background: #fce8e6;
+            color: #c93b2b;
+            border: 1px solid #f6c4c0;
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #2f8f6b;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(47,143,107,0.7);
+            animation: pulse 1.8s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(47,143,107,0.7); }
+            70% { box-shadow: 0 0 0 7px rgba(47,143,107,0); }
+            100% { box-shadow: 0 0 0 0 rgba(47,143,107,0); }
+        }
+
+        .timer-badge {
+            background: #fdf3ed;
+            border: 1px solid #f5cfb8;
+            border-radius: 24px;
+            padding: 6px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #92400e;
+        }
+        .timer-time {
+            color: #b45309;
+        }
+        .timer-countdown {
+            color: #b91c1c;
+            background: rgba(185,28,28,0.08);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        /* ── Metrics Grid ── */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+
+        .metric-box {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+        }
+        .metric-box-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #8b8179;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .metric-box-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+        .metric-box-sub {
+            font-size: 12px;
+            color: #8b8179;
+            margin-top: 4px;
+        }
+
+        /* ── Functions Overview Box ── */
+        .functions-box {
+            background: #faf7f2;
+            border: 1px solid #ebdcd0;
+            border-radius: 12px;
+            padding: 16px 20px;
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
 
-        /* ── Base Batch Card ── */
-        .batch-card {
-            border-radius: 14px;
-            padding: 20px 24px;
-            box-shadow: 0 4px 14px rgba(43,30,24,0.04);
+        .func-item {
             display: flex;
             flex-direction: column;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            gap: 4px;
+        }
+        .func-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .func-desc {
+            font-size: 12px;
+            color: #79706b;
+            line-height: 1.4;
         }
 
-        /* ── B1 Special: Very Soft, Subtle Red Background ── */
-        .batch-card.batch-b1 {
-            background: #fff8f7;
-            border: 1.5px solid #f6dedc;
-            box-shadow: 0 4px 16px rgba(180, 50, 40, 0.05);
-        }
-        .batch-card.batch-b1:hover {
-            box-shadow: 0 6px 20px rgba(180, 50, 40, 0.08);
-        }
-
-        /* ── B2 Card: Clean Warm Neutral Background ── */
-        .batch-card.batch-b2 {
+        /* ── History Table ── */
+        .table-section {
             background: var(--panel);
             border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: 0 4px 14px rgba(43,30,24,0.03);
         }
-
-        /* ── Header ── */
-        .batch-card-header {
+        .table-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #f0e7dd;
+            align-items: center;
+            margin-bottom: 16px;
         }
-
-        .batch-title {
+        .table-header h3 {
             font-size: 16px;
             font-weight: 800;
-            color: #2f2a26;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            color: var(--text-dark);
         }
-
-        /* ── Header Actions (Next run + Active) ── */
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-
-        /* ── Clean Timer Pill ── */
-        .timer-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--info-bg);
-            border: 1px solid var(--info-border);
-            padding: 4px 10px;
+        .refresh-btn {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
             border-radius: 8px;
             font-size: 12px;
-            color: var(--info-text);
             font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: all 0.15s ease;
         }
-        .timer-pill .timer-label {
+        .refresh-btn:hover {
+            background: #f4efe6;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 10px 12px;
+            background: #faf7f2;
+            color: #79706b;
             font-weight: 700;
-            font-size: 11.5px;
+            border-bottom: 1.5px solid var(--border);
         }
-        .timer-pill .timer-time {
-            font-weight: 800;
-            font-size: 12.5px;
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-dark);
         }
-        .timer-pill .timer-countdown {
-            background: #fff;
-            color: var(--info-text);
-            border: 1px solid #bcdcf5;
-            padding: 2px 7px;
+        tr:hover td {
+            background: #fbf9f5;
+        }
+
+        .badge-status {
+            padding: 3px 8px;
             border-radius: 12px;
             font-size: 11px;
             font-weight: 700;
+            display: inline-block;
+        }
+        .badge-status.success {
+            background: #e6f6ee;
+            color: #1e7b54;
+        }
+        .badge-status.error {
+            background: #fce8e6;
+            color: #c93b2b;
         }
 
-        /* B1 Red-tinted timer pill */
-        .batch-b1 .timer-pill {
-            background: #fdf0ee;
-            border: 1px solid #f7d2cd;
-            color: #a8332a;
-        }
-        .batch-b1 .timer-pill .timer-time {
-            color: #8c261e;
-        }
-        .batch-b1 .timer-pill .timer-countdown {
-            background: #fff;
-            color: #a8332a;
-            border: 1px solid #f7d2cd;
-        }
-
-        /* ── Status Badge ── */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-        .status-badge.active {
-            background: #eaf7ef;
-            color: #1a6147;
-            border: 1px solid #b7dfcd;
-        }
-        .status-badge.disabled {
-            background: #f7eaea;
-            color: #a32a2a;
-            border: 1px solid #e5b4b4;
-        }
-        .pulse-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 2px rgba(47,143,107,0.3); }
-            50% { box-shadow: 0 0 0 4px rgba(47,143,107,0.08); }
-        }
-
-        /* ── Clean Content Rows ── */
-        .batch-details {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .detail-row {
-            display: flex;
-            align-items: flex-start;
-            font-size: 13px;
-            line-height: 1.45;
-        }
-
-        .detail-label {
-            font-weight: 700;
-            color: #3b3531;
-            min-width: 140px;
-            flex-shrink: 0;
-        }
-
-        .detail-value {
-            color: #554d48;
-            font-weight: 600;
-        }
-        .detail-value.green { color: var(--success); }
-        .detail-value.muted { color: #9b9188; font-weight: normal; }
-
-        .detail-sub {
-            font-size: 11.5px;
-            color: #9b9188;
-            font-weight: normal;
-            margin-left: 4px;
-        }
-
-        @media (max-width: 860px) {
-            .batch-grid { grid-template-columns: 1fr; }
-            .main-content { margin-left: 0; }
-            .sidebar { display: none; }
-            .content { padding: 0 16px 40px; }
-            .topbar { padding: 18px 16px; }
-            .header-actions { flex-direction: column; align-items: flex-end; gap: 6px; }
-            .detail-row { flex-direction: column; gap: 2px; }
-            .detail-label { min-width: auto; }
+        @media (max-width: 992px) {
+            .metrics-grid { grid-template-columns: 1fr 1fr; }
+            .functions-box { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -280,83 +362,143 @@
     <div class="main-content">
         <div class="topbar">
             <div class="page-heading">
-                <h2>🔔 Batch Monitor (B1 & B2)</h2>
-                <p>Automated notification batches running via Laravel Scheduler</p>
+                <h2>🔔 Batch Status</h2>
+                <p>Automated notification batch (postergali-alpha) running via Laravel Scheduler</p>
             </div>
         </div>
 
         <div class="content">
 
-            {{-- Summary Bar --}}
-            <div class="schedule-info">
+            <!-- Info Strip -->
+            <div class="info-strip">
                 <div>
-                    ⚡ <strong>B1:</strong> Every 2 min (Expired, Expiring, Milestones)
+                    ⚡ <strong>Batch Engine:</strong> postergali-alpha
                     &nbsp;·&nbsp;
-                    🌙 <strong>B2:</strong> Evening 7:00 PM IST (Milestones)
+                    ⏰ <strong>Schedule:</strong> {{ $batchStatus['schedule_human'] ?? 'Everyday at 6:00 AM IST' }}
                 </div>
                 <div>
                     🌐 <strong>Timezone:</strong> {{ $batchStatus['timezone'] ?? 'Asia/Kolkata' }}
                 </div>
             </div>
 
-            {{-- Batch Cards Grid --}}
-            <div class="batch-grid">
-                @foreach($batchStatus['batches'] as $batch)
-                <div class="batch-card batch-{{ strtolower($batch['name']) }}" id="card-{{ strtolower($batch['name']) }}">
-
-                    <!-- Card Header: Title on Left, Timer + Active Button on Right -->
-                    <div class="batch-card-header">
-                        <div class="batch-title">
-                            {{ $batch['label'] }}
-                        </div>
-
-                        <div class="header-actions">
-                            <!-- Next Run -->
-                            <div class="timer-pill">
-                                <span>⏰</span>
-                                <span class="timer-label">Next run :</span>
-                                <span class="timer-time">{{ $batch['upcomingTimeOnly'] ?? $batch['upcomingFormatted'] }}</span>
-                                <span class="timer-countdown" id="countdown-{{ strtolower($batch['name']) }}">⏳ {{ $batch['upcomingHuman'] }}</span>
-                            </div>
-
-                            <!-- Active Button -->
-                            <span class="status-badge {{ $batch['enabled'] ? 'active' : 'disabled' }}">
-                                @if($batch['enabled'])
-                                    <span class="pulse-dot"></span>
-                                @endif
-                                {{ $batch['status'] }}
-                            </span>
-                        </div>
+            <!-- Single Alpha Batch Overview Card -->
+            <div class="alpha-card">
+                <div class="alpha-header">
+                    <div class="alpha-title-group">
+                        <span class="alpha-title">{{ $batchStatus['batch_name'] ?? 'postergali-alpha' }}</span>
+                        <span class="alpha-badge {{ ($batchStatus['enabled'] ?? true) ? 'active' : 'disabled' }}">
+                            @if($batchStatus['enabled'] ?? true)
+                                <span class="pulse-dot"></span>
+                            @endif
+                            {{ $batchStatus['status'] ?? 'Active' }}
+                        </span>
                     </div>
 
-                    <!-- Card Body: Only the requested clean items -->
-                    <div class="batch-details">
-                        <div class="detail-row">
-                            <span class="detail-label">About :</span>
-                            <span class="detail-value">{{ $batch['description'] }}</span>
-                        </div>
-
-                        <div class="detail-row">
-                            <span class="detail-label">Last Run :</span>
-                            <span class="detail-value {{ $batch['lastRunStatus'] ? '' : 'muted' }}">
-                                {{ $batch['lastRunFormatted'] }}
-                                @if($batch['lastRunHuman'])
-                                    <span class="detail-sub">({{ $batch['lastRunHuman'] }})</span>
-                                @endif
-                            </span>
-                        </div>
-
-                        <div class="detail-row">
-                            <span class="detail-label">Notifications Sent :</span>
-                            <span class="detail-value {{ $batch['totalSent'] > 0 ? 'green' : 'muted' }}">
-                                📲 {{ $batch['totalSent'] }} sent
-                                <span class="detail-sub">({{ $batch['totalRuns'] }} runs)</span>
-                            </span>
-                        </div>
+                    <div class="timer-badge">
+                        <span>⏰ Next Run:</span>
+                        <span class="timer-time">{{ $batchStatus['upcoming_time_only'] ?? $batchStatus['upcoming_formatted'] }}</span>
+                        <span class="timer-countdown" id="alpha-countdown">⏳ {{ $batchStatus['upcoming_human'] }}</span>
                     </div>
-
                 </div>
-                @endforeach
+
+                <!-- 4 Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-box">
+                        <div class="metric-box-title">Schedule Time</div>
+                        <div class="metric-box-value">{{ $batchStatus['schedule_human'] }}</div>
+                        <div class="metric-box-sub">Customizable (cron: {{ $batchStatus['schedule'] }})</div>
+                    </div>
+
+                    <div class="metric-box">
+                        <div class="metric-box-title">Last Executed</div>
+                        <div class="metric-box-value" style="font-size: 15px;">{{ $batchStatus['last_run_formatted'] }}</div>
+                        <div class="metric-box-sub">
+                            @if($batchStatus['last_run_human'])
+                                {{ $batchStatus['last_run_human'] }} ({{ $batchStatus['last_run_duration'] }}ms)
+                            @else
+                                No previous run
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="metric-box">
+                        <div class="metric-box-title">Total Notifications Sent</div>
+                        <div class="metric-box-value" style="color: #1e7b54;">📲 {{ $batchStatus['total_sent'] }}</div>
+                        <div class="metric-box-sub">Across {{ $batchStatus['total_runs'] }} successful batch runs</div>
+                    </div>
+
+                    <div class="metric-box">
+                        <div class="metric-box-title">Last Run Dispatched</div>
+                        <div class="metric-box-value">{{ $batchStatus['last_run_sent'] }} sent</div>
+                        <div class="metric-box-sub">
+                            Day-1: {{ $batchStatus['last_run_day_before'] }} &bull; Expired: {{ $batchStatus['last_run_on_expiry'] }} &bull; Skipped: {{ $batchStatus['last_run_skipped'] }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Functions Details -->
+                <div class="functions-box">
+                    <div class="func-item">
+                        <div class="func-title">⏰ Function 1 (f1): 1 Day Before Expiry Reminder</div>
+                        <div class="func-desc">
+                            Finds approved posters expiring in the next 24 hours and dispatches reminder push notification ("Poster Expires Tomorrow") to renew or create a new poster.
+                        </div>
+                    </div>
+                    <div class="func-item">
+                        <div class="func-title">⚠️ Function 2 (f2): Expiring Today & Expired Alert</div>
+                        <div class="func-desc">
+                            Finds approved posters that reached expiry today, sends expiration notification ("Poster Expired"), and transitions poster status to expired.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Runs History Table -->
+            <div class="table-section">
+                <div class="table-header">
+                    <h3>Recent Execution History (postergali-alpha)</h3>
+                    <button class="refresh-btn" onclick="location.reload();">↻ Refresh</button>
+                </div>
+
+                @if(!empty($batchStatus['recent_runs']) && count($batchStatus['recent_runs']) > 0)
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Execution Time (IST)</th>
+                                <th>Duration</th>
+                                <th>Day 1 Before (Jobs/Offers)</th>
+                                <th>Expiring Today (Jobs/Offers)</th>
+                                <th>Sent</th>
+                                <th>Skipped</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($batchStatus['recent_runs'] as $run)
+                                <tr>
+                                    <td>
+                                        <strong>{{ $run['ran_at_formatted'] }}</strong>
+                                        <div style="font-size: 11px; color: #8b8179;">{{ $run['ran_at_human'] }}</div>
+                                    </td>
+                                    <td>{{ $run['duration_ms'] }}ms</td>
+                                    <td>{{ $run['day_before_jobs'] }} / {{ $run['day_before_offers'] }}</td>
+                                    <td>{{ $run['on_expiry_jobs'] }} / {{ $run['on_expiry_offers'] }}</td>
+                                    <td><strong style="color: #1e7b54;">{{ $run['notifications_sent'] }}</strong></td>
+                                    <td style="color: #8b8179;">{{ $run['skipped_no_token'] }}</td>
+                                    <td>
+                                        <span class="badge-status {{ strtolower($run['status']) === 'success' ? 'success' : 'error' }}">
+                                            {{ $run['status'] }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p style="color: #8b8179; font-style: italic; padding: 12px 0;">
+                        No execution records found yet for postergali-alpha. The batch will record logs upon its next scheduled run or manual execution via <code>php artisan postergali-alpha</code>.
+                    </p>
+                @endif
             </div>
 
         </div>
@@ -364,40 +506,37 @@
 </div>
 
 <script>
-    // Live countdown update for upcoming runs
     document.addEventListener('DOMContentLoaded', function () {
-        @foreach($batchStatus['batches'] as $batch)
-            @if(!empty($batch['upcomingIso']))
-                (function() {
-                    const targetTime = new Date("{{ $batch['upcomingIso'] }}").getTime();
-                    const el = document.getElementById("countdown-{{ strtolower($batch['name']) }}");
-                    if (!el) return;
+        @if(!empty($batchStatus['upcoming_iso']))
+            (function() {
+                const targetTime = new Date("{{ $batchStatus['upcoming_iso'] }}").getTime();
+                const el = document.getElementById("alpha-countdown");
+                if (!el) return;
 
-                    function updateCountdown() {
-                        const now = new Date().getTime();
-                        const diff = targetTime - now;
+                function updateCountdown() {
+                    const now = new Date().getTime();
+                    const diff = targetTime - now;
 
-                        if (diff <= 0) {
-                            el.innerHTML = "⚡ Due now";
-                            return;
-                        }
-
-                        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-                        const hours = Math.floor(diff / (1000 * 60 * 60));
-
-                        if (hours > 0) {
-                            el.innerHTML = "⏳ in " + hours + "h " + mins + "m";
-                        } else {
-                            el.innerHTML = "⏳ in " + (mins > 0 ? mins + "m " : "") + secs + "s";
-                        }
+                    if (diff <= 0) {
+                        el.innerHTML = "⚡ Due now";
+                        return;
                     }
 
-                    updateCountdown();
-                    setInterval(updateCountdown, 1000);
-                })();
-            @endif
-        @endforeach
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    if (hours > 0) {
+                        el.innerHTML = "⏳ in " + hours + "h " + mins + "m";
+                    } else {
+                        el.innerHTML = "⏳ in " + (mins > 0 ? mins + "m " : "") + secs + "s";
+                    }
+                }
+
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            })();
+        @endif
     });
 </script>
 </body>

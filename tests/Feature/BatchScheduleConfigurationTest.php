@@ -2,65 +2,51 @@
 
 namespace Tests\Feature;
 
-use App\Services\Batches\BatchB1Service;
-use App\Services\Batches\BatchB2Service;
-use App\Services\Batches\BatchHelper;
-use App\Services\PosterExpiryNotificationService;
+use App\Services\PostergaliAlphaBatchService;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Tests\TestCase;
 
 class BatchScheduleConfigurationTest extends TestCase
 {
-    public function test_batch_b1_and_b2_constants_are_defined(): void
+    public function test_postergali_alpha_constants_are_defined(): void
     {
-        $this->assertSame('*/2 * * * *', BatchB1Service::DEFAULT_SCHEDULE);
-        $this->assertSame('0 19 * * *', BatchB2Service::DEFAULT_SCHEDULE);
-        $this->assertSame('Asia/Kolkata', BatchB1Service::DEFAULT_TIMEZONE);
+        $this->assertSame('postergali-alpha', PostergaliAlphaBatchService::BATCH_NAME);
+        $this->assertSame('0 6 * * *', PostergaliAlphaBatchService::DEFAULT_SCHEDULE);
+        $this->assertSame('Asia/Kolkata', PostergaliAlphaBatchService::DEFAULT_TIMEZONE);
     }
 
-    public function test_batch_helper_computes_human_schedule_and_future_runs(): void
+    public function test_postergali_alpha_computes_human_schedule_and_future_runs(): void
     {
-        $this->assertSame('Every 2 minutes', BatchHelper::getScheduleHuman('*/2 * * * *'));
-        $this->assertSame('Every evening at 7:00 PM IST', BatchHelper::getScheduleHuman('0 19 * * *'));
+        $this->assertSame('Everyday at 6:00 AM IST', PostergaliAlphaBatchService::getScheduleHuman('0 6 * * *'));
+        $this->assertSame('Every 2 minutes', PostergaliAlphaBatchService::getScheduleHuman('*/2 * * * *'));
+        $this->assertSame('Everyday at 07:30 PM', PostergaliAlphaBatchService::getScheduleHuman('30 19 * * *'));
 
-        $nextB1 = BatchHelper::getNextRun('*/2 * * * *', 'Asia/Kolkata');
-        $this->assertTrue($nextB1->isFuture());
-        $this->assertSame('Asia/Kolkata', $nextB1->timezoneName);
-
-        $nextB2 = BatchHelper::getNextRun('0 19 * * *', 'Asia/Kolkata');
-        $this->assertTrue($nextB2->isFuture());
-        $this->assertSame('Asia/Kolkata', $nextB2->timezoneName);
+        $nextAlpha = PostergaliAlphaBatchService::getNextRun('0 6 * * *', 'Asia/Kolkata');
+        $this->assertTrue($nextAlpha->isFuture());
+        $this->assertSame('Asia/Kolkata', $nextAlpha->timezoneName);
     }
 
-    public function test_batch_schedule_is_configurable_via_config(): void
+    public function test_batch_schedule_is_customizable_via_config(): void
     {
-        config(['posters.batches.b1.schedule' => '*/5 * * * *']);
-        $this->assertSame('*/5 * * * *', config('posters.batches.b1.schedule'));
+        config(['posters.batch.alpha.schedule' => '30 9 * * *']);
+        $this->assertSame('30 9 * * *', PostergaliAlphaBatchService::getSchedule());
 
-        $nextRun = BatchHelper::getNextRun(config('posters.batches.b1.schedule'), 'Asia/Kolkata');
+        $nextRun = PostergaliAlphaBatchService::getNextRun(PostergaliAlphaBatchService::getSchedule(), 'Asia/Kolkata');
         $this->assertTrue($nextRun->isFuture());
     }
 
-    public function test_laravel_scheduler_registers_b1_and_b2_batches_with_india_timezone(): void
+    public function test_laravel_scheduler_registers_postergali_alpha_batch_with_india_timezone(): void
     {
         $schedule = $this->app->make(Schedule::class);
         $events = collect($schedule->events());
 
-        $b1Event = $events->first(function ($event) {
-            return str_contains($event->command, 'batch:b1');
+        $alphaEvent = $events->first(function ($event) {
+            return str_contains($event->command, 'postergali-alpha');
         });
 
-        $b2Event = $events->first(function ($event) {
-            return str_contains($event->command, 'batch:b2');
-        });
-
-        $this->assertNotNull($b1Event, 'Expected batch:b1 command to be registered in scheduler.');
-        $this->assertSame(config('posters.batches.b1.schedule', '*/2 * * * *'), $b1Event->expression);
-        $this->assertSame('Asia/Kolkata', $b1Event->timezone);
-
-        $this->assertNotNull($b2Event, 'Expected batch:b2 command to be registered in scheduler.');
-        $this->assertSame(config('posters.batches.b2.schedule', '0 19 * * *'), $b2Event->expression);
-        $this->assertSame('Asia/Kolkata', $b2Event->timezone);
+        $this->assertNotNull($alphaEvent, 'Expected postergali-alpha command to be registered in scheduler.');
+        $this->assertSame(PostergaliAlphaBatchService::getSchedule(), $alphaEvent->expression);
+        $this->assertSame('Asia/Kolkata', $alphaEvent->timezone);
     }
 }
