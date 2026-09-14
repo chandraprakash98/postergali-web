@@ -188,7 +188,7 @@ Customers have an account tied to their mobile number (`Customer`) and a wallet 
 
 ### Customers & Credits
 - `GET /api/v1/customers/check`: Verify mobile number, auto-register customer, issue 1000 welcome credits, update FCM token.
-- `GET /api/v1/customers/poster-ads`: Fetch all jobs and offers submitted by a customer's phone number.
+- `GET /api/v1/customers/poster-ads` (and aliases `customers/my-posters`, `my-posters`): Fetch and filter customer's jobs and offers. Supports identical filters to Jobs & Offers APIs (`sub_categories`, `is_expiry`, `job_type`, `salary`, `offer_type`, `status`, `type`, distance/location, etc.).
 - `GET /api/v1/customers/{customerId}/balance`: Fetch current credit wallet balance.
 - `GET/POST /api/v1/customers/invoice` & `/api/v1/payments/invoice`: Generate and download PDF tax invoice.
 

@@ -44,6 +44,19 @@ class FilterService
         'offer_type', 'offer_types'
     ];
 
+    public const ALLOWED_POSTER_ADS_PARAMS = [
+        'mobile', 'mobile_number', 'phone_number', 'customer_id', 'device_id',
+        'latitude', 'longitude', 'radius', 'distance', 'min_radius', 'max_radius', 'min_distance', 'max_distance',
+        'per_page', 'page',
+        'sub_categories', 'sub_category', 'category', 'categories',
+        'is_expiry', 'expiry',
+        'job_type', 'job_types',
+        'salary', 'min_salary', 'max_salary',
+        'offer_type', 'offer_types',
+        'type', 'poster_type',
+        'status',
+    ];
+
     /**
      * Validate that no unsupported query parameters are passed in the request.
      *

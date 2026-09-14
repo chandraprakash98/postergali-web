@@ -290,9 +290,20 @@ Retrieve promotional offers/discounts within a radius with multi-filtering.
 
 ---
 
-#### 2. Get Customer's Created Ads
+#### 2. Get Customer's Created Ads (My Posters)
 - **Method**: `GET`
-- **Path**: `/api/v1/customers/poster-ads?mobile=9876543210`
+- **Path**: `/api/v1/customers/poster-ads` (aliases: `/api/v1/customers/my-posters`, `/api/v1/my-posters`)
+- **Query Parameters**:
+  - `mobile` / `mobile_number` / `phone_number` or `customer_id` (**Required**)
+  - `sub_categories` / `sub_category` / `category` / `categories`: string or comma-separated list (e.g. `Food and Hospitality`)
+  - `is_expiry` / `expiry`: window (`within_a_day`, `within_3_days`, `within_a_week`, etc.)
+  - `job_type` / `job_types`: job types (e.g. `full_time`, `part_time`, `temporary`)
+  - `salary` / `min_salary` / `max_salary`: salary filters (e.g. `less_than_10000`, `21000_and_above`)
+  - `offer_type` / `offer_types`: offer types (e.g. `discount`, `combo`, `bogo`)
+  - `status`: filter by status (`approved`, `pending`, `expired`, `active`, `live`)
+  - `type` / `poster_type`: filter by type (`job` / `jobs` or `offer` / `offers`)
+  - `latitude`, `longitude`, `radius` / `distance`, `min_distance`, `max_distance`: location radius filtering
+  - `page`, `per_page`: pagination parameters
 - **Success Response (`200 OK`)**:
 ```json
 {
