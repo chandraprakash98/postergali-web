@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'bulk_sms' => [
+        'url' => env('BULK_SMS_URL', 'http://api.bulksmsadmin.com/BulkSMSapi/keyApiSendSMS/SendMsg'),
+        'username' => env('BULK_SMS_USERNAME'),
+        'password' => env('BULK_SMS_PASSWORD'),
+        'sender' => env('BULK_SMS_SENDER', 'PSRGLI'),
+        'timeout' => (int) env('BULK_SMS_TIMEOUT', 10),
+    ],
+
 ];

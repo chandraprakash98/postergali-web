@@ -5,6 +5,7 @@ use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\InvoiceController;
 use App\Http\Controllers\API\JobController;
 use App\Http\Controllers\API\OfferController;
+use App\Http\Controllers\API\OtpController;
 use App\Http\Controllers\API\PlanController;
 use App\Http\Controllers\API\PosterController;
 use App\Http\Controllers\API\ReferralController;
@@ -21,6 +22,8 @@ Route::prefix('v1')->group(function () {
     Route::post('referrals', [ReferralController::class, 'store']);
     Route::get('referrals/check', [ReferralController::class, 'check']);
     Route::get('customers/check', [CustomerController::class, 'check']);
+    Route::post('auth/otp/send', [OtpController::class, 'send']);
+    Route::post('auth/otp/verify', [OtpController::class, 'verify']);
     Route::get('customers/poster-ads', [CustomerController::class, 'posterAds']);
     Route::get('customers/my-posters', [CustomerController::class, 'posterAds']);
     Route::get('my-posters', [CustomerController::class, 'posterAds']);
