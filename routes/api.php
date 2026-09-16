@@ -6,11 +6,13 @@ use App\Http\Controllers\API\InvoiceController;
 use App\Http\Controllers\API\JobController;
 use App\Http\Controllers\API\OfferController;
 use App\Http\Controllers\API\PlanController;
+use App\Http\Controllers\API\PosterController;
 use App\Http\Controllers\API\ReferralController;
 use App\Http\Controllers\AdminAuthController;
 
 Route::prefix('v1')->group(function () {
     Route::get('categories', [CategoryController::class, 'index']);
+    Route::get('posters/check', [PosterController::class, 'check']);
     Route::get('offers/search', [OfferController::class, 'search']);
     Route::apiResource('offers', OfferController::class);
     Route::get('jobs/search', [JobController::class, 'search']);

@@ -215,4 +215,42 @@ class PosterDailyLimitTest extends TestCase
         // Phone B is completely unaffected and can still post
         $this->postJson('/api/v1/jobs', $this->jobPayload($phoneB))->assertStatus(201);
     }
+
+    public function test_poster_limit_check_endpoint_reports_remaining_slots(): void
+    {
+        $phone = '9876543219';
+
+        $this->postJson('/api/v1/jobs', $this->jobPayload($phone))->assertStatus(201);
+
+        $this->getJson('/api/v1/posters/check?phone_number=' . $phone)
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'can_post' => true,
+                'daily_count' => 1,
+                'daily_limit' => 2,
+                'remaining' => 1,
+                'type' => 'all',
+            ]);
+    }
+
+    public function test_poster_limit_check_endpoint_reports_configured_limit_message(): void
+    {
+        $phone = '9876543220';
+
+        $this->postJson('/api/v1/jobs', $this->jobPayload($phone))->assertStatus(201);
+        $this->postJson('/api/v1/offers', $this->offerPayload($phone))->assertStatus(201);
+
+        $this->getJson('/api/v1/posters/check?mobile_number=' . $phone)
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'can_post' => false,
+                'daily_count' => 2,
+                'daily_limit' => 2,
+                'remaining' => 0,
+                'type' => 'all',
+                'message' => 'Daily poster limit reached. You can only post up to 2 posters per day.',
+            ]);
+    }
 }
