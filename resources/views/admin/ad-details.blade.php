@@ -266,28 +266,52 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                @if(is_array($ad->media) && count($ad->media) > 0)
+                                @php
+                                    $mediaItems = [];
+                                    $storedMedia = $ad->media;
+
+                                    if (is_array($storedMedia) && array_key_exists('images', $storedMedia)) {
+                                        foreach ($storedMedia['images'] ?? [] as $image) {
+                                            $mediaItems[] = $image;
+                                        }
+
+                                        if (!empty($storedMedia['video'])) {
+                                            $mediaItems[] = $storedMedia['video'];
+                                        }
+                                    } elseif (is_array($storedMedia)) {
+                                        $mediaItems = $storedMedia;
+                                    }
+                                @endphp
+
+                                @if(count($mediaItems) > 0)
                                     <div class="media-list">
-                                        @foreach($ad->media as $mediaItem)
+                                        @foreach($mediaItems as $mediaItem)
                                             @php
                                                 if (is_string($mediaItem)) {
-                                                    $mediaUrl = $mediaItem;
-                                                    $mediaName = basename($mediaItem);
+                                                    $mediaPath = $mediaItem;
+                                                    $mediaName = basename(parse_url($mediaItem, PHP_URL_PATH) ?? $mediaItem);
                                                 } elseif (is_array($mediaItem)) {
-                                                    $mediaUrl = $mediaItem['url'] ?? $mediaItem['path'] ?? $mediaItem['name'] ?? null;
-                                                    $mediaName = basename($mediaUrl ?? ($mediaItem['name'] ?? json_encode($mediaItem)));
+                                                    $mediaPath = $mediaItem['url'] ?? $mediaItem['path'] ?? $mediaItem['name'] ?? null;
+                                                    $mediaName = basename(parse_url($mediaPath ?? '', PHP_URL_PATH) ?? ($mediaItem['name'] ?? json_encode($mediaItem)));
                                                 } else {
-                                                    $mediaUrl = null;
+                                                    $mediaPath = null;
                                                     $mediaName = 'Media attachment';
                                                 }
+
+                                                $normalizedMediaPath = $mediaPath ? ltrim($mediaPath, '/') : null;
+                                                $mediaUrl = $mediaPath && filter_var($mediaPath, FILTER_VALIDATE_URL)
+                                                    ? $mediaPath
+                                                    : ($normalizedMediaPath
+                                                        ? asset(strpos($normalizedMediaPath, 'storage/') === 0 ? $normalizedMediaPath : 'storage/' . $normalizedMediaPath)
+                                                        : null);
                                             @endphp
                                             <div class="media-item">
                                                 @if($mediaUrl)
-                                                    <a href="{{ $mediaUrl }}" download class="media-link">{{ $mediaName }}</a>
+                                                    <a href="{{ $mediaUrl }}" target="_blank" rel="noopener noreferrer" class="media-link">{{ $mediaName }}</a>
                                                 @else
                                                     <span>{{ $mediaName }}</span>
                                                 @endif
-                                                <span class="media-action">⬇️</span>
+                                                <span class="media-action">↗</span>
                                             </div>
                                         @endforeach
                                     </div>
