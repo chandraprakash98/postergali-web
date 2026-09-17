@@ -1166,7 +1166,7 @@ body {
         bottom: 42px !important;
         top: auto !important;
         z-index: 3;
-        transform: rotate(6deg);
+        transform: rotate(16deg);
     }
 
     /* RIGHT HIGH */
@@ -1408,6 +1408,7 @@ body {
     margin-bottom: 4px;
     font-family: sans-serif;
     font-weight: 600;
+    
 }
 
 .main-section-title {
@@ -1543,6 +1544,10 @@ body {
 .feature-grid-sub .green-highlight {
     color: #2E7D32;
     font-weight: 800;
+}
+
+.feature-grid-sub > div > div:not(.green-highlight) {
+    text-decoration: line-through;
 }
 
 /* ================= WHO IS IT FOR SECTION ================= */
@@ -1759,13 +1764,14 @@ body {
     font-size: 15px;
     color: #6B7280;
     margin-bottom: 6px;
+     text-shadow: 0 -1px 0 #000000;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 300;
 }
 
 .promises-section .main-section-title {
     text-align: center;
-    font-size: clamp(22px, 4.5vw, 32px);
+    font-size: clamp(22px, 4.5vw, 22px);
     color: #be6e05;
     font-weight: 100;
     line-height: 1.2;
@@ -1893,15 +1899,38 @@ body {
 /* ================= HOW IT WORKS (STAMP CAROUSEL) ================= */
 
 .how-works-section {
-    padding: 20px 16px 80px;
+    padding: 10px 16px 10px;
+    margin-top: -45px;
     background: #FAF8E9;
     text-align: center;
 }
 
-.how-works-section p {
-    font-size: 22px;
-    color: #444;
+.how-works-section .sub-header-label {
+    font-family: 'Clash Display', sans-serif;
+    font-size: 14px;
+    
+}
+
+.contact-section .sub-header-label {
+    font-size: 14px;
+}
+
+.how-works-section h2,
+.contact-section h2.main-section-title {
+    color: #E6970F;
+     font-size: 16px;
     max-width: 320px;
+    font-family: 'Clash Display', sans-serif;
+    margin: 0 auto 10px;
+    text-shadow: 0 -1px 0 #000000;
+}
+
+
+.how-works-section p {
+    color: #472F05;
+    max-width: 320px;
+     font-size: 12px;
+            font-family: 'Helvetica Now Display', sans-serif;
     margin: 0 auto 20px;
 }
 
@@ -1933,7 +1962,7 @@ body {
 .stamp-card-container {
     width: 100%;
     position: absolute;
-    top: 45%;
+    top: 36%;
     left: 0;
     z-index: 2;
     overflow: hidden;
@@ -1966,13 +1995,13 @@ body {
     z-index: 3;
     left: 0;
     right: 0;
-    bottom: 12px;
+    bottom: 108px;
 }
 
 .stamp-dot {
     display: block;
-    width: 12px;
-    height: 12px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: #F5A623;
     border: 2px solid transparent;
@@ -1988,7 +2017,8 @@ body {
 /* ================= GET IN TOUCH (CONTACT SECTION) ================= */
 
 .contact-section {
-    padding: 30px 0 30px;
+    padding: 10px 0 30px;
+    margin-top: -99px;
     background: #FAF8E9;
 }
 
@@ -2006,9 +2036,10 @@ body {
 
 .contact-card-green h1 {
     font-family: 'Clash Display', sans-serif;
-    font-size: clamp(32px, 6vw, 62px);
+    font-size: 36px;
     font-weight: 600;
-    line-height: 1.08;
+    font-style: normal;
+    line-height: 100%;
     margin-bottom: 28px;
     color: #ffffff;
 }
@@ -2018,7 +2049,7 @@ body {
     font-size: clamp(18px, 3vw, 28px);
     line-height: 1.42;
     color: #F1FFF4;
-    font-weight: 550;
+    font-weight: 700;
     margin-bottom: 34px;
     opacity: 0.95;
 }
@@ -2026,8 +2057,8 @@ body {
 .contact-info-pill {
 
     background: transparent;
-    border: 2px solid rgba(255, 255, 255, 0.95);
-    border-radius: 30px;
+    border: 1.5px solid rgba(245, 243, 243, 0.95);
+    border-radius: 15px;
     padding: 28px 32px;
     margin-bottom: 64px;
     display: flex;
@@ -2069,7 +2100,7 @@ body {
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     text-align: left;
 }
 
@@ -2077,6 +2108,7 @@ body {
     font-size: clamp(18px, 3vw, 28px);
     font-weight: 700;
     color: #ffffff;
+     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .input-wrapper {
@@ -2085,21 +2117,30 @@ body {
 
 .input-wrapper input,
 .input-wrapper textarea {
+     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     width: 100%;
     background: #ffffff;
     border: 1px solid var(--color-primary-terracotta-700);
-    border-radius: 16px;
+    border-radius: 8px;
     padding: 14px 58px 14px 24px;
     min-height: 64px;
     font-size: clamp(16px, 2.4vw, 22px);
     color: #111;
+    font-size: 12px;
     outline: none;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.28);
 }
 
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+    font-family: 'Helvetica Now Display', sans-serif;
+    font-size: 12px;
+    color: #A4A4A4;
+}
+
 .input-wrapper textarea {
     resize: none;
-    height: 88px;
+    height: 72px;
 }
 
 .input-wrapper .input-icon {
@@ -2118,6 +2159,21 @@ body {
     color: var(--color-primary-terracotta-700);
 }
 
+.input-wrapper textarea + .input-icon {
+    top: 18px;
+    transform: none;
+}
+
+.contact-icon-svg {
+    width: 17px;
+    height: 17px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 /* Scallop Wavy Bottom Border */
 .scallop-bottom-edge {
     display: none;
@@ -2127,34 +2183,43 @@ body {
 
 .faq-section {
     padding: 2px 12px 40px;
-    max-width: 440px;
+    max-width: 680px;
     margin: 0 auto;
 }
 
 .faq-header-badge {
     width: 100%;
     background: #F5AD2F;
-    color: #ffffff;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-weight: 700;
-    font-size: 17px;
-    padding: 11px 24px;
-    border-radius: 10px 10px 0 0;
-    display: block;
+    color: #FCEFD7;
+    font-family: 'Clash Display', sans-serif;
+    font-weight: 600;
+    font-size: clamp(26px, 7vw, 44px);
+    height: 62px;
+    padding: 0 clamp(2px, 12vw, 80px);
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
     margin-bottom: -1px;
     box-shadow: none;
 }
 
 .faq-accordion-box {
-    border-radius: 0 0 6px 6px;
+    height: 360px;
+    margin-left: 5px;
+    margin-right: 5px;
+    border-radius: 0 0 8px 8px;
     border: none;
-    box-shadow: 4px 0 0 #E9E1C5;
-    overflow: hidden;
+    background: #FAF8E9;
+    box-shadow: 4px 0 0 #f3eaca;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 
 .faq-item {
-    border-bottom: 1px solid #898989;
-    padding: 10px 12px;
+    border-bottom: 1.9px solid rgba(66, 58, 41, 0.87);
+    padding: 18px 24px;
     cursor: pointer;
     transition: background 0.2s ease;
 }
@@ -2168,25 +2233,35 @@ body {
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: #696565;
+    font-family: 'Helvetica Now Display', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #000000;
 }
 
 .faq-chevron {
-    color: var(--color-primary-terracotta-700);
-    font-size: 11px;
+    color: #C4351D;
     font-weight: 700;
     flex-shrink: 0;
     transition: transform 0.2s;
+}
+
+.faq-chevron svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: #C4351D;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .faq-answer {
     display: none;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 10px;
-    color: #555;
+    color: #020101;
     line-height: 1.4;
     padding-top: 7px;
 }
@@ -2199,11 +2274,25 @@ body {
     transform: rotate(180deg);
 }
 
+.faq-accordion-box::-webkit-scrollbar {
+    width: 14px;
+}
+
+.faq-accordion-box::-webkit-scrollbar-track {
+    background: #F4F0DD;
+}
+
+.faq-accordion-box::-webkit-scrollbar-thumb {
+    background: #D8CC9D;
+    border-radius: 999px;
+    border: 2px solid #F4F0DD;
+}
+
 /* ================= FOOTER SECTION ================= */
 
 .footer-section {
     background: var(--color-saffron-100);
-    margin-top: 24px;
+    margin-top: 20px;
     padding: 24px 0 0;
     text-align: center;
     border-top: none;
@@ -2219,21 +2308,25 @@ body {
 }
 
 .footer-logo-image {
-    width: auto;
-    max-width: min(220px, 60vw);
+    width: 480px;
+    max-width: min(480px, 90vw);
     height: auto;
     display: block;
     margin: 0 auto;
 }
 
 .footer-tagline {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 11px;
+    width: 328px;
+    height: 48px;
+    font-family: 'Helvetica Now Display', sans-serif;
+    font-size: 16px;
     font-weight: 700;
-    color: #222;
-    max-width: 300px;
+    font-style: normal;
+    color: #000000;
+    max-width: 328px;
     margin: 0 auto 18px;
-    line-height: 1.35;
+    line-height: 100%;
+    letter-spacing: 0;
     text-align: center;
 }
 
@@ -2258,7 +2351,7 @@ body {
     height: 36px;
     border-radius: 50%;
     background: #FFFCE5;
-    border: 2px solid #F7A626;
+    border: 1px solid #F7A626;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2267,6 +2360,12 @@ body {
     text-decoration: none;
     font-weight: bold;
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.social-icon-svg {
+    width: 42px;
+    height: 42px;
+    display: block;
 }
 
 .footer-section>.app-store-btns {
@@ -2303,17 +2402,17 @@ body {
     font-weight: 400;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     width: 100%;
     box-sizing: border-box;
-    text-align: left;
+    text-align: center;
     gap: 10px;
 
 }
 
 .footer-bottom-bar>div,
 .footer-bottom-bar a {
-    width: 100%;
+    width: auto;
     color: #111111;
     text-decoration: underline;
     text-underline-offset: 2px;
@@ -2325,6 +2424,18 @@ body {
 
 .footer-bottom-bar>div {
     font-size: 0.85em;
+}
+
+.footer-legal-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.footer-bottom-bar .footer-legal-links a {
+    width: auto;
 }
 
 /* ================= MOBILE FIXED NAVBAR ================= */
@@ -2965,7 +3076,7 @@ body {
     }
 
     .footer-logo-image {
-        max-width: min(180px, 55vw) !important;
+        max-width: min(390px, 90vw) !important;
         width: auto !important;
         height: auto !important;
     }
@@ -3046,15 +3157,20 @@ body {
     .footer-tagline,
     .follow-title,
     .social-icons {
+        color: #333333 !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
+        font-size: 24px;
     }
 
     .footer-tagline {
-        font-size: 10px !important;
-        padding: 0 16px !important;
-        max-width: none !important;
+        width: min(328px, 100%) !important;
+        height: 48px !important;
+        padding: 0 !important;
+        max-width: 328px !important;
+        font-size: 16px !important;
+        line-height: 100% !important;
     }
 
     /* App-store buttons row in footer — stretch edge-to-edge */
@@ -3084,11 +3200,14 @@ body {
         margin: 16px 0 0 !important;
         font-size: 10px !important;
         gap: 6px !important;
+        align-items: center !important;
+        text-align: center !important;
     }
 
     .footer-bottom-bar>div,
     .footer-bottom-bar a {
-        width: 100% !important;
+        width: auto !important;
+        max-width: 100% !important;
         font-size: 10px !important;
         word-break: break-word !important;
     }
@@ -3136,8 +3255,12 @@ body {
 
     /* ── FAQ section ── */
     .faq-accordion-box {
-        width: 100% !important;
+        width: calc(100% - 10px) !important;
+        height: 360px !important;
+        margin-left: 5px !important;
+        margin-right: 5px !important;
         box-sizing: border-box !important;
+        overflow-y: scroll !important;
     }
 
     /* ── Hero Phone + Poster Stage (same as 900px, tuned for 393px) ── */
@@ -3166,61 +3289,67 @@ body {
     }
 
     /* 1st Poster — Far Left */
-    .poster-far-left {
-        width: clamp(54px, 14vw, 72px) !important;
-        height: clamp(80px, 26vw, 118px) !important;
-        left: calc(0px - clamp(55px, 11vw, 68px) + 8px) !important;
-        top: calc(clamp(55px, 14vw, 85px) + 36px) !important;
-        margin-top: -10px !important;
-        bottom: auto !important;
-        z-index: 2 !important;
-        transform: rotate(-2deg) !important;
-    }
+.poster-far-left {
+    width: clamp(54px, 14vw, 72px) !important;
+    height: clamp(80px, 26vw, 118px) !important;
+    left: calc(0px - clamp(55px, 11vw, 68px) + 8px) !important;
+    top: calc(clamp(55px, 14vw, 85px) + 66px) !important;
+    margin-top: -10px !important;
+    bottom: auto !important;
+    z-index: 2 !important;
+    transform: rotate(-2deg) !important;
+}
 
-    /* 2nd Poster — Left High */
-    .poster-left-high {
-        width: clamp(56px, 14.5vw, 74px) !important;
-        height: clamp(80px, 26vw, 118px) !important;
-        left: calc(50% - clamp(118px, 30vw, 158px) + 20px - 5px) !important;
-        top: calc(clamp(55px, 14vw, 85px) + 36px) !important;
-        bottom: auto !important;
-        z-index: 2 !important;
-        margin-top: -14px !important;
-        transform: rotate(-3deg) !important;
-    }
+/* 2nd Poster — Left High */
+.poster-left-high {
+    width: clamp(56px, 14.5vw, 74px) !important;
+    height: clamp(80px, 26vw, 118px) !important;
+    left: calc(50% - clamp(118px, 30vw, 158px) + 20px - 13px) !important;
+    top: calc(clamp(55px, 14vw, 85px) + 66px) !important;
+    bottom: auto !important;
+    z-index: 2 !important;
+    margin-top: -14px !important;
+    transform: rotate(-3deg) !important;
+}
 
-    /* 3rd Poster — Left Low */
-    .poster-left-low {
-        width: clamp(58px, 15vw, 78px) !important;
-        height: clamp(80px, 26vw, 118px) !important;
-        left: calc(50% - clamp(162px, 42vw, 200px) - 5px) !important;
-        bottom: calc(clamp(115px, 27vw, 148px) - 60px) !important;
-        z-index: 4 !important;
-        margin-top: -4px !important;
-        transform: rotate(2deg) !important;
-    }
+/* 3rd Poster — Left Low */
+.poster-left-low {
+    width: clamp(58px, 15vw, 78px) !important;
+    height: clamp(80px, 26vw, 118px) !important;
+    left: calc(50% - clamp(162px, 42vw, 200px) - 13px) !important;
+    bottom: calc(clamp(115px, 27vw, 148px) - 75px) !important;
+    z-index: 4 !important;
+    margin-top: -4px !important;
+    transform: rotate(2deg) !important;
+}
+
 
 
     /* 4th Poster — Right Low */
     .poster-right-low {
         width: clamp(56px, 14.5vw, 74px) !important;
         height: clamp(80px, 26vw, 118px) !important;
-        right: calc(50% - clamp(90px, 8vw, 148px) - 15px) !important;
+        right: calc(50% - clamp(90px, 8vw, 148px) - 13px) !important;
         bottom: calc(clamp(50px, 5vw, 50px) - 20px) !important;
         z-index: 3 !important;
         transform: rotate(-3deg) !important;
     }
-
+hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 16px 0;
+}
     /* 5th Poster — Right High */
     .poster-right-high {
         width: clamp(58px, 15vw, 78px) !important;
         height: clamp(80px, 26vw, 118px) !important;
-        right: calc(50% - clamp(162px, 43vw, 200px) + 4px) !important;
-        top: calc(clamp(55px, 14vw, 85px) + 27px) !important;
+        right: calc(50% - clamp(162px, 43vw, 200px) - 5px) !important;
+        top: calc(clamp(55px, 14vw, 85px) + 62px) !important;
         bottom: auto !important;
         transform: rotate(2deg) !important;
         z-index: 4 !important;
     }
+
 
     /* 6th Poster — Far Right */
     .poster-far-right {

@@ -145,7 +145,7 @@
 
         <div class="app-store-btns">
             <!-- Google Play Store -->
-            <a href="https://play.google.com" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Get PosterGali on Google Play Store">
+            <a href="https://play.google.com/store/apps/details?id=com.postergali.postergali" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Get PosterGali on Google Play Store">
                 <svg width="26" height="28" viewBox="0 0 24 24" fill="none" class="store-icon-play">
                     <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
                     <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
@@ -325,7 +325,7 @@
 
 <!-- GET IN TOUCH / CONTACT SECTION -->
 <section class="contact-section" id="contact">
-    <div class="sub-header-label">Want to connect business?</div>
+    <div class="sub-header-label">Connect with PosterGali</div>
     <h2 class="main-section-title">Let's Talk About Growing Your Local Reach Today</h2>
 
     <div class="contact-card-green">
@@ -335,14 +335,23 @@
         <!-- Phone & Email info pill -->
         <div class="contact-info-pill">
             <div class="contact-info-item">
-                <div class="contact-icon-circle">📞</div>
+                <div class="contact-icon-circle">
+                    <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"></path>
+                    </svg>
+                </div>
                 <div>
                     <div>+91 74709 98914</div>
                     <div>+91 83529 62885</div>
                 </div>
             </div>
             <div class="contact-info-item">
-                <div class="contact-icon-circle">✉</div>
+                <div class="contact-icon-circle">
+                    <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                        <path d="m3 7 9 6 9-6"></path>
+                    </svg>
+                </div>
                 <div>contact@postergali.com</div>
             </div>
         </div>
@@ -353,7 +362,12 @@
                 <label>Full Name</label>
                 <div class="input-wrapper">
                     <input type="text" placeholder="Enter your full name">
-                    <span class="input-icon">👤</span>
+                    <span class="input-icon">
+                        <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21a8 8 0 0 1 16 0"></path>
+                        </svg>
+                    </span>
                 </div>
             </div>
 
@@ -361,7 +375,12 @@
                 <label>Last Name</label>
                 <div class="input-wrapper">
                     <input type="text" placeholder="Enter your last name">
-                    <span class="input-icon">📍</span>
+                    <span class="input-icon">
+                        <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21a8 8 0 0 1 16 0"></path>
+                        </svg>
+                    </span>
                 </div>
             </div>
 
@@ -369,7 +388,12 @@
                 <label>Email</label>
                 <div class="input-wrapper">
                     <input type="email" placeholder="Enter your email address">
-                    <span class="input-icon">✉</span>
+                    <span class="input-icon">
+                        <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                            <path d="m3 7 9 6 9-6"></path>
+                        </svg>
+                    </span>
                 </div>
             </div>
 
@@ -377,7 +401,11 @@
                 <label>Phone Number</label>
                 <div class="input-wrapper">
                     <input type="tel" placeholder="Enter your phone number">
-                    <span class="input-icon">📞</span>
+                    <span class="input-icon">
+                        <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"></path>
+                        </svg>
+                    </span>
                 </div>
             </div>
 
@@ -385,7 +413,12 @@
                 <label>Message</label>
                 <div class="input-wrapper">
                     <textarea placeholder="Enter your message here"></textarea>
-                    <span class="input-icon">💬</span>
+                    <span class="input-icon">
+                        <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.8 9.8 0 0 1-4-.8L3 21l1.8-4.2A8.5 8.5 0 1 1 21 11.5Z"></path>
+                            <path d="M8 12h.01M12 12h.01M16 12h.01"></path>
+                        </svg>
+                    </span>
                 </div>
             </div>
         </form>
@@ -401,7 +434,7 @@
         <div class="faq-item">
             <div class="faq-question">
                 <span>What is PosterGali?</span>
-                <span class="faq-chevron">▼</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
                 PosterGali is India's hyperlocal digital poster bazaar that connects local shops, vendors, and service providers with customers in their exact street or neighborhood.
@@ -411,7 +444,7 @@
         <div class="faq-item">
             <div class="faq-question">
                 <span>Who can use PosterGali?</span>
-                <span class="faq-chevron">▼</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
                 Any local business owner, shopkeeper, vendor, recruiter, or local resident looking to share job openings, discount sales, or local announcements.
@@ -421,7 +454,7 @@
         <div class="faq-item">
             <div class="faq-question">
                 <span>Is it free or paid to use?</span>
-                <span class="faq-chevron">▼</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
                 Posting your first poster is completely free! After that, posters start from as low as ₹19 per promotion.
@@ -431,7 +464,7 @@
         <div class="faq-item">
             <div class="faq-question">
                 <span>How do I create a poster?</span>
-                <span class="faq-chevron">▼</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
                 Simply download the app, select a design template or upload your details, choose your target area, and publish in under 60 seconds.
@@ -441,7 +474,7 @@
         <div class="faq-item">
             <div class="faq-question">
                 <span>What kind of posters can I create?</span>
-                <span class="faq-chevron">▼</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
                 You can create hiring posters, discount sales, new arrivals, announcements, local services, and events.
@@ -451,7 +484,7 @@
         <div class="faq-item">
             <div class="faq-question">
                 <span>How long will my poster stay live or be published?</span>
-                <span class="faq-chevron">▼</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
                 Depending on the plan selected, posters remain live from 7 days up to 30 days.
@@ -461,7 +494,7 @@
         <div class="faq-item">
             <div class="faq-question">
                 <span>Can I edit or delete my poster after it's published?</span>
-                <span class="faq-chevron">▼</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
                 Yes, you can easily edit text or delete your poster anytime directly from your profile dashboard in the app.
@@ -482,12 +515,16 @@
 
     <div class="follow-title">FOLLOW US</div>
     <div class="social-icons">
-        <a href="https://facebook.com/postergali" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Follow PosterGali on Facebook">f</a>
-        <a href="https://instagram.com/postergali" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Follow PosterGali on Instagram">📷</a>
+        <a href="https://facebook.com/postergali" target="_blank" rel="noopener noreferrer"  aria-label="Follow PosterGali on Facebook">
+            <img src="{{ asset('images/fb.png') }}" alt="" class="social-icon-svg">
+        </a>
+        <a href="https://instagram.com/postergali" target="_blank" rel="noopener noreferrer"  aria-label="Follow PosterGali on Instagram">
+            <img src="{{ asset('images/insta.png') }}" alt="" class="social-icon-svg">
+        </a>
     </div>
 
     <div class="app-store-btns" style="margin-bottom: 25px;">
-        <a href="#download" class="app-store-btn" aria-label="Get on Google Play">
+        <a href="https://play.google.com/store/apps/details?id=com.postergali.postergali" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Get on Google Play">
             <svg width="18" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
                 <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
@@ -512,8 +549,10 @@
     <!-- Bottom Golden Bar -->
     <div class="footer-bottom-bar">
         <div>© 2026 PosterGali. All rights reserved.</div>
-        <div><a href="{{ url('/privacy-policy') }}">Privacy Policy</a></div>
-        <div><a href="{{ url('/terms-and-conditions') }}">Terms of Service</a></div>
+        <div class="footer-legal-links">
+            <a href="{{ url('/privacy-policy') }}">Privacy Policy</a>
+            <a href="{{ url('/terms-and-conditions') }}">Terms of Service</a>
+        </div>
         <div>Developed by Chandra Prakash &amp; MadeInCode.in team</div>
     </div>
 </footer>
