@@ -227,6 +227,8 @@ class OfferController extends Controller
             'payment_type' => ['nullable', 'string', 'in:full_upi,semi,full_credit,FULL_UPI,SEMI,FULL_CREDIT'],
             'credit_mode' => ['nullable', 'string', 'in:full_upi,semi,full_credit,FULL_UPI,SEMI,FULL_CREDIT'],
             'customer_id' => ['nullable', 'string'],
+            'images' => ['nullable', 'array', 'max:10'],
+            'images.*' => ['image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
         ]);
 
         $mobile = $data['mobile_number'] ?? $data['phone_number'] ?? null;
