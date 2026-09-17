@@ -145,4 +145,60 @@ class PaymentService
 
         return $credit;
     }
+
+    /**
+     * Refund a full-credit poster once after an admin rejection.
+     */
+    public function refundRejectedPoster(string $mobile, int $posterId, ?string $masterCategory, string $legacyItemType): ?Payment
+    {
+        return DB::transaction(function () use ($mobile, $posterId, $masterCategory, $legacyItemType) {
+            $customerId = Customer::where('mobile', $mobile)->value('customer_id');
+            if (!$customerId) {
+                return null;
+            }
+
+            $payment = Payment::where('job_or_offer_id', $posterId)
+                ->where('customer_id', $customerId)
+                ->where(function ($query) use ($masterCategory, $legacyItemType) {
+                    if ($masterCategory !== null && $masterCategory !== '') {
+                        $query->where('item_type', $masterCategory)
+                            ->orWhere('item_type', $legacyItemType);
+                    } else {
+                        $query->where('item_type', $legacyItemType);
+                    }
+                })
+                ->where('payment_type', Payment::TYPE_FULL_CREDIT)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$payment || $payment->payment_status === Payment::STATUS_REFUNDED) {
+                return $payment;
+            }
+
+            $refundAmount = number_format((float) ($payment->credit_amount ?? 0), 2, '.', '');
+            if (bccomp($refundAmount, '0.00', 2) <= 0) {
+                return $payment;
+            }
+
+            $credit = CustomerCredit::where('customer_id', $customerId)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$credit) {
+                $credit = CustomerCredit::create([
+                    'customer_id' => $customerId,
+                    'balance' => 0,
+                ]);
+            }
+
+            $currentBalance = number_format((float) $credit->balance, 2, '.', '');
+            $credit->balance = (float) bcadd($currentBalance, $refundAmount, 2);
+            $credit->save();
+
+            $payment->payment_status = Payment::STATUS_REFUNDED;
+            $payment->save();
+
+            return $payment;
+        });
+    }
 }

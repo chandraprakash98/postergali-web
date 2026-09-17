@@ -244,7 +244,7 @@ class JobController extends Controller
                 || !empty($data['total_amount']);
 
             if ($hasPaymentInfo) {
-                $paymentData = PaymentData::fromArray($data, itemType: 'job', jobOrOfferId: $job->id);
+                $paymentData = PaymentData::fromArray($data, itemType: $job->master_category, jobOrOfferId: $job->id);
                 $this->paymentService->processPayment($paymentData);
             }
 

@@ -263,7 +263,7 @@ class OfferController extends Controller
                 || !empty($data['total_amount']);
 
             if ($hasPaymentInfo) {
-                $paymentData = PaymentData::fromArray($data, itemType: 'offer', jobOrOfferId: $offer->id);
+                $paymentData = PaymentData::fromArray($data, itemType: $offer->master_category, jobOrOfferId: $offer->id);
                 $this->paymentService->processPayment($paymentData);
             }
 

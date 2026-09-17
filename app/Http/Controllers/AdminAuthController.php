@@ -12,6 +12,7 @@ use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Plan;
 use App\Models\Notification;
+use App\Services\PaymentService;
 
 use Carbon\Carbon;
 use App\Services\PostergaliAlphaBatchService;
@@ -21,6 +22,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FcmNotification;
@@ -154,11 +156,17 @@ class AdminAuthController extends Controller
                 $model->expires_at = null;
             }
 
-            $model->save();
+            DB::transaction(function () use ($model, $data, $type, $id) {
+                $model->save();
 
-            if ($data['status'] === 'approved') {
-                $this->handleReferralCredit($model);
-            }
+                if ($data['status'] === 'approved') {
+                    $this->handleReferralCredit($model);
+                    return;
+                }
+
+                $mobile = $type === 'job' ? $model->phone_number : $model->mobile_number;
+                app(PaymentService::class)->refundRejectedPoster($mobile, $id, $model->master_category, $type);
+            });
 
             // Send FCM Notification using device_id as FCM token
             try {

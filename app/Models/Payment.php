@@ -15,6 +15,7 @@ class Payment extends Model
     public const STATUS_COMPLETED = 'COMPLETED';
     public const STATUS_SUCCESS = 'SUCCESS';
     public const STATUS_FAILED = 'FAILED';
+    public const STATUS_REFUNDED = 'REFUNDED';
 
     protected $fillable = [
         'customer_id',
