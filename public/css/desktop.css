@@ -11,7 +11,7 @@
         background-size: cover;
         background-position: center center;
         background-repeat: no-repeat;
-        box-shadow: 0 16px 36px rgba(95, 44, 9, 0.14);
+        box-shadow: 0 6px 6px rgba(95, 44, 9, 0.14);
         position: relative;
         overflow: hidden;
         max-width: 1360px;
@@ -142,7 +142,6 @@
         width: 230px;
         height: 230px;
         background: #FAF4E4;
-        border-radius: 18px;
         padding: 16px;
         box-shadow: 0 10px 25px rgba(95, 44, 9, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
         border: 1.5px solid rgba(0, 0, 0, 0.06);
@@ -376,7 +375,7 @@
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 15px !important;
         font-weight: 800 !important;
-        background: transparent !important;
+
         color: #031a03 !important;
         border: none !important;
         cursor: pointer !important;

@@ -1451,7 +1451,7 @@ body {
     margin-bottom: 4px;
     font-family: sans-serif;
     font-weight: 600;
-    
+
 }
 
 .main-section-title {
@@ -1589,7 +1589,7 @@ body {
     font-weight: 800;
 }
 
-.feature-grid-sub > div > div:not(.green-highlight) {
+.feature-grid-sub>div>div:not(.green-highlight) {
     text-decoration: line-through;
 }
 
@@ -1628,6 +1628,11 @@ body {
     width: 100%;
     height: clamp(270px, 108vw, 420px);
     position: relative;
+}
+
+/* Desktop slides are hidden on mobile — shown only via desktop.css */
+.persona-slides-desktop {
+    display: none;
 }
 
 .persona-slide {
@@ -1807,7 +1812,7 @@ body {
     font-size: 15px;
     color: #6B7280;
     margin-bottom: 6px;
-     text-shadow: 0 -1px 0 #000000;
+    text-shadow: 0 -1px 0 #000000;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 300;
 }
@@ -1951,7 +1956,7 @@ body {
 .how-works-section .sub-header-label {
     font-family: 'Clash Display', sans-serif;
     font-size: 14px;
-    
+
 }
 
 .contact-section .sub-header-label {
@@ -1961,7 +1966,7 @@ body {
 .how-works-section h2,
 .contact-section h2.main-section-title {
     color: #E6970F;
-     font-size: 16px;
+    font-size: 16px;
     max-width: 320px;
     font-family: 'Clash Display', sans-serif;
     margin: 0 auto 10px;
@@ -1972,8 +1977,8 @@ body {
 .how-works-section p {
     color: #472F05;
     max-width: 320px;
-     font-size: 12px;
-            font-family: 'Helvetica Now Display', sans-serif;
+    font-size: 12px;
+    font-family: 'Helvetica Now Display', sans-serif;
     margin: 0 auto 20px;
 }
 
@@ -2151,7 +2156,7 @@ body {
     font-size: clamp(18px, 3vw, 28px);
     font-weight: 700;
     color: #ffffff;
-     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .input-wrapper {
@@ -2160,7 +2165,7 @@ body {
 
 .input-wrapper input,
 .input-wrapper textarea {
-     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     width: 100%;
     background: #ffffff;
     border: 1px solid var(--color-primary-terracotta-700);
@@ -2202,7 +2207,7 @@ body {
     color: var(--color-primary-terracotta-700);
 }
 
-.input-wrapper textarea + .input-icon {
+.input-wrapper textarea+.input-icon {
     top: 18px;
     transform: none;
 }
@@ -3332,39 +3337,39 @@ body {
     }
 
     /* 1st Poster — Far Left */
-.poster-far-left {
-    width: clamp(54px, 14vw, 72px) !important;
-    height: clamp(80px, 26vw, 118px) !important;
-    left: calc(0px - clamp(55px, 11vw, 68px) + 8px) !important;
-    top: calc(clamp(55px, 14vw, 85px) + 66px) !important;
-    margin-top: -10px !important;
-    bottom: auto !important;
-    z-index: 2 !important;
-    transform: rotate(-2deg) !important;
-}
+    .poster-far-left {
+        width: clamp(54px, 14vw, 72px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        left: calc(0px - clamp(55px, 11vw, 68px) + 8px) !important;
+        top: calc(clamp(55px, 14vw, 85px) + 66px) !important;
+        margin-top: -10px !important;
+        bottom: auto !important;
+        z-index: 2 !important;
+        transform: rotate(-2deg) !important;
+    }
 
-/* 2nd Poster — Left High */
-.poster-left-high {
-    width: clamp(56px, 14.5vw, 74px) !important;
-    height: clamp(80px, 26vw, 118px) !important;
-    left: calc(50% - clamp(118px, 30vw, 158px) + 20px - 13px) !important;
-    top: calc(clamp(55px, 14vw, 85px) + 66px) !important;
-    bottom: auto !important;
-    z-index: 2 !important;
-    margin-top: -14px !important;
-    transform: rotate(-3deg) !important;
-}
+    /* 2nd Poster — Left High */
+    .poster-left-high {
+        width: clamp(56px, 14.5vw, 74px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        left: calc(50% - clamp(118px, 30vw, 158px) + 20px - 13px) !important;
+        top: calc(clamp(55px, 14vw, 85px) + 66px) !important;
+        bottom: auto !important;
+        z-index: 2 !important;
+        margin-top: -14px !important;
+        transform: rotate(-3deg) !important;
+    }
 
-/* 3rd Poster — Left Low */
-.poster-left-low {
-    width: clamp(58px, 15vw, 78px) !important;
-    height: clamp(80px, 26vw, 118px) !important;
-    left: calc(50% - clamp(162px, 42vw, 200px) - 13px) !important;
-    bottom: calc(clamp(115px, 27vw, 148px) - 75px) !important;
-    z-index: 4 !important;
-    margin-top: -4px !important;
-    transform: rotate(2deg) !important;
-}
+    /* 3rd Poster — Left Low */
+    .poster-left-low {
+        width: clamp(58px, 15vw, 78px) !important;
+        height: clamp(80px, 26vw, 118px) !important;
+        left: calc(50% - clamp(162px, 42vw, 200px) - 13px) !important;
+        bottom: calc(clamp(115px, 27vw, 148px) - 75px) !important;
+        z-index: 4 !important;
+        margin-top: -4px !important;
+        transform: rotate(2deg) !important;
+    }
 
 
 
@@ -3377,11 +3382,13 @@ body {
         z-index: 3 !important;
         transform: rotate(-3deg) !important;
     }
-hr {
-  border: none;
-  border-top: 1px solid #ddd;
-  margin: 16px 0;
-}
+
+    hr {
+        border: none;
+        border-top: 1px solid #ddd;
+        margin: 16px 0;
+    }
+
     /* 5th Poster — Right High */
     .poster-right-high {
         width: clamp(58px, 15vw, 78px) !important;
