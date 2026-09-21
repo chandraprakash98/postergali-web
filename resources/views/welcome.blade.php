@@ -10,7 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700,800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+<link rel="stylesheet" href="{{ asset('css/styles.css') }}?v={{ time() }}">
+<link rel="stylesheet" href="{{ asset('css/desktop.css') }}?v={{ time() }}" media="(min-width: 901px)">
 </head>
 
 <body>
@@ -136,45 +137,159 @@
     </div>
 </div>
 
-<!-- APP DOWNLOAD / CREASED PAPER SECTION (MATCHING REFERENCE IMAGE 1) -->
+<!-- APP DOWNLOAD / CREASED PAPER SECTION (MATCHING REFERENCE IMAGE) -->
 <section class="app-crease-section" id="download">
     <div class="app-crease-container">
-        <div class="app-crease-badge">DOWNLOAD NOW</div>
-        <h2>Your Very Own Poster<br>Bazaar  Available On<br>Android & IOS</h2>
-        <p>Get it free today, design your first poster in minutes<br class="desktop-br"> and watch your business grow like never before!</p>
+        <!-- Left Side: Typography & Download Now Badge -->
+        <div class="app-crease-left">
+            <h2>Your very own<br>Poster Bazaar<br>Available on<br>Android & iOS</h2>
+            <p>Get it free today, design your first poster in minutes<br class="desktop-br"> and watch your business grow like never before!</p>
+            <a href="#download" class="app-crease-badge">DOWNLOAD NOW</a>
+        </div>
 
-        <div class="app-store-btns">
-            <!-- Google Play Store -->
-            <a href="https://play.google.com/store/apps/details?id=com.postergali.postergali" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Get PosterGali on Google Play Store">
-                <svg width="26" height="28" viewBox="0 0 24 24" fill="none" class="store-icon-play">
-                    <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
-                    <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
-                    <path d="M3.6 1.8L14.2 12.4L17.5 9.1L4.8 1.9C4.4 1.7 4 1.7 3.6 1.8Z" fill="#4CAF50"/>
-                    <path d="M3.6 23C4 23.1 4.4 23.1 4.8 22.9L17.5 15.7L14.2 12.4L3.6 23Z" fill="#F44336"/>
-                </svg>
-                <div class="btn-text-wrap">
-                    <span class="btn-text-small">GET IT ON</span>
-                    <span class="btn-text-large">Google Play Store</span>
-                </div>
-            </a>
+        <!-- Right Side: Dual QR Code Cards & App Store Download Buttons -->
+        <div class="app-crease-right">
+            <!-- Left Card: Google Play Store -->
+            <div class="qr-store-card qr-card-play">
+                <div class="qr-code-box">
+                    <svg class="qr-code-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Corner bracket alignment markers -->
+                        <path d="M14 44V18C14 15.7909 15.7909 14 18 14H44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M156 14H182C184.209 14 186 15.7909 186 18V44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M14 156V182C14 184.209 15.7909 186 18 186H44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M156 186H182C184.209 186 186 184.209 186 182V156" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
 
-            <!-- Apple App Store -->
-            <a href="https://apple.com/app-store/" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Download PosterGali on Apple App Store">
-                <div class="apple-circle-badge">
-                    <svg width="18" height="20" viewBox="0 0 24 24" fill="#ffffff">
-                        <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM15.22 4.93C15.9 4.1 16.36 2.95 16.23 1.8C15.24 1.84 14.04 2.46 13.33 3.29C12.7 4.02 12.15 5.2 12.3 6.33C13.41 6.42 14.54 5.76 15.22 4.93Z"/>
+                        <!-- Top-Left Finder Pattern -->
+                        <rect x="26" y="26" width="44" height="44" rx="4" fill="none" stroke="#111111" stroke-width="8"/>
+                        <rect x="38" y="38" width="20" height="20" rx="2" fill="#111111"/>
+
+                        <!-- Top-Right Finder Pattern -->
+                        <rect x="130" y="26" width="44" height="44" rx="4" fill="none" stroke="#111111" stroke-width="8"/>
+                        <rect x="142" y="38" width="20" height="20" rx="2" fill="#111111"/>
+
+                        <!-- Bottom-Left Finder Pattern -->
+                        <rect x="26" y="130" width="44" height="44" rx="4" fill="none" stroke="#111111" stroke-width="8"/>
+                        <rect x="38" y="142" width="20" height="20" rx="2" fill="#111111"/>
+
+                        <!-- QR Code Matrix Data Blocks -->
+                        <rect x="80" y="26" width="10" height="20" fill="#111111"/>
+                        <rect x="100" y="26" width="18" height="10" fill="#111111"/>
+                        <rect x="80" y="54" width="18" height="18" fill="#111111"/>
+                        <rect x="108" y="44" width="10" height="28" fill="#111111"/>
+
+                        <rect x="26" y="80" width="18" height="10" fill="#111111"/>
+                        <rect x="34" y="98" width="16" height="20" fill="#111111"/>
+                        <rect x="58" y="80" width="12" height="38" fill="#111111"/>
+                        <rect x="80" y="80" width="22" height="10" fill="#111111"/>
+                        <rect x="110" y="80" width="10" height="22" fill="#111111"/>
+                        <rect x="130" y="80" width="18" height="10" fill="#111111"/>
+                        <rect x="156" y="80" width="20" height="18" fill="#111111"/>
+
+                        <rect x="80" y="100" width="10" height="30" fill="#111111"/>
+                        <rect x="98" y="100" width="22" height="10" fill="#111111"/>
+                        <rect x="130" y="98" width="12" height="22" fill="#111111"/>
+                        <rect x="150" y="106" width="26" height="12" fill="#111111"/>
+
+                        <rect x="80" y="140" width="18" height="12" fill="#111111"/>
+                        <rect x="106" y="138" width="14" height="24" fill="#111111"/>
+                        <rect x="130" y="130" width="20" height="10" fill="#111111"/>
+                        <rect x="158" y="128" width="18" height="22" fill="#111111"/>
+
+                        <rect x="80" y="162" width="30" height="14" fill="#111111"/>
+                        <rect x="120" y="152" width="10" height="24" fill="#111111"/>
+                        <rect x="138" y="150" width="14" height="26" fill="#111111"/>
+                        <rect x="160" y="160" width="16" height="16" fill="#111111"/>
                     </svg>
                 </div>
-                <div class="btn-text-wrap">
-                    <span class="btn-text-small">DOWNLOAD ON THE</span>
-                    <span class="btn-text-large">Apple App Store</span>
+
+                <!-- Google Play Store Button -->
+                <a href="https://play.google.com/store/apps/details?id=com.postergali.postergali" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Get PosterGali on Google Play Store">
+                    <svg width="26" height="28" viewBox="0 0 24 24" fill="none" class="store-icon-play">
+                        <path d="M3.6 1.8L14.2 12.4L3.6 23C3.2 22.5 3 21.8 3 21V3C3 2.2 3.2 1.5 3.6 1.8Z" fill="#2196F3"/>
+                        <path d="M17.5 9.1L14.2 12.4L17.5 15.7L21.3 13.5C22.2 13 22.2 11.8 21.3 11.3L17.5 9.1Z" fill="#FFC107"/>
+                        <path d="M3.6 1.8L14.2 12.4L17.5 9.1L4.8 1.9C4.4 1.7 4 1.7 3.6 1.8Z" fill="#4CAF50"/>
+                        <path d="M3.6 23C4 23.1 4.4 23.1 4.8 22.9L17.5 15.7L14.2 12.4L3.6 23Z" fill="#F44336"/>
+                    </svg>
+                    <div class="btn-text-wrap">
+                        <span class="btn-text-small">GET IT ON</span>
+                        <span class="btn-text-large">Google Play Store</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Right Card: Apple App Store -->
+            <div class="qr-store-card qr-card-apple">
+                <div class="qr-code-box">
+                    <svg class="qr-code-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Corner bracket alignment markers -->
+                        <path d="M14 44V18C14 15.7909 15.7909 14 18 14H44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M156 14H182C184.209 14 186 15.7909 186 18V44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M14 156V182C14 184.209 15.7909 186 18 186H44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+                        <path d="M156 186H182C184.209 186 186 184.209 186 182V156" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
+
+                        <!-- Top-Left Finder Pattern -->
+                        <rect x="26" y="26" width="44" height="44" rx="4" fill="none" stroke="#111111" stroke-width="8"/>
+                        <rect x="38" y="38" width="20" height="20" rx="2" fill="#111111"/>
+
+                        <!-- Top-Right Finder Pattern -->
+                        <rect x="130" y="26" width="44" height="44" rx="4" fill="none" stroke="#111111" stroke-width="8"/>
+                        <rect x="142" y="38" width="20" height="20" rx="2" fill="#111111"/>
+
+                        <!-- Bottom-Left Finder Pattern -->
+                        <rect x="26" y="130" width="44" height="44" rx="4" fill="none" stroke="#111111" stroke-width="8"/>
+                        <rect x="38" y="142" width="20" height="20" rx="2" fill="#111111"/>
+
+                        <!-- QR Code Matrix Data Blocks -->
+                        <rect x="82" y="26" width="12" height="24" fill="#111111"/>
+                        <rect x="102" y="24" width="18" height="12" fill="#111111"/>
+                        <rect x="80" y="58" width="24" height="12" fill="#111111"/>
+                        <rect x="112" y="44" width="10" height="26" fill="#111111"/>
+
+                        <rect x="26" y="80" width="14" height="12" fill="#111111"/>
+                        <rect x="44" y="80" width="26" height="10" fill="#111111"/>
+                        <rect x="26" y="100" width="22" height="18" fill="#111111"/>
+                        <rect x="54" y="98" width="16" height="20" fill="#111111"/>
+
+                        <rect x="80" y="80" width="12" height="24" fill="#111111"/>
+                        <rect x="100" y="80" width="20" height="10" fill="#111111"/>
+                        <rect x="128" y="80" width="22" height="12" fill="#111111"/>
+                        <rect x="158" y="80" width="18" height="18" fill="#111111"/>
+
+                        <rect x="80" y="112" width="20" height="14" fill="#111111"/>
+                        <rect x="108" y="100" width="12" height="28" fill="#111111"/>
+                        <rect x="128" y="100" width="14" height="20" fill="#111111"/>
+                        <rect x="150" y="106" width="26" height="12" fill="#111111"/>
+
+                        <rect x="80" y="134" width="18" height="20" fill="#111111"/>
+                        <rect x="106" y="136" width="14" height="26" fill="#111111"/>
+                        <rect x="128" y="128" width="22" height="12" fill="#111111"/>
+                        <rect x="158" y="126" width="18" height="24" fill="#111111"/>
+
+                        <rect x="80" y="162" width="30" height="14" fill="#111111"/>
+                        <rect x="118" y="152" width="12" height="24" fill="#111111"/>
+                        <rect x="138" y="148" width="14" height="28" fill="#111111"/>
+                        <rect x="160" y="158" width="16" height="18" fill="#111111"/>
+                    </svg>
                 </div>
-            </a>
+
+                <!-- Apple App Store Button -->
+                <a href="https://apple.com/app-store/" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Download PosterGali on Apple App Store">
+                    <div class="apple-circle-badge">
+                        <svg width="18" height="20" viewBox="0 0 24 24" fill="#ffffff">
+                            <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.09 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM15.22 4.93C15.9 4.1 16.36 2.95 16.23 1.8C15.24 1.84 14.04 2.46 13.33 3.29C12.7 4.02 12.15 5.2 12.3 6.33C13.41 6.42 14.54 5.76 15.22 4.93Z"/>
+                        </svg>
+                    </div>
+                    <div class="btn-text-wrap">
+                        <span class="btn-text-small">DOWNLOAD ON THE</span>
+                        <span class="btn-text-large">Apple App Store</span>
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- WHY POSTERGALI SECTION (MATCHING REFERENCE IMAGE 2) -->
+<!-- WHY POSTERGALI SECTION -->
 <section class="why-section" id="why-postergali">
     <div class="sub-header-label">Why PosterGali?</div>
     <h2 class="main-section-title">India's Hyperlocal Street Ad Network</h2>
@@ -182,36 +297,42 @@
     <!-- FOLDER TABBED COMPONENT -->
     <div class="folder-container">
         <div class="folder-tabs" role="tablist">
-            <button class="folder-tab tab-vendors active" id="tabVendors" role="tab" aria-selected="true" aria-controls="tabContentVendors" onclick="switchFolderTab('vendors')">Vendors</button>
-            <button class="folder-tab tab-locals" id="tabLocals" role="tab" aria-selected="false" aria-controls="tabContentLocals" onclick="switchFolderTab('locals')">Locals</button>
-            <button class="folder-tab tab-hiring" id="tabHiring" role="tab" aria-selected="false" aria-controls="tabContentHiring" onclick="switchFolderTab('hiring')">Hiring</button>
+            <button class="folder-tab tab-vendors active" id="tabVendors" role="tab" aria-selected="true" aria-controls="tabContentVendors" onclick="switchFolderTab('vendors')">For Shop Owners</button>
+            <button class="folder-tab tab-locals" id="tabLocals" role="tab" aria-selected="false" aria-controls="tabContentLocals" onclick="switchFolderTab('locals')">For Neighbours</button>
+            <button class="folder-tab tab-hiring" id="tabHiring" role="tab" aria-selected="false" aria-controls="tabContentHiring" onclick="switchFolderTab('hiring')">For Job Seekers</button>
         </div>
 
-        <div class="folder-card" id="folderCard">
-            <!-- Market Scene & Phone Holder Image -->
-            <div class="folder-media-box">
-                <img src="{{ asset('images/tb1.png') }}" alt="PosterGali vendors view" class="folder-img" id="folderImage">
-            </div>
+        <div class="folder-card tab-vendors-active" id="folderCard">
+            <!-- Desktop Two-Column Layout -->
+            <div class="folder-desktop-inner">
+                <!-- Left: Content -->
+                <div class="folder-text-col">
+                    <!-- Tab 1: Vendors Content (Default) -->
+                    <div class="folder-content-body tab-content active" id="tabContentVendors" role="tabpanel">
+                        <h3>Poster lagao,<br>dhanda badhao</h3>
+                        <p>Got an opening, offer, new stock, a service, or a job to fill? Make a digital poster in under a minute — no design skills, no big budget. Your first posters are on us. Reach every phone in your mohalla for less than a chai.</p>
+                        <a href="#download" class="btn-folder-cta btn-tab-vendors">Post your first poster for free</a>
+                    </div>
 
-            <!-- Tab 1: Vendors Content (Default) -->
-            <div class="folder-content-body tab-content active" id="tabContentVendors" role="tabpanel">
-                <h3>Poster Lagao, Dhanda Badhao</h3>
-                <p>Got an opening, offer, new stock, a service, or a job to fill? Make a digital poster in under a minute — no design skills, no big budget. Your first posters are on us. Reach every phone in your mohalla for less than a chai.</p>
-                <a href="#download" class="btn-folder-cta">Post Your First Poster For Free</a>
-            </div>
+                    <!-- Tab 2: Locals Content -->
+                    <div class="folder-content-body tab-content" id="tabContentLocals" role="tabpanel" style="display: none;">
+                        <h3>Aapki gali mein<br>sab milta hai</h3>
+                        <p>The best deals and freshest offers around you, in one place. Check before you step out, or stumble on something new. Call, save, share or get directions in a tap.</p>
+                        <a href="#download" class="btn-folder-cta btn-tab-locals">See offers near you &nbsp;&gt;</a>
+                    </div>
 
-            <!-- Tab 2: Locals Content -->
-            <div class="folder-content-body tab-content" id="tabContentLocals" role="tabpanel" style="display: none;">
-                <h3>Apne Mohalle Ki Har Khabar</h3>
-                <p>Discover daily offers, discounts, neighborhood grocery deals, home services, and local community updates directly from verified shops and neighbors in your area.</p>
-                <a href="#download" class="btn-folder-cta">Explore Your Mohalla</a>
-            </div>
+                    <!-- Tab 3: Hiring Content -->
+                    <div class="folder-content-body tab-content" id="tabContentHiring" role="tabpanel" style="display: none;">
+                        <h3>Kaam dhundo<br>apni gali mein</h3>
+                        <p>Find jobs of your choice within walking distance of home or in a place you prefer. New openings from shops and businesses in your own neighbourhood — no endless scrolling, no faraway commutes.</p>
+                        <a href="#download" class="btn-folder-cta btn-tab-hiring">Find jobs near you &nbsp;&gt;</a>
+                    </div>
+                </div>
 
-            <!-- Tab 3: Hiring Content -->
-            <div class="folder-content-body tab-content" id="tabContentHiring" role="tabpanel" style="display: none;">
-                <h3>Staff Chahiye? Poster Lagao</h3>
-                <p>Hire shop assistants, delivery riders, cooks, helpers, or technicians in hours. Connect directly with local job seekers in your area with zero middlemen and zero commission.</p>
-                <a href="#download" class="btn-folder-cta">Post a Job Poster Free</a>
+                <!-- Right: Image -->
+                <div class="folder-img-col">
+                    <img src="{{ asset('images/tb1.png') }}" alt="PosterGali vendors view" class="folder-img" id="folderImage">
+                </div>
             </div>
         </div>
     </div>
@@ -220,10 +341,10 @@
     <div class="feature-grid-sub">
         <div>
             <div>Not a directory</div>
-            <div>Not a paid ad platform</div>
+            <div>Not a delivery app</div>
         </div>
         <div>
-            <div>Not a delivery app</div>
+            <div>Not a paid ad platform</div>
             <div class="green-highlight">A poster wall for everyone</div>
         </div>
     </div>
@@ -232,14 +353,14 @@
 <!-- WHO IS IT FOR SECTION -->
 <section class="who-section" id="who-is-it-for">
     <div class="sub-header-label">Who is it for?</div>
-    <h2 class="main-section-title">Different People, One Platform</h2>
+    <h2 class="main-section-title">Different people, one platform</h2>
 
     <div class="red-hero-card">
         <div class="persona-carousel" id="personaCarousel" tabindex="0" aria-label="PosterGali audience examples">
             <div class="persona-slides">
                 <img class="persona-slide active" src="{{ asset('images/mb1.png') }}" alt="Raghav, a local job seeker">
-                <img class="persona-slide" src="{{ asset('images/mb2.png') }}" alt="Sunita Tai, a home tiffin service provider">
                 <img class="persona-slide" src="{{ asset('images/mb3.png') }}" alt="Ramesh Bhai, a mall retailer">
+                <img class="persona-slide" src="{{ asset('images/mb2.png') }}" alt="Sunita Tai, a home tiffin service provider">
                 <img class="persona-slide" src="{{ asset('images/mb4.png') }}" alt="Shrey, a local deal seeker">
             </div>
         </div>
@@ -256,36 +377,36 @@
 <!-- FIVE PROMISES SECTION -->
 <section class="promises-section" id="promises">
     <div class="sub-header-label">Why should people trust it?</div>
-    <p class="main-section-title">Five Promises, No Exceptions</p>
+    <h2 class="main-section-title">Five promises, no exceptions</h2>
 
     <div class="stack-cards-wrapper">
         <div class="stack-card card-1">
             <div class="card-num">01</div>
-            <h4>Hyperlocal by default</h4>
-            <p>Every poster reaches the exact street and mohalla you select.</p>
+            <h4>No AI Deciding Your Fate</h4>
+            <p>No algorithm boosts a competitor over you</p>
         </div>
 
         <div class="stack-card card-2">
             <div class="card-num">02</div>
-            <h4>No favourites-everyone equal</h4>
-            <p>Every poster gets equal visibility in your area.</p>
+            <h4>No Favourites—Everyone Equal</h4>
+            <p>Street vendor or mall shop—same rate, same visibility</p>
         </div>
 
         <div class="stack-card card-3">
             <div class="card-num">03</div>
-            <h4>No commission, no hidden</h4>
-            <p>Direct connection with your customers without middleman fees.</p>
+            <h4>No Commission, No Hidden Fees</h4>
+            <p>₹20 + taxes. That's all we take</p>
         </div>
 
         <div class="stack-card card-4">
             <div class="card-num">04</div>
-            <h4>No complexity</h4>
-            <p>Design and publish your poster in 60 seconds.</p>
+            <h4>No Complexity</h4>
+            <p>If you've put up a poster before, you know PosterGali</p>
         </div>
 
         <div class="stack-card card-5">
             <div class="card-num">05</div>
-            <h4>No learning curve</h4>
+            <h4>No Learning Curve</h4>
             <p>Hindi + English, built for every age and trade</p>
         </div>
     </div>
@@ -594,25 +715,38 @@
             vendors: {
                 btn: document.getElementById('tabVendors'),
                 content: document.getElementById('tabContentVendors'),
-                image: '{{ asset('images/tb1.png') }}'
+                image: '{{ asset('images/tb1.png') }}',
+                bg: '{{ asset('images/bg1.png') }}'
             },
             locals: {
                 btn: document.getElementById('tabLocals'),
                 content: document.getElementById('tabContentLocals'),
-                image: '{{ asset('images/tb2.png') }}'
+                image: '{{ asset('images/tb2.png') }}',
+                bg: '{{ asset('images/bg2.png') }}'
             },
             hiring: {
                 btn: document.getElementById('tabHiring'),
                 content: document.getElementById('tabContentHiring'),
-                image: '{{ asset('images/tb3.png') }}'
+                image: '{{ asset('images/tb3.png') }}',
+                bg: '{{ asset('images/bg3.png') }}'
             }
         };
+
+        const folderCard = document.getElementById('folderCard');
 
         ['vendors', 'locals', 'hiring'].forEach(key => {
             if (tabs[key] && tabs[key].btn && tabs[key].content) {
                 if (key === tabName) {
-                    document.getElementById('folderImage').src = tabs[key].image;
-                    document.getElementById('folderImage').alt = `${tabName} PosterGali view`;
+                    const imgEl = document.getElementById('folderImage');
+                    if (imgEl) {
+                        imgEl.src = tabs[key].image;
+                        imgEl.alt = `${tabName} PosterGali view`;
+                    }
+                    if (folderCard) {
+                        folderCard.classList.remove('tab-vendors-active', 'tab-locals-active', 'tab-hiring-active');
+                        folderCard.classList.add(`tab-${key}-active`);
+                        folderCard.style.backgroundImage = `url('${tabs[key].bg}')`;
+                    }
                     tabs[key].btn.classList.add('active');
                     tabs[key].btn.setAttribute('aria-selected', 'true');
                     tabs[key].content.classList.add('active');
