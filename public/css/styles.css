@@ -1266,7 +1266,7 @@ body {
     overflow: hidden;
     width: calc(100% - 24px);
     margin: 30px auto 0;
-    border-radius: 16px;
+    border-radius: 0;
     padding: 40px 16px 48px;
     box-sizing: border-box;
 }
@@ -2433,6 +2433,10 @@ body {
     box-shadow: 2px 2px 0 rgba(17, 17, 17, 0.9);
 }
 
+.footer-app-showcase {
+    display: none;
+}
+
 .footer-section>.app-store-btns .btn-text-small {
     font-size: 6px;
 }
@@ -2875,12 +2879,10 @@ body {
     /* ── WHY POSTERGALI SECTION (MATCHING REFERENCE IMAGE 2) ── */
     .why-section {
         padding: 25px 16px 25px !important;
-        background: #FAF8E9 !important;
         text-align: center !important;
         position: relative !important;
         overflow: hidden !important;
         width: 100% !important;
-        box-sizing: border-box !important;
     }
 
     .why-section .sub-header-label {
@@ -2926,14 +2928,14 @@ body {
         font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: clamp(11px, 2.9vw, 13px) !important;
         font-weight: 700 !important;
-        padding: 6px 6px !important;
+        padding: 8px 12px !important;
         border-radius: 0 !important;
         border: none !important;
         cursor: pointer !important;
         clip-path: polygon(9% 0, 88% 0, 100% 100%, 0 100%) !important;
         margin-right: 0 !important;
         flex: 1 1 0 !important;
-        min-width: 0 !important;
+        min-width: 120px !important;
         position: relative !important;
         z-index: 1 !important;
         transition: all 0.2s ease !important;

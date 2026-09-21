@@ -426,11 +426,11 @@
 
         <div class="stamp-card-container" aria-label="How PosterGali works">
             <div class="stamp-card-track">
-                <img class="stamp-slide" src="{{ asset('images/hp1.png') }}" alt="Define your goal">
-                <img class="stamp-slide active" src="{{ asset('images/hp2.png') }}" alt="Choose your location">
-                <img class="stamp-slide" src="{{ asset('images/hp3.png') }}" alt="Create your poster">
-                <img class="stamp-slide" src="{{ asset('images/hp4.png') }}" alt="Publish your poster">
-                <img class="stamp-slide" src="{{ asset('images/hp5.png') }}" alt="Reach your local audience">
+                <img class="stamp-slide" src="{{ asset('images/md1.png') }}" alt="Define your goal">
+                <img class="stamp-slide active" src="{{ asset('images/md2.png') }}" alt="Choose your location">
+                <img class="stamp-slide" src="{{ asset('images/md3.png') }}" alt="Create your poster">
+                <img class="stamp-slide" src="{{ asset('images/md4.png') }}" alt="Publish your poster">
+                <img class="stamp-slide" src="{{ asset('images/md5.png') }}" alt="Reach your local audience">
             </div>
         </div>
 
@@ -644,6 +644,12 @@
         </a>
     </div>
 
+    <div class="footer-app-showcase">
+        <div class="footer-qr-codes" aria-label="Scan to download PosterGali">
+            <div class="footer-qr-box" data-qr-source=".qr-card-play .qr-code-svg"></div>
+            <div class="footer-qr-box" data-qr-source=".qr-card-apple .qr-code-svg"></div>
+        </div>
+
     <div class="app-store-btns" style="margin-bottom: 25px;">
         <a href="https://play.google.com/store/apps/details?id=com.postergali.postergali" target="_blank" rel="noopener noreferrer" class="app-store-btn" aria-label="Get on Google Play">
             <svg width="18" height="20" viewBox="0 0 24 24" fill="none">
@@ -665,6 +671,7 @@
                 <span class="btn-text-large">Apple App Store</span>
             </div>
         </a>
+        </div>
     </div>
 
     <!-- Bottom Golden Bar -->
@@ -674,7 +681,7 @@
             <a href="{{ url('/privacy-policy') }}">Privacy Policy</a>
             <a href="{{ url('/terms-and-conditions') }}">Terms of Service</a>
         </div>
-        <div>Developed by Chandra Prakash &amp; MadeInCode.in team</div>
+        <div><a href="https://www.instagram.com/madeincode.in/" target="_blank" rel="noopener noreferrer">Developed by Chandra Prakash &amp; MadeInCode.in team</a></div>
     </div>
 </footer>
 
@@ -837,6 +844,11 @@
         showStampSlide(1);
         setInterval(() => showStampSlide(stampIndex + 1), 4500);
     }
+
+    document.querySelectorAll('.footer-qr-box').forEach(box => {
+        const source = document.querySelector(box.dataset.qrSource);
+        if (source) box.appendChild(source.cloneNode(true));
+    });
 
     // ── Mobile Navigation Drawer ──
     const drawer = document.getElementById('mobileNavDrawer');
