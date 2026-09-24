@@ -47,10 +47,19 @@
         .card-body{ color:#4f463f; font-size:13px; line-height:1.8 }
         .card-body strong{ display:block; color:#2f2a26; margin-bottom:4px }
 
-        .media-list{ display:grid; gap:12px }
-        .media-item{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:#f9f7f3; border-radius:12px; border:1px solid rgba(47,34,30,0.04); color:#2f2a26 }
-        .media-link{ color:#2f2a26; text-decoration:none; font-weight:700 }
-        .media-action{ width:32px; height:32px; border-radius:8px; display:grid; place-items:center; background:#fdecea; color:var(--danger) }
+        .media-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px }
+        .media-item{ overflow:hidden; background:#f9f7f3; border-radius:12px; border:1px solid rgba(47,34,30,0.04); color:#2f2a26 }
+        .media-preview{ position:relative; aspect-ratio:4 / 3; background:#ebe7e0 }
+        .media-preview img,.media-preview video{ width:100%; height:100%; display:block; object-fit:cover }
+        .media-preview video{ background:#211d1a }
+        .media-caption{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:10px 12px }
+        .media-name{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; font-weight:700 }
+        .media-action{ flex:0 0 auto; width:32px; height:32px; border:0; border-radius:8px; display:grid; place-items:center; background:#fdecea; color:var(--danger); cursor:pointer; font-size:18px }
+        .media-viewer{ display:none; position:fixed; inset:0; z-index:10000; align-items:center; justify-content:center; padding:24px; background:rgba(19,15,13,0.88) }
+        .media-viewer.active{ display:flex }
+        .media-viewer-content{ position:relative; max-width:min(1200px,95vw); max-height:90vh; display:flex; align-items:center; justify-content:center }
+        .media-viewer-content img,.media-viewer-content video{ display:block; max-width:95vw; max-height:90vh; object-fit:contain }
+        .media-viewer-close{ position:fixed; top:20px; right:24px; width:40px; height:40px; border:0; border-radius:50%; background:#fff; color:#2f2a26; font-size:24px; cursor:pointer }
 
         .status-card{ grid-column:span 2 }
         .form-row{ display:grid; gap:16px; grid-template-columns:180px 1fr; margin-bottom:18px; align-items:center }
@@ -304,14 +313,25 @@
                                                     : ($normalizedMediaPath
                                                         ? asset(strpos($normalizedMediaPath, 'storage/') === 0 ? $normalizedMediaPath : 'storage/' . $normalizedMediaPath)
                                                         : null);
+                                                $mediaExtension = strtolower(pathinfo(parse_url($mediaPath ?? '', PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+                                                $mediaType = in_array($mediaExtension, ['mp4', 'webm', 'ogg', 'mov', 'm4v'], true) ? 'video' : 'image';
                                             @endphp
                                             <div class="media-item">
                                                 @if($mediaUrl)
-                                                    <a href="{{ $mediaUrl }}" target="_blank" rel="noopener noreferrer" class="media-link">{{ $mediaName }}</a>
+                                                    <div class="media-preview">
+                                                        @if($mediaType === 'video')
+                                                            <video src="{{ $mediaUrl }}" controls playsinline preload="metadata"></video>
+                                                        @else
+                                                            <img src="{{ $mediaUrl }}" alt="{{ $mediaName }}" loading="lazy">
+                                                        @endif
+                                                    </div>
+                                                    <div class="media-caption">
+                                                        <span class="media-name" title="{{ $mediaName }}">{{ $mediaName }}</span>
+                                                        <button type="button" class="media-action" title="Open {{ $mediaType }} fullscreen" aria-label="Open {{ $mediaType }} fullscreen" onclick="openMediaViewer('{{ $mediaUrl }}', '{{ $mediaType }}', '{{ addslashes($mediaName) }}')">⛶</button>
+                                                    </div>
                                                 @else
-                                                    <span>{{ $mediaName }}</span>
+                                                    <div class="media-caption"><span class="media-name">{{ $mediaName }}</span></div>
                                                 @endif
-                                                <span class="media-action">↗</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -373,7 +393,34 @@
         </div>
     </div>
 
+    <div class="media-viewer" id="mediaViewer" role="dialog" aria-modal="true" aria-label="Media viewer" onclick="closeMediaViewer(event)">
+        <button type="button" class="media-viewer-close" title="Close media viewer" aria-label="Close media viewer" onclick="closeMediaViewer()">&times;</button>
+        <div class="media-viewer-content" id="mediaViewerContent"></div>
+    </div>
+
     <script>
+        function openMediaViewer(url, type, name) {
+            const viewer = document.getElementById('mediaViewer');
+            const content = document.getElementById('mediaViewerContent');
+            content.innerHTML = type === 'video'
+                ? `<video src="${url}" controls autoplay aria-label="${name}"></video>`
+                : `<img src="${url}" alt="${name}">`;
+            viewer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMediaViewer(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const viewer = document.getElementById('mediaViewer');
+            document.getElementById('mediaViewerContent').innerHTML = '';
+            viewer.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') closeMediaViewer();
+        });
+
         function showLoading(event) {
             // Show the loading overlay
             const overlay = document.getElementById('loadingOverlay');
