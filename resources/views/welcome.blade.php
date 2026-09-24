@@ -445,7 +445,7 @@
 </section>
 
 <!-- GET IN TOUCH / CONTACT SECTION -->
-<section class="contact-section" id="contact">
+<section class="contact-section{{ session('contact_success') ? ' contact-dialog-visible' : '' }}" id="contact">
     <div class="sub-header-label">Connect with PosterGali</div>
     <h2 class="main-section-title">Let's Talk About Growing Your Local Reach Today</h2>
 
@@ -478,11 +478,12 @@
         </div>
 
         <!-- Contact Form -->
-        <form class="contact-form" onsubmit="event.preventDefault();">
+        <form id="contactForm" class="contact-form" action="{{ route('contact-us.store') }}" method="POST">
+            @csrf
             <div class="form-group">
-                <label>Full Name</label>
+                <label for="contact-first-name">First Name</label>
                 <div class="input-wrapper">
-                    <input type="text" placeholder="Enter your full name">
+                    <input id="contact-first-name" name="first_name" type="text" placeholder="Enter your first name" value="{{ old('first_name') }}" required>
                     <span class="input-icon">
                         <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <circle cx="12" cy="8" r="4"></circle>
@@ -493,9 +494,9 @@
             </div>
 
             <div class="form-group">
-                <label>Last Name</label>
+                <label for="contact-last-name">Last Name</label>
                 <div class="input-wrapper">
-                    <input type="text" placeholder="Enter your last name">
+                    <input id="contact-last-name" name="last_name" type="text" placeholder="Enter your last name" value="{{ old('last_name') }}" required>
                     <span class="input-icon">
                         <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <circle cx="12" cy="8" r="4"></circle>
@@ -506,9 +507,9 @@
             </div>
 
             <div class="form-group">
-                <label>Email</label>
+                <label for="contact-email">Email</label>
                 <div class="input-wrapper">
-                    <input type="email" placeholder="Enter your email address">
+                    <input id="contact-email" name="email" type="email" placeholder="Enter your email address" value="{{ old('email') }}" required>
                     <span class="input-icon">
                         <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <rect x="3" y="5" width="18" height="14" rx="2"></rect>
@@ -519,9 +520,9 @@
             </div>
 
             <div class="form-group">
-                <label>Phone Number</label>
+                <label for="contact-phone">Phone Number</label>
                 <div class="input-wrapper">
-                    <input type="tel" placeholder="Enter your phone number">
+                    <input id="contact-phone" name="phone" type="tel" placeholder="Enter your phone number" value="{{ old('phone') }}" required>
                     <span class="input-icon">
                         <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"></path>
@@ -531,9 +532,9 @@
             </div>
 
             <div class="form-group">
-                <label>Message</label>
+                <label for="contact-message">Message</label>
                 <div class="input-wrapper">
-                    <textarea placeholder="Enter your message here"></textarea>
+                    <textarea id="contact-message" name="message" placeholder="Enter your message here" required>{{ old('message') }}</textarea>
                     <span class="input-icon">
                         <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.8 9.8 0 0 1-4-.8L3 21l1.8-4.2A8.5 8.5 0 1 1 21 11.5Z"></path>
@@ -542,8 +543,20 @@
                     </span>
                 </div>
             </div>
+            <p id="contactFormError" class="contact-form-error" role="alert" hidden></p>
+            <button class="contact-submit-btn" type="submit">Send Message</button>
         </form>
     </div>
+
+    <dialog id="contactSuccessDialog" class="contact-success-dialog">
+        <div class="contact-success-dialog-content">
+            <img class="contact-success-logo" src="{{ asset('images/logo.png') }}" alt="PosterGali">
+            <div class="contact-success-mark" aria-hidden="true">&#10003;</div>
+            <h2>Thank you!</h2>
+            <p>Thank you for contacting PosterGali. Our team will get back to you within 24 hours.</p>
+            <button type="button" onclick="this.closest('dialog').close()">Continue</button>
+        </div>
+    </dialog>
     
 </section>
 
@@ -706,6 +719,59 @@
 
 <script>
     // ── Interactive FAQ Accordion ──
+    const contactForm = document.getElementById('contactForm');
+    const contactFormError = document.getElementById('contactFormError');
+    const contactSuccessDialog = document.getElementById('contactSuccessDialog');
+
+    function showContactSuccess() {
+        document.getElementById('contact')?.classList.add('contact-dialog-visible');
+        contactSuccessDialog.showModal();
+        document.body.classList.add('contact-dialog-open');
+    }
+
+    if (contactSuccessDialog) {
+        contactSuccessDialog.addEventListener('close', () => {
+            document.body.classList.remove('contact-dialog-open');
+            document.getElementById('contact')?.classList.remove('contact-dialog-visible');
+        });
+    }
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', async event => {
+            event.preventDefault();
+            const submitButton = contactForm.querySelector('.contact-submit-btn');
+            submitButton.disabled = true;
+            submitButton.textContent = 'Sending...';
+            contactFormError.hidden = true;
+
+            try {
+                const response = await fetch(contactForm.action, {
+                    method: 'POST',
+                    body: new FormData(contactForm),
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(response.status === 422
+                        ? 'Please check the form and try again.'
+                        : 'We could not send your message. Please try again.');
+                }
+
+                contactForm.reset();
+                showContactSuccess();
+            } catch (error) {
+                contactFormError.textContent = error.message;
+                contactFormError.hidden = false;
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Send Message';
+            }
+        });
+    }
+
     document.querySelectorAll('.faq-item').forEach(item => {
         item.addEventListener('click', () => {
             const isActive = item.classList.contains('active');

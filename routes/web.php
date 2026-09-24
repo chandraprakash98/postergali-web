@@ -2,10 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\ContactUsController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::post('/contact-us', [ContactUsController::class, 'store'])->name('contact-us.store');
 
 Route::get('/privacy-policy', function () {
     return view('privacy-policy');

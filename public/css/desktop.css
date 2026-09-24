@@ -845,7 +845,7 @@
         font-size: 17px !important;
     }
 
-    .contact-form .form-group:last-child {
+    .contact-form .form-group:last-of-type {
         grid-column: 1 / -1 !important;
     }
 
