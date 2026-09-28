@@ -38,7 +38,7 @@ class OtpApiTest extends TestCase
 
             return str_starts_with($request->url(), config('services.bulk_sms.url'))
                 && $data['dest'] === '917982553609'
-                && preg_match('/^Postergali - Use OTP \d{6} to complete your verification\. Please do not share this OTP with anyone\.\nUNITYGRID PVT LTD$/', $data['msg']) === 1;
+                && preg_match('/^Postergali - Use OTP \d{4} to complete your verification\. Please do not share this OTP with anyone\.\nUNITYGRID PVT LTD$/', $data['msg']) === 1;
         });
     }
 
@@ -56,23 +56,23 @@ class OtpApiTest extends TestCase
     {
         OtpVerification::create([
             'mobile' => '7982553609',
-            'code_hash' => Hash::make('262626'),
+            'code_hash' => Hash::make('2626'),
             'expires_at' => now()->addMinutes(5),
         ]);
 
         $this->postJson('/api/v1/auth/otp/verify', [
             'mobile' => '7982553609',
-            'otp' => '111111',
+            'otp' => '1111',
         ])->assertStatus(422)->assertJsonValidationErrors(['otp']);
 
         $this->postJson('/api/v1/auth/otp/verify', [
             'mobile' => '7982553609',
-            'otp' => '262626',
+            'otp' => '2626',
         ])->assertOk()->assertJson(['success' => true]);
 
         $this->postJson('/api/v1/auth/otp/verify', [
             'mobile' => '7982553609',
-            'otp' => '262626',
+            'otp' => '2626',
         ])->assertStatus(422)->assertJsonValidationErrors(['otp']);
     }
 }

@@ -31,7 +31,7 @@ class OtpController extends Controller
     public function verify(Request $request)
     {
         $mobile = $this->mobile($request);
-        $validated = $request->validate(['otp' => ['required', 'digits:6']]);
+        $validated = $request->validate(['otp' => ['required', 'digits:4']]);
 
         if (!$this->otpService->verify($mobile, $validated['otp'])) {
             throw ValidationException::withMessages(['otp' => ['The OTP is invalid or expired.']]);

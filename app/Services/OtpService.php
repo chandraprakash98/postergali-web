@@ -31,7 +31,7 @@ class OtpService
             'username' => $requestData['uname'],
             'sender' => $requestData['send'],
             'destination' => $requestData['dest'],
-            'message' => preg_replace('/\b\d{6}\b/', '[REDACTED]', $message),
+            'message' => preg_replace('/\b\d{4}\b/', '[REDACTED]', $message),
         ]);
 
         $response = $this->client()->get(config('services.bulk_sms.url'), $requestData);
@@ -81,7 +81,7 @@ class OtpService
 
     protected function generateCode(): string
     {
-        return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        return str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
     }
 
     protected function client(): PendingRequest
