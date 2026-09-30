@@ -11,6 +11,7 @@ class Customer extends Model
         'customer_id',
         'mobile',
         'fcm',
+        'influencer_bonus_coupon_id',
     ];
 
     public function payments(): HasMany

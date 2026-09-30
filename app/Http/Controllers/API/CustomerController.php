@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\BonusCoupon;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Job;
 use App\Models\Offer;
 use App\Services\FilterService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CustomerController extends Controller
 {
@@ -18,35 +20,66 @@ class CustomerController extends Controller
 
     public function check(Request $request)
     {
+        $request->merge([
+            'coupon_code' => $request->input('coupon_code', $request->input('couponcode')),
+            'fcm' => $request->input('fcm', $request->input('fcm_token')),
+        ]);
+
         $validated = $request->validate([
             'mobile' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\-\s]{7,15}$/'],
             'fcm' => ['nullable', 'string', 'max:255'],
+            'coupon_code' => ['nullable', 'string', 'max:255'],
         ]);
 
         $normalizedMobile = $this->normalizeMobile($validated['mobile']);
         $customer = Customer::where('mobile', $normalizedMobile)->first();
 
         if (!$customer) {
-            $customer = Customer::create([
-                'mobile' => $normalizedMobile,
-                'fcm' => $validated['fcm'] ?? null,
-            ]);
+            $couponCode = $validated['coupon_code'] ?? null;
+            $coupon = $couponCode
+                ? BonusCoupon::where('influencer_bonus_coupon_id', $couponCode)->first()
+                : null;
+            $couponIsActive = $coupon && strtolower($coupon->bonus_coupon_status) === 'active';
+            $balance = $couponIsActive ? $coupon->bonus_coupon_poster_credit : 1000;
 
-            CustomerCredit::create([
-                'customer_id' => $customer->customer_id,
-                'balance' => 1000,
-            ]);
+            [$customer, $credit] = DB::transaction(function () use ($normalizedMobile, $validated, $couponCode, $couponIsActive, $balance) {
+                $newCustomer = Customer::create([
+                    'mobile' => $normalizedMobile,
+                    'fcm' => $validated['fcm'] ?? null,
+                    'influencer_bonus_coupon_id' => $couponIsActive ? $couponCode : null,
+                ]);
 
-            return response()->json([
+                $newCredit = CustomerCredit::create([
+                    'customer_id' => $newCustomer->customer_id,
+                    'balance' => $balance,
+                ]);
+
+                return [$newCustomer, $newCredit];
+            });
+
+            $response = [
                 'success' => true,
                 'created' => true,
                 'customer_id' => $customer->customer_id,
                 'mobile' => $customer->mobile,
-                'balance' => 1000,
-            ], 201);
+                'balance' => $credit->balance,
+                'coupon_applied' => (bool) $couponIsActive,
+            ];
+
+            if ($couponCode !== null) {
+                $response['coupon_code_status'] = $couponIsActive
+                    ? 'active'
+                    : ($coupon ? 'inactive' : 'invalid');
+
+                if (!$couponIsActive) {
+                    $response['message'] = 'Coupon code is invalid or inactive. Default credit assigned.';
+                }
+            }
+
+            return response()->json($response, 201);
         }
 
-        if (!empty($validated['fcm'])) {
+        if (isset($validated['fcm'])) {
             $customer->fcm = $validated['fcm'];
             $customer->save();
         }
