@@ -16,13 +16,13 @@ class CustomerExistsApiTest extends TestCase
 
         $this->getJson('/api/v1/customers/exists?mobile=%2B91%209876543210')
             ->assertOk()
-            ->assertContent('true');
+            ->assertExactJson(['status' => true]);
     }
 
     public function test_returns_false_when_customer_mobile_does_not_exist(): void
     {
         $this->getJson('/api/v1/customers/exists?mobile=919876543211')
             ->assertOk()
-            ->assertContent('false');
+            ->assertExactJson(['status' => false]);
     }
 }

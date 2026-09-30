@@ -104,7 +104,9 @@ class CustomerController extends Controller
 
         $normalizedMobile = $this->normalizeMobile($validated['mobile']);
 
-        return response()->json(Customer::where('mobile', $normalizedMobile)->exists());
+        return response()->json([
+            'status' => Customer::where('mobile', $normalizedMobile)->exists(),
+        ]);
     }
 
     public function posterAds(Request $request)
