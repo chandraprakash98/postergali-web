@@ -12,6 +12,8 @@ use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Plan;
 use App\Models\Notification;
+use App\Models\Payment;
+use App\Models\CouponIncentive;
 use App\Services\PaymentService;
 
 use Carbon\Carbon;
@@ -141,9 +143,9 @@ class AdminAuthController extends Controller
                 $model->subcategory = $data['subcategory'];
             }
             if ($type === 'job') {
-                $model->status_comment = $data['comment'];
+                $model->status_comment = $data['comment'] ?? null;
             } else {
-                $model->status_note = $data['comment'];
+                $model->status_note = $data['comment'] ?? null;
             }
             $model->reviewed_by = Auth::user()->name;
 
@@ -161,6 +163,7 @@ class AdminAuthController extends Controller
 
                 if ($data['status'] === 'approved') {
                     $this->handleReferralCredit($model);
+                    $this->handleCouponIncentive($model, $type);
                     return;
                 }
 
@@ -475,6 +478,120 @@ class AdminAuthController extends Controller
         } catch (\Throwable $e) {
             Log::warning("Failed to send referral reward notification: {$e->getMessage()}");
         }
+    }
+
+    /**
+     * Handle coupon incentive creation upon poster approval if customer used an active coupon.
+     */
+    private function handleCouponIncentive($model, string $type): void
+    {
+        $phoneNumber = null;
+        if ($model instanceof Job) {
+            $phoneNumber = $model->phone_number;
+        } elseif ($model instanceof Offer) {
+            $phoneNumber = $model->mobile_number;
+        }
+
+        $customer = null;
+        if (!empty($phoneNumber)) {
+            $normalizedPhone = preg_replace('/[^0-9]/', '', (string) $phoneNumber);
+            if ($normalizedPhone !== '') {
+                $customer = Customer::where('mobile', $normalizedPhone)
+                    ->orWhere('mobile', (string) $phoneNumber)
+                    ->first();
+            }
+        }
+
+        if (!$customer) {
+            $paymentCustomerId = Payment::where('job_or_offer_id', $model->id)
+                ->whereNotNull('customer_id')
+                ->value('customer_id');
+
+            if ($paymentCustomerId) {
+                $customer = Customer::where('customer_id', $paymentCustomerId)->first();
+            }
+        }
+
+        if (!$customer) {
+            return;
+        }
+
+        // Step 1 — Check Coupon Code
+        $couponCode = trim((string) ($customer->influencer_bonus_coupon_id ?? ''));
+        if ($couponCode === '') {
+            return;
+        }
+
+        // 3. Duplicate Protection
+        $alreadyRecorded = CouponIncentive::where('ad_id', $model->id)
+            ->where('customer_id', $customer->customer_id)
+            ->exists();
+
+        if ($alreadyRecorded) {
+            return;
+        }
+
+        // Step 3 — Calculate poster_count
+        $latestIncentive = CouponIncentive::where('customer_id', $customer->customer_id)
+            ->latest('id')
+            ->lockForUpdate()
+            ->first();
+
+        $posterCount = $latestIncentive ? ((int) $latestIncentive->poster_count + 1) : 1;
+
+        // Step 4 — Determine payment_method
+        $payment = Payment::where('job_or_offer_id', $model->id)
+            ->where('customer_id', $customer->customer_id)
+            ->where(function ($query) use ($model, $type) {
+                if (!empty($model->master_category)) {
+                    $query->where('item_type', $model->master_category)
+                        ->orWhere('item_type', $type);
+                } else {
+                    $query->where('item_type', $type);
+                }
+            })
+            ->latest('id')
+            ->first();
+
+        if (!$payment) {
+            $payment = Payment::where('job_or_offer_id', $model->id)
+                ->where('customer_id', $customer->customer_id)
+                ->latest('id')
+                ->first();
+        }
+
+        if (!$payment) {
+            $payment = Payment::where('job_or_offer_id', $model->id)
+                ->latest('id')
+                ->first();
+        }
+
+        $paymentMethod = 'free';
+        if ($payment) {
+            $paymentType = strtoupper(trim((string) ($payment->payment_type ?? '')));
+            $creditMode = strtolower(trim((string) ($payment->credit_mode ?? '')));
+            $razorpayAmount = (float) ($payment->razorpay_amount ?? 0);
+
+            if ($paymentType === 'FULL_UPI' || $paymentType === 'SEMI' || $creditMode === 'full_upi' || $creditMode === 'semi' || $razorpayAmount > 0) {
+                $paymentMethod = 'paid';
+            } else {
+                $paymentMethod = 'free';
+            }
+        }
+
+        // Step 2 — Create Coupon-Incentive Record
+        CouponIncentive::create([
+            'influencer_bonus_coupon_id' => $couponCode,
+            'ad_id'                      => $model->id,
+            'customer_id'                => $customer->customer_id,
+            'mobile_number'              => (string) ($customer->mobile ?: $phoneNumber),
+            'usage_date'                 => now()->toDateString(),
+            'payment_method'             => $paymentMethod,
+            'poster_count'               => $posterCount,
+            'incentive_processed_date'   => null,
+        ]);
+
+        Log::info("Coupon incentive recorded for customer {$customer->customer_id}, ad #{$model->id}, poster_count {$posterCount}, method {$paymentMethod}");
     }
 
     private function calculateExpiryFromDuration($approvedAt, string $duration)
