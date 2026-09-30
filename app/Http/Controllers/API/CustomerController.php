@@ -96,6 +96,17 @@ class CustomerController extends Controller
         ]);
     }
 
+    public function exists(Request $request)
+    {
+        $validated = $request->validate([
+            'mobile' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\-\s]{7,15}$/'],
+        ]);
+
+        $normalizedMobile = $this->normalizeMobile($validated['mobile']);
+
+        return response()->json(Customer::where('mobile', $normalizedMobile)->exists());
+    }
+
     public function posterAds(Request $request)
     {
         $this->filterService->rejectUnsupportedParams($request, FilterService::ALLOWED_POSTER_ADS_PARAMS);

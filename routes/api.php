@@ -22,6 +22,7 @@ Route::prefix('v1')->group(function () {
     Route::post('referrals', [ReferralController::class, 'store']);
     Route::get('referrals/check', [ReferralController::class, 'check']);
     Route::get('customers/check', [CustomerController::class, 'check']);
+    Route::get('customers/exists', [CustomerController::class, 'exists']);
     Route::post('auth/otp/send', [OtpController::class, 'send']);
     Route::post('auth/otp/verify', [OtpController::class, 'verify']);
     Route::get('customers/poster-ads', [CustomerController::class, 'posterAds']);
