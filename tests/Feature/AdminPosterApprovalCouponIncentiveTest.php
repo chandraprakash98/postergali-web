@@ -9,6 +9,7 @@ use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\FirebaseNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,7 +22,14 @@ class AdminPosterApprovalCouponIncentiveTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        FirebaseNotificationService::fake();
         $this->admin = User::factory()->create(['is_admin' => true]);
+    }
+
+    protected function tearDown(): void
+    {
+        FirebaseNotificationService::resetFake();
+        parent::tearDown();
     }
 
     private function createJob(array $attributes = []): Job
@@ -371,5 +379,80 @@ class AdminPosterApprovalCouponIncentiveTest extends TestCase
             ]);
 
         $this->assertEquals(1, CouponIncentive::where('ad_id', $job->id)->count());
+    }
+
+    public function test_admin_approval_sends_notification_to_customer_fcm_token_and_not_poster_device_id(): void
+    {
+        $customer = Customer::create([
+            'mobile' => '9777777777',
+            'fcm' => 'real_customer_fcm_token_999',
+        ]);
+
+        $job = $this->createJob([
+            'phone_number' => $customer->mobile,
+            'device_id' => 'samsung_galaxy_s23_ultra_model_sm_s918b',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->postJson('/admin/ads/job/' . $job->id . '/status', [
+                'status' => 'approved',
+                'comment' => 'Approved ad',
+            ])
+            ->assertRedirect();
+
+        $sentMessages = FirebaseNotificationService::getSentMessages();
+        $this->assertCount(1, $sentMessages);
+        $this->assertEquals('real_customer_fcm_token_999', $sentMessages[0]['token']);
+        $this->assertNotEquals('samsung_galaxy_s23_ultra_model_sm_s918b', $sentMessages[0]['token']);
+        $this->assertEquals('Ad Approved ✓', $sentMessages[0]['title']);
+    }
+
+    public function test_admin_rejection_sends_notification_to_customer_fcm_token_and_not_poster_device_id(): void
+    {
+        $customer = Customer::create([
+            'mobile' => '9888888888',
+            'fcm' => 'customer_fcm_for_rejected_ad_123',
+        ]);
+
+        $offer = $this->createOffer([
+            'mobile_number' => $customer->mobile,
+            'device_id' => 'apple_iphone_15_pro_a3102',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->postJson('/admin/ads/offer/' . $offer->id . '/status', [
+                'status' => 'rejected',
+                'comment' => 'Inappropriate images',
+            ])
+            ->assertRedirect();
+
+        $sentMessages = FirebaseNotificationService::getSentMessages();
+        $this->assertCount(1, $sentMessages);
+        $this->assertEquals('customer_fcm_for_rejected_ad_123', $sentMessages[0]['token']);
+        $this->assertNotEquals('apple_iphone_15_pro_a3102', $sentMessages[0]['token']);
+        $this->assertEquals('Ad Rejected ✕', $sentMessages[0]['title']);
+        $this->assertStringContainsString('Inappropriate images', $sentMessages[0]['body']);
+    }
+
+    public function test_admin_approval_gracefully_handles_missing_customer_fcm(): void
+    {
+        $customer = Customer::create([
+            'mobile' => '9999999999',
+            'fcm' => null,
+        ]);
+
+        $job = $this->createJob([
+            'phone_number' => $customer->mobile,
+            'device_id' => 'device_hardware_id_no_fcm',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->postJson('/admin/ads/job/' . $job->id . '/status', [
+                'status' => 'approved',
+            ])
+            ->assertRedirect();
+
+        $sentMessages = FirebaseNotificationService::getSentMessages();
+        $this->assertCount(0, $sentMessages);
     }
 }

@@ -18,8 +18,10 @@ use App\Services\PaymentService;
 
 use Carbon\Carbon;
 use App\Services\PostergaliAlphaBatchService;
+use App\Constants\NotificationContent;
 use App\Services\FirebaseNotificationService;
 use App\Services\FcmTokenResolver;
+use App\Services\PosterPostingLimitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -171,40 +173,64 @@ class AdminAuthController extends Controller
                 app(PaymentService::class)->refundRejectedPoster($mobile, $id, $model->master_category, $type);
             });
 
-            // Send FCM Notification using device_id as FCM token
+            // Send FCM Notification using customer's fcm token from customers table (do not use model device_id)
             try {
-                $firebaseCredentials = env('FIREBASE_CREDENTIALS', 'storage/app/firebase/firebase-service-account.json');
-                $serviceAccountPath = base_path($firebaseCredentials);
-                $factory = (new Factory())->withServiceAccount($serviceAccountPath);
-                $messaging = $factory->createMessaging();
+                $phoneNumber = $type === 'job' ? $model->phone_number : $model->mobile_number;
+                $customer = null;
 
-                // Use device_id directly as FCM token
-                $fcmToken = $model->device_id;
-
-                if (empty($fcmToken)) {
-                    \Log::warning('Device ID not found for model ID: ' . $model->id);
-                    return;
+                if (!empty($phoneNumber)) {
+                    $normalizedPhone = preg_replace('/[^0-9]/', '', (string) $phoneNumber);
+                    if ($normalizedPhone !== '') {
+                        $customer = Customer::where('mobile', $normalizedPhone)
+                            ->orWhere('mobile', (string) $phoneNumber)
+                            ->first();
+                    }
                 }
 
-                $title = $data['status'] === 'approved' ? 'Ad Approved ✓' : 'Ad Rejected ✕';
-                $body = $data['status'] === 'approved' 
-                    ? 'Your ad has been approved and is now live!' 
-                    : ('Your ad was rejected. ' . ($data['comment'] ?? 'Contact support for details.'));
+                if (!$customer) {
+                    $paymentCustomerId = Payment::where('job_or_offer_id', $model->id)
+                        ->whereNotNull('customer_id')
+                        ->value('customer_id');
 
-                $message = CloudMessage::withTarget('token', $fcmToken)
-                    ->withNotification(FcmNotification::create($title, $body))
-                    ->withData([
+                    if ($paymentCustomerId) {
+                        $customer = Customer::where('customer_id', $paymentCustomerId)->first();
+                    }
+                }
+
+                $fcmToken = $customer && !empty($customer->fcm) ? trim($customer->fcm) : null;
+
+                if (empty($fcmToken) && !empty($phoneNumber)) {
+                    $variants = (new PosterPostingLimitService())->getPhoneVariants($phoneNumber);
+                    if (!empty($variants)) {
+                        $fcmToken = Customer::whereIn('mobile', $variants)
+                            ->whereNotNull('fcm')
+                            ->where('fcm', '!=', '')
+                            ->value('fcm');
+                    }
+                }
+
+                if (empty($fcmToken)) {
+                    Log::warning("Customer FCM token not found in customers table for ad #{$model->id} (phone: " . ($phoneNumber ?? 'unknown') . ")");
+                } else {
+                    $content = $data['status'] === 'approved'
+                        ? NotificationContent::adApproved('en')
+                        : NotificationContent::adRejected($data['comment'] ?? null, 'en');
+
+                    $title = $content['title'];
+                    $body  = $content['body'];
+
+                    $firebaseService = new FirebaseNotificationService();
+                    $firebaseService->sendToToken($fcmToken, $title, $body, [
                         'ad_id' => (string) $model->id,
                         'type' => $type,
                         'status' => $data['status'],
                         'timestamp' => now()->toIso8601String(),
                     ]);
 
-                $messaging->send($message);
-                
-                \Log::info('FCM notification sent successfully for device_id: ' . $fcmToken);
+                    Log::info("FCM notification sent successfully using customer FCM token for ad #{$model->id}");
+                }
             } catch (\Throwable $e) {
-                \Log::error('FCM send failed for device_id ' . ($model->device_id ?? 'unknown') . ': ' . $e->getMessage());
+                Log::error("FCM send failed for ad #{$model->id}: " . $e->getMessage());
             }
         } else {
             // subcategory-only update (no notifications)
@@ -461,8 +487,9 @@ class AdminAuthController extends Controller
 
             if ($token) {
                 $firebaseService = new FirebaseNotificationService();
-                $title = '🎉 Referral Reward! | रेफरल इनाम';
-                $body  = '🎉 Congratulations! 100 Poster Credits have been added to your account.';
+                $content = NotificationContent::referralReward(100, 'en');
+                $title   = $content['title'];
+                $body    = $content['body'];
 
                 $firebaseService->sendToToken($token, $title, $body, [
                     'type'          => 'referral_credit',
