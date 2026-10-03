@@ -13,6 +13,7 @@ use App\Models\Offer;
 use App\Models\Plan;
 use App\Models\Notification;
 use App\Models\Payment;
+use App\Models\UgcReport;
 use App\Models\CouponIncentive;
 use App\Services\PaymentService;
 
@@ -387,6 +388,27 @@ class AdminAuthController extends Controller
     {
         $referrals = Referral::orderBy('created_at', 'desc')->get();
         return $this->renderDashboard('referrals', ['referrals' => $referrals]);
+    }
+
+    public function ugcReports()
+    {
+        $reports = UgcReport::latest()->paginate(25);
+        $jobIds = $reports->getCollection()
+            ->where('content_type', 'job')
+            ->pluck('content_id');
+        $offerIds = $reports->getCollection()
+            ->where('content_type', 'offer')
+            ->pluck('content_id');
+
+        $jobs = Job::whereIn('id', $jobIds)->get()->keyBy('id');
+        $offers = Offer::whereIn('id', $offerIds)->get()->keyBy('id');
+
+        $reports->getCollection()->each(function (UgcReport $report) use ($jobs, $offers): void {
+            $posters = $report->content_type === 'job' ? $jobs : $offers;
+            $report->setAttribute('poster', $posters->get($report->content_id));
+        });
+
+        return $this->renderDashboard('reports', ['reports' => $reports]);
     }
 
     private function getAllAds()

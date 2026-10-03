@@ -129,6 +129,10 @@
                     <span class="menu-icon">🤝</span>
                     Referrals
                 </a>
+                <a href="{{ route('admin.ugcReports') }}" class="menu-item {{ ($active ?? null) === 'reports' ? 'active' : '' }}">
+                    <span class="menu-icon">🚩</span>
+                    UGC Reports
+                </a>
             </div>
             <div class="sidebar-footer">
                 {{-- Batch Status Mini Widget --}}
@@ -164,7 +168,10 @@
         <div class="main-content">
             <div class="topbar">
                 <div class="page-heading">
-                    @if(($active ?? 'all') === 'referrals')
+                    @if(($active ?? 'all') === 'reports')
+                        <h2>UGC Reports</h2>
+                        <p>Review reported posters and their submitted reasons</p>
+                    @elseif(($active ?? 'all') === 'referrals')
                         <h2>Referrals</h2>
                         <p>Referral records from the referral table</p>
                     @elseif(($active ?? 'all') === 'pricing')
@@ -175,7 +182,7 @@
                         <p>Overview of all ad listings</p>
                     @endif
                 </div>
-                @if(($active ?? 'all') !== 'referrals' && ($active ?? 'all') !== 'pricing')
+                @if(!in_array(($active ?? 'all'), ['referrals', 'pricing', 'reports'], true))
                     <div class="type-toggle">
                         <div class="pill">
                             <button id="toggle-jobs" class="active">Jobs</button>
@@ -186,7 +193,59 @@
             </div>
 
             <div class="content">
-                @if(($active ?? 'all') === 'referrals')
+                @if(($active ?? 'all') === 'reports')
+                    <div class="table-section">
+                        <div class="table-header">
+                            <h3>Reported Posters</h3>
+                        </div>
+
+                        @if($reports->count() > 0)
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>REPORTED AT</th>
+                                        <th>POSTER</th>
+                                        <th>REASON</th>
+                                        <th>DETAILS</th>
+                                        <th>AUTHOR ID</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($reports as $report)
+                                        <tr>
+                                            <td>{{ $report->created_at->format('M d, Y H:i') }}</td>
+                                            <td>
+                                                {{ strtoupper($report->content_type) }} #{{ $report->content_id }}
+                                                @if($report->poster)
+                                                    <br><small>{{ $report->poster->business_name }}</small>
+                                                @else
+                                                    <br><small>Poster no longer exists</small>
+                                                @endif
+                                            </td>
+                                            <td>{{ $report->reason }}</td>
+                                            <td>{{ $report->details ?: '—' }}</td>
+                                            <td>{{ $report->author_id ?: '—' }}</td>
+                                            <td>
+                                                @if($report->poster)
+                                                    <a href="{{ route('admin.ad.show', ['type' => $report->content_type, 'id' => $report->content_id]) }}" class="view-btn">Review Poster</a>
+                                                @else
+                                                    —
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <div style="padding: 12px 18px;">{{ $reports->links() }}</div>
+                        @else
+                            <div class="empty-state" style="display:block;">
+                                <p>No reported posters found</p>
+                            </div>
+                        @endif
+                    </div>
+
+                @elseif(($active ?? 'all') === 'referrals')
                     <div class="table-section">
                         <div class="table-header">
                             <h3>All Referrals</h3>

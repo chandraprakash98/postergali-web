@@ -17,6 +17,27 @@ curl "http://localhost:8000/api/v1/offers?latitude=40.7128&longitude=-74.0060&ra
 curl "http://localhost:8000/api/v1/jobs?latitude=40.7128&longitude=-74.0060&radius=10&per_page=25&page=1"
 ```
 
+### 4. Report a Poster
+Report a job or offer poster for review. Requests are limited to 10 per minute.
+
+```bash
+curl -X POST "http://localhost:8000/api/ugc/report" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "content_id": 123,
+    "content_type": "job",
+    "reason": "Spam",
+    "details": "This listing contains misleading information.",
+    "author_id": "poster-456"
+  }'
+```
+
+`content_type` must be `job` or `offer`; `details` and `author_id` are optional.
+Successful requests return `201 Created`, save the report for admins, and email
+`contact@postergali.com`. Admins can review reports in the **UGC Reports** section
+of the admin panel.
+
 ---
 
 ## Postman Examples

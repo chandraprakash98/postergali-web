@@ -9,7 +9,12 @@ use App\Http\Controllers\API\OtpController;
 use App\Http\Controllers\API\PlanController;
 use App\Http\Controllers\API\PosterController;
 use App\Http\Controllers\API\ReferralController;
+use App\Http\Controllers\API\UgcReportController;
 use App\Http\Controllers\AdminAuthController;
+
+Route::post('ugc/report', [UgcReportController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('ugc-reports.store');
 
 Route::prefix('v1')->group(function () {
     Route::get('categories', [CategoryController::class, 'index']);
