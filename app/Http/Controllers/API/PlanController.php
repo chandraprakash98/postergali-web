@@ -10,7 +10,10 @@ class PlanController extends Controller
 {
     public function index()
     {
-        return Plan::latest()->get();
+        return Plan::query()
+            ->orderByRaw('CAST(duration AS SIGNED) ASC')
+            ->orderBy('id')
+            ->get();
     }
 
     public function store(Request $request)

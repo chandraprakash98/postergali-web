@@ -137,6 +137,7 @@ class AdminAuthController extends Controller
                 'status' => 'required|in:approved,rejected',
                 'comment' => 'nullable|string|max:255',
                 'subcategory' => 'nullable|string|max:100',
+                'expires_at' => 'nullable|date',
             ]);
 
             $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
@@ -155,7 +156,11 @@ class AdminAuthController extends Controller
             $planDuration = Plan::find($model->plan_id)?->duration ?? '1 day';
             if ($data['status'] === 'approved') {
                 $model->approved_at = $model->approved_at ?: now();
-                $model->expires_at = $this->calculateExpiryFromDuration($model->approved_at, $planDuration);
+                if (!empty($data['expires_at'])) {
+                    $model->expires_at = Carbon::parse($data['expires_at'])->endOfDay();
+                } else {
+                    $model->expires_at = $this->calculateExpiryFromDuration($model->approved_at, $planDuration);
+                }
             } else {
                 $model->approved_at = null;
                 $model->expires_at = null;
@@ -648,28 +653,28 @@ class AdminAuthController extends Controller
         $approvedAt = $approvedAt instanceof \Carbon\Carbon ? $approvedAt : Carbon::parse($approvedAt);
         $value = trim(strtolower($duration));
 
-        if (preg_match('/^(\d+)\s*(day|days|d)$/', $value, $matches)) {
-            return $approvedAt->copy()->addDays((int) $matches[1]);
-        }
-        if (preg_match('/^(\d+)\s*(week|weeks|w)$/', $value, $matches)) {
-            return $approvedAt->copy()->addWeeks((int) $matches[1]);
-        }
-        if (preg_match('/^(\d+)\s*(month|months|m)$/', $value, $matches)) {
-            return $approvedAt->copy()->addMonths((int) $matches[1]);
-        }
-        if (preg_match('/^(\d+)\s*(year|years|y)$/', $value, $matches)) {
-            return $approvedAt->copy()->addYears((int) $matches[1]);
-        }
-        if (is_numeric($value)) {
-            return $approvedAt->copy()->addDays((int) $value);
+        if ($value === 'today' || $value === 'same day' || $value === '0' || $value === '0 day' || $value === '0 days') {
+            $expiry = $approvedAt->copy();
+        } elseif (preg_match('/^(\d+)\s*(day|days|d)$/', $value, $matches)) {
+            $expiry = $approvedAt->copy()->addDays((int) $matches[1]);
+        } elseif (preg_match('/^(\d+)\s*(week|weeks|w)$/', $value, $matches)) {
+            $expiry = $approvedAt->copy()->addWeeks((int) $matches[1]);
+        } elseif (preg_match('/^(\d+)\s*(month|months|m)$/', $value, $matches)) {
+            $expiry = $approvedAt->copy()->addMonths((int) $matches[1]);
+        } elseif (preg_match('/^(\d+)\s*(year|years|y)$/', $value, $matches)) {
+            $expiry = $approvedAt->copy()->addYears((int) $matches[1]);
+        } elseif (is_numeric($value)) {
+            $expiry = $approvedAt->copy()->addDays((int) $value);
+        } else {
+            $numericValue = (int) filter_var($value, FILTER_SANITIZE_NUMBER_INT);
+            if ($numericValue > 0) {
+                $expiry = $approvedAt->copy()->addDays($numericValue);
+            } else {
+                $expiry = $approvedAt->copy()->addDay();
+            }
         }
 
-        $numericValue = (int) filter_var($value, FILTER_SANITIZE_NUMBER_INT);
-        if ($numericValue > 0) {
-            return $approvedAt->copy()->addDays($numericValue);
-        }
-
-        return $approvedAt->copy()->addDay();
+        return $expiry->endOfDay();
     }
 
     private function getBatchStatus(): array

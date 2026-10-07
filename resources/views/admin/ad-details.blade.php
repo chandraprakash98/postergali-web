@@ -357,7 +357,7 @@
                                     <div>Approval</div>
                                     <div class="radio-group">
                                         <label class="radio-field">
-                                            <input type="radio" name="status" value="approved" {{ $ad->status === 'approved' ? 'checked' : '' }}>
+                                            <input type="radio" name="status" value="approved" {{ $ad->status === 'approved' ? 'checked' : '' }} {{ $ad->status === 'rejected' ? 'disabled' : '' }}>
                                             Approve
                                         </label>
                                         <label class="radio-field">

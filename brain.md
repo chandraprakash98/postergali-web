@@ -107,7 +107,7 @@ Customers have an account tied to their mobile number (`Customer`) and a wallet 
 ### D. Poster Approval & Expiry Lifecycle
 1. When created via API, posters (`Job` and `Offer`) have `status = 'pending'`.
 2. Admin logs into `/admin/dashboard`, reviews pending ads, and can:
-   - **Approve**: Sets `status = 'approved'`, `approved_at = now()`, calculates `expires_at = approved_at + plan_duration` (e.g. 30 days, 1 day, 7 days).
+   - **Approve**: Sets `status = 'approved'`, `approved_at = now()`, calculates `expires_at = (approved_at + plan_duration)->endOfDay()` (e.g. 30 days, 1 day, 7 days, ending at 23:59:59) or uses admin-specified custom expiry date at end of day.
    - **Reject**: Sets `status = 'rejected'`, records admin comment (`status_comment` / `status_note`).
 3. Public listing/search endpoints enforce `active()` scope:
    `approved_at IS NOT NULL AND (expires_at IS NULL OR expires_at > now())`.
