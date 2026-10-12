@@ -17,21 +17,6 @@
 <body>
 
 
-<div class="company-top-bar">
-    <div class="company-top-container">
-        <div class="company-line">
-            <strong>PosterGali</strong> is a product of
-            <strong>Unitygrid Private Limited</strong>
-        </div>
-        <div class="company-subline">
-            PosterGali is owned, operated and developed by
-            <strong>Unitygrid Private Limited</strong>,
-            an Indian technology company.
-        </div>
-    </div>
-</div>
-
-
 <!-- NAVBAR -->
 <nav class="navbar" id="navbar">
     <div class="logo-wrap">
@@ -457,9 +442,7 @@
         <div class="contact-info-pill">
             <div class="contact-info-item">
                 <div class="contact-icon-circle">
-                    <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L8 9.73a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z"></path>
-                    </svg>
+                    <img class="contact-icon-image" src="{{ asset('images/call.png') }}" alt="">
                 </div>
                 <div>
                     <div>+91 74709 98914</div>
@@ -468,10 +451,7 @@
             </div>
             <div class="contact-info-item">
                 <div class="contact-icon-circle">
-                    <svg class="contact-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                        <path d="m3 7 9 6 9-6"></path>
-                    </svg>
+                    <img class="contact-icon-image" src="{{ asset('images/mail.png') }}" alt="">
                 </div>
                 <div>contact@postergali.com</div>
             </div>
@@ -689,10 +669,10 @@
 
     <!-- Bottom Golden Bar -->
     <div class="footer-bottom-bar">
-        <div>© 2026 PosterGali. All rights reserved.</div>
+        <div>© 2026 PosterGali. All rights reserved. | Unitygrid Pvt Limited</div>
         <div class="footer-legal-links">
-            <a href="{{ url('/privacy-policy') }}">Privacy Policy</a>
-            <a href="{{ url('/terms-and-conditions') }}">Terms of Service</a>
+            <a href="{{ url('/privacy-policy') }}" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+            <a href="{{ url('/terms-and-conditions') }}" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
         </div>
         <div><a href="https://www.instagram.com/madeincode.in/" target="_blank" rel="noopener noreferrer">Developed by Chandra Prakash &amp; MadeInCode.in team</a></div>
     </div>
