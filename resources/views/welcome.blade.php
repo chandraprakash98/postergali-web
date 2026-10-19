@@ -343,10 +343,10 @@
     <div class="red-hero-card">
         <div class="persona-carousel" id="personaCarousel" tabindex="0" aria-label="PosterGali audience examples">
             <div class="persona-slides">
-                <img class="persona-slide active" src="{{ asset('images/mb1.png') }}" alt="Raghav, a local job seeker">
-                <img class="persona-slide" src="{{ asset('images/mb3.png') }}" alt="Ramesh Bhai, a mall retailer">
-                <img class="persona-slide" src="{{ asset('images/mb2.png') }}" alt="Sunita Tai, a home tiffin service provider">
-                <img class="persona-slide" src="{{ asset('images/mb4.png') }}" alt="Shrey, a local deal seeker">
+                <img class="persona-slide active" src="{{ asset('images/mb1.png') }}" data-mobile-src="{{ asset('images/mb1.png') }}" data-desktop-src="{{ asset('images/tl1.png') }}" alt="Raghav, a local job seeker">
+                <img class="persona-slide" src="{{ asset('images/mb3.png') }}" data-mobile-src="{{ asset('images/mb3.png') }}" data-desktop-src="{{ asset('images/mb3.png') }}" alt="Ramesh Bhai, a mall retailer">
+                <img class="persona-slide" src="{{ asset('images/mb2.png') }}" data-mobile-src="{{ asset('images/mb2.png') }}" data-desktop-src="{{ asset('images/tl2.png') }}" alt="Sunita Tai, a home tiffin service provider">
+                <img class="persona-slide" src="{{ asset('images/mb4.png') }}" data-mobile-src="{{ asset('images/mb4.png') }}" data-desktop-src="{{ asset('images/mb4.png') }}" alt="Shrey, a local deal seeker">
             </div>
         </div>
 
@@ -523,7 +523,9 @@
                     </span>
                 </div>
             </div>
-            <p id="contactFormError" class="contact-form-error" role="alert" hidden></p>
+            @if ($errors->any())
+                <p class="contact-form-error" role="alert">{{ $errors->first() }}</p>
+            @endif
             <button class="contact-submit-btn" type="submit">Send Message</button>
         </form>
     </div>
@@ -545,73 +547,165 @@
     <div class="faq-header-badge">FAQs</div>
     
     <div class="faq-accordion-box">
+        <h3 class="faq-category">General</h3>
         <div class="faq-item">
             <div class="faq-question">
-                <span>What is PosterGali?</span>
+                <span>1. What is PosterGali?</span>
                 <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
-                PosterGali is India's hyperlocal digital poster bazaar that connects local shops, vendors, and service providers with customers in their exact street or neighborhood.
+                PosterGali is a hyperlocal discovery platform where people and businesses of every size can post digital posters for jobs, offers, services and opportunities. Inspired by the simplicity of street posters, PosterGali helps local communities discover what matters nearby.
             </div>
         </div>
 
         <div class="faq-item">
             <div class="faq-question">
-                <span>Who can use PosterGali?</span>
+                <span>2. Who can use PosterGali?</span>
                 <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
-                Any local business owner, shopkeeper, vendor, recruiter, or local resident looking to share job openings, discount sales, or local announcements.
+                Anyone and everyone! Shop owners, job seekers, students, freelancers, or anyone looking to promote something locally within their area or city.
             </div>
         </div>
 
         <div class="faq-item">
             <div class="faq-question">
-                <span>Is it free or paid to use?</span>
+                <span>3. Is PosterGali free to use?</span>
                 <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
-                Posting your first poster is completely free! After that, posters start from as low as ₹19 per promotion.
+                Yes, browsing is free. Creating and publishing a poster has a nominal fee based on the duration.
+            </div>
+        </div>
+
+        <h3 class="faq-category">Posting Ads</h3>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>4. How do I create a poster?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                Simply click the “+” button on the Poster Wall screen to create a poster. You’ll be redirected to our chatbot, PosterMan, where you can add details like the headline, business name, phone number and location. Select a poster plan and make your payment to publish—it takes less than 2 minutes.
             </div>
         </div>
 
         <div class="faq-item">
             <div class="faq-question">
-                <span>How do I create a poster?</span>
+                <span>5. What kind of posters can I create?</span>
                 <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
-                Simply download the app, select a design template or upload your details, choose your target area, and publish in under 60 seconds.
+                You can create posters for:
+                <ul>
+                    <li>Job openings (shop staff, helpers, etc.)</li>
+                    <li>Local deals and offers (sales, special offers, etc.)</li>
+                    <li>Business promotions (new store openings, fresh stock, etc.)</li>
+                    <li>Services (tutors, classes, repairs, etc.)</li>
+                </ul>
             </div>
         </div>
 
         <div class="faq-item">
             <div class="faq-question">
-                <span>What kind of posters can I create?</span>
+                <span>6. How long will my poster stay live on the platform?</span>
                 <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
-                You can create hiring posters, discount sales, new arrivals, announcements, local services, and events.
+                While creating a poster, choose a poster plan that includes the duration and charges.
             </div>
         </div>
 
         <div class="faq-item">
             <div class="faq-question">
-                <span>How long will my poster stay live or be published?</span>
+                <span>7. Can I edit or delete my poster after it is published?</span>
                 <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
-                Depending on the plan selected, posters remain live from 7 days up to 30 days.
+                No, a poster cannot be edited once it has been published. It will be deleted automatically after it expires. To delete it before expiry, email <a href="mailto:contact@postergali.com">contact@postergali.com</a>.
+            </div>
+        </div>
+
+        <h3 class="faq-category">Jobs &amp; Hiring</h3>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>8. How can I find jobs near me?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                Browse the Jobs category to discover nearby opportunities posted by local businesses.
             </div>
         </div>
 
         <div class="faq-item">
             <div class="faq-question">
-                <span>Can I edit or delete my poster after it's published?</span>
+                <span>9. How do I apply for a job?</span>
                 <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
             </div>
             <div class="faq-answer">
-                Yes, you can easily edit text or delete your poster anytime directly from your profile dashboard in the app.
+                Contact the employer directly using the phone number or WhatsApp details provided in the poster.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>10. Is PosterGali safe for job seekers?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                We encourage all users to verify job-posting details before applying. Never share sensitive personal or financial information unless you’re confident the opportunity is genuine.
+            </div>
+        </div>
+
+        <h3 class="faq-category">Trust &amp; Safety</h3>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>11. Can I report a suspicious ad?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                Yes. Report an ad through the Contact Us page or email <a href="mailto:contact@postergali.com">contact@postergali.com</a>. Before publication, our team reviews every poster to ensure it complies with our guidelines. Posters found to be inappropriate, misleading or fraudulent are rejected.
+            </div>
+        </div>
+
+        <h3 class="faq-category">Business &amp; Promotions</h3>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>12. How can PosterGali help my business?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                PosterGali helps you attract nearby customers, promote your offers and events, advertise your products or services, and hire local talent—all from one platform.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>13. Will my poster reach people nearby?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                Yes. PosterGali is built for hyperlocal discovery, helping your poster reach people in and around your area. It can also be seen by users planning to visit your locality, increasing your visibility beyond your immediate neighborhood.
+            </div>
+        </div>
+
+        <h3 class="faq-category">Account &amp; Support</h3>
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>14. Do I need to create an account to create a poster?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                No, you don’t need an account to create a poster. We only verify your phone number during the poster-creation process.
+            </div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-question">
+                <span>15. How do I contact support?</span>
+                <span class="faq-chevron" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </div>
+            <div class="faq-answer">
+                Reach our support team through the Contact Us page on our website or email <a href="mailto:contact@postergali.com">contact@postergali.com</a>.
             </div>
         </div>
     </div>
@@ -674,7 +768,7 @@
             <a href="{{ url('/privacy-policy') }}" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
             <a href="{{ url('/terms-and-conditions') }}" target="_blank" rel="noopener noreferrer">Terms &amp; Conditions</a>
         </div>
-        <div><a href="https://www.instagram.com/madeincode.in/" target="_blank" rel="noopener noreferrer">Developed by Chandra Prakash &amp; MadeInCode.in team</a></div>
+        <div class="footer-credit"><a href="https://www.instagram.com/madeincode.in/" target="_blank" rel="noopener noreferrer">Crafted by <span class="footer-credit-heart" aria-hidden="true">&hearts;</span> MadeInCode</a></div>
     </div>
 </footer>
 
@@ -699,8 +793,6 @@
 
 <script>
     // ── Interactive FAQ Accordion ──
-    const contactForm = document.getElementById('contactForm');
-    const contactFormError = document.getElementById('contactFormError');
     const contactSuccessDialog = document.getElementById('contactSuccessDialog');
 
     function showContactSuccess() {
@@ -716,41 +808,9 @@
         });
     }
 
-    if (contactForm) {
-        contactForm.addEventListener('submit', async event => {
-            event.preventDefault();
-            const submitButton = contactForm.querySelector('.contact-submit-btn');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Sending...';
-            contactFormError.hidden = true;
-
-            try {
-                const response = await fetch(contactForm.action, {
-                    method: 'POST',
-                    body: new FormData(contactForm),
-                    headers: {
-                        Accept: 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(response.status === 422
-                        ? 'Please check the form and try again.'
-                        : 'We could not send your message. Please try again.');
-                }
-
-                contactForm.reset();
-                showContactSuccess();
-            } catch (error) {
-                contactFormError.textContent = error.message;
-                contactFormError.hidden = false;
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Send Message';
-            }
-        });
-    }
+    @if (session('contact_success'))
+        showContactSuccess();
+    @endif
 
     document.querySelectorAll('.faq-item').forEach(item => {
         item.addEventListener('click', () => {
@@ -821,6 +881,18 @@
     let personaIndex = 0;
     let personaTouchStart = 0;
 
+    function syncPersonaAssets() {
+        if (!personaSlides.length) return;
+        const isDesktop = window.matchMedia('(min-width: 901px)').matches;
+
+        personaSlides.forEach((slide) => {
+            const targetSrc = isDesktop ? slide.dataset.desktopSrc : slide.dataset.mobileSrc;
+            if (targetSrc) {
+                slide.src = targetSrc;
+            }
+        });
+    }
+
     function showPersona(index) {
         if (!personaSlides.length) return;
         personaIndex = (index + personaSlides.length) % personaSlides.length;
@@ -849,6 +921,8 @@
             if (Math.abs(distance) > 40) showPersona(personaIndex + (distance < 0 ? 1 : -1));
         }, { passive: true });
         personaDots.forEach((dot, dotIndex) => dot.addEventListener('click', () => showPersona(dotIndex)));
+        syncPersonaAssets();
+        window.addEventListener('resize', syncPersonaAssets);
         showPersona(0);
         setInterval(() => showPersona(personaIndex + 1), 5000);
     }

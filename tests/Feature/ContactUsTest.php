@@ -2,16 +2,17 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Mail\ContactUsMessage;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class ContactUsTest extends TestCase
 {
-    use RefreshDatabase;
-
-    public function test_contact_form_stores_message_and_returns_success_json(): void
+    public function test_contact_form_emails_message_and_redirects_with_success(): void
     {
-        $response = $this->postJson(route('contact-us.store'), [
+        Mail::fake();
+
+        $response = $this->post(route('contact-us.store'), [
             'first_name' => 'Asha',
             'last_name' => 'Sharma',
             'email' => 'asha@example.com',
@@ -19,22 +20,23 @@ class ContactUsTest extends TestCase
             'message' => 'I would like to know more about PosterGali.',
         ]);
 
-        $response->assertCreated();
-        $response->assertJsonPath('message', 'Thank you for contacting PosterGali. Our team will get back to you within 24 hours.');
-        $this->assertDatabaseHas('contact_us', [
-            'first_name' => 'Asha',
-            'last_name' => 'Sharma',
-            'email' => 'asha@example.com',
-            'phone' => '+91 9876543210',
-            'message' => 'I would like to know more about PosterGali.',
-        ]);
+        $response->assertRedirect('/#contact');
+        $response->assertSessionHas('contact_success', true);
+        Mail::assertSent(ContactUsMessage::class, function (ContactUsMessage $mail): bool {
+            return $mail->hasTo('officialcp1998@gmail.com')
+                && $mail->hasReplyTo('asha@example.com')
+                && $mail->contact['message'] === 'I would like to know more about PosterGali.';
+        });
     }
 
     public function test_contact_form_requires_all_fields(): void
     {
-        $response = $this->postJson(route('contact-us.store'), []);
+        Mail::fake();
 
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['first_name', 'last_name', 'email', 'phone', 'message']);
+        $response = $this->post(route('contact-us.store'), []);
+
+        $response->assertRedirect('/#contact');
+        $response->assertSessionHasErrors(['first_name', 'last_name', 'email', 'phone', 'message']);
+        Mail::assertNothingOutgoing();
     }
 }
