@@ -3,14 +3,30 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Plan;
+use Illuminate\Http\Request;
 
 class PlanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Plan::query()
+        $query = Plan::query();
+
+        if ($request->filled('type')) {
+            $type = strtoupper($request->input('type'));
+            $query->where('plan_type', $type);
+
+            if ($type === Plan::TYPE_CONSUMABLE) {
+                return $query->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->orderBy('price')
+                    ->get();
+            }
+        }
+
+        // Backward compatibility: default returns duration tiers ordered by duration
+        return $query
+            ->whereNotNull('duration')
             ->orderByRaw('CAST(duration AS SIGNED) ASC')
             ->orderBy('id')
             ->get();
@@ -20,8 +36,15 @@ class PlanController extends Controller
     {
         $data = $request->validate([
             'plan_title' => 'required',
-            'duration' => 'required',
-            'price' => 'required|numeric'
+            'duration' => 'nullable',
+            'price' => 'required|numeric',
+            'plan_code' => 'nullable|string|unique:plans,plan_code',
+            'product_id' => 'nullable|string|unique:plans,product_id',
+            'credits' => 'nullable|integer',
+            'currency' => 'nullable|string|size:3',
+            'plan_type' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+            'sort_order' => 'nullable|integer',
         ]);
 
         return Plan::create($data);

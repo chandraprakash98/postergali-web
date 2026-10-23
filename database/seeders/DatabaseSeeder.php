@@ -39,5 +39,8 @@ class DatabaseSeeder extends Seeder
 
         // Seed ad subcategories (job & offer)
         $this->call(AdSubcategorySeeder::class);
+
+        // Seed consumable credit packages
+        $this->call(CreditPackagePlanSeeder::class);
     }
 }

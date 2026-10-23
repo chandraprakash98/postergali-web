@@ -19,6 +19,26 @@ class Customer extends Model
         return $this->hasMany(Payment::class, 'customer_id', 'customer_id');
     }
 
+    public function creditWallet(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(CustomerCredit::class, 'customer_id', 'customer_id');
+    }
+
+    public function paymentTransactions(): HasMany
+    {
+        return $this->hasMany(PaymentTransaction::class, 'customer_id', 'customer_id');
+    }
+
+    public function creditLedger(): HasMany
+    {
+        return $this->hasMany(CreditLedger::class, 'customer_id', 'customer_id');
+    }
+
+    public function accessTokens(): HasMany
+    {
+        return $this->hasMany(CustomerAccessToken::class, 'customer_id', 'customer_id');
+    }
+
     protected static function booted(): void
     {
         static::creating(function (Customer $customer): void {

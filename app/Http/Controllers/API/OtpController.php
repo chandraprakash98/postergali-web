@@ -37,7 +37,21 @@ class OtpController extends Controller
             throw ValidationException::withMessages(['otp' => ['The OTP is invalid or expired.']]);
         }
 
-        return response()->json(['success' => true, 'message' => 'OTP verified successfully.']);
+        $customer = \App\Models\Customer::firstOrCreate(['mobile' => $mobile]);
+        \App\Models\CustomerCredit::firstOrCreate(
+            ['customer_id' => $customer->customer_id],
+            ['balance' => 1000.00]
+        );
+
+        $tokenData = \App\Models\CustomerAccessToken::createToken($customer);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'OTP verified successfully.',
+            'customer_id' => $customer->customer_id,
+            'token' => $tokenData['plainTextToken'],
+            'token_type' => 'Bearer',
+        ]);
     }
 
     private function mobile(Request $request): string

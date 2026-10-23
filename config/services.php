@@ -43,4 +43,19 @@ return [
         'timeout' => (int) env('BULK_SMS_TIMEOUT', 10),
     ],
 
+    'razorpay' => [
+        'key_id' => env('RAZORPAY_KEY_ID', ''),
+        'key_secret' => env('RAZORPAY_KEY_SECRET', ''),
+        'webhook_secret' => env('RAZORPAY_WEBHOOK_SECRET', ''),
+        'api_url' => env('RAZORPAY_API_URL', 'https://api.razorpay.com/v1'),
+    ],
+
+    'apple' => [
+        'bundle_id' => env('APPLE_BUNDLE_ID', 'com.postergali.postergali'),
+        'key_id' => env('APPLE_KEY_ID', ''),
+        'issuer_id' => env('APPLE_ISSUER_ID', ''),
+        'private_key' => env('APPLE_PRIVATE_KEY', ''),
+        'environment' => env('APPLE_ENVIRONMENT', 'Sandbox'),
+    ],
+
 ];
