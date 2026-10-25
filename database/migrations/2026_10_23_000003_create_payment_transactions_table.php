@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->uuid('transaction_uuid')->unique();
             $table->string('customer_id', 50)->index();
-            $table->unsignedBigInteger('plan_id')->index();
+            $table->unsignedBigInteger('credit_pack_id')->nullable()->index();
+            $table->unsignedBigInteger('plan_id')->nullable()->index();
 
             $table->string('payment_provider', 30)->index(); // RAZORPAY or APPLE_IAP
             $table->decimal('amount', 10, 2);
@@ -51,9 +52,9 @@ return new class extends Migration
                 ->on('customers')
                 ->onDelete('cascade');
 
-            $table->foreign('plan_id')
+            $table->foreign('credit_pack_id')
                 ->references('id')
-                ->on('plans')
+                ->on('credit_packs')
                 ->onDelete('restrict');
         });
     }

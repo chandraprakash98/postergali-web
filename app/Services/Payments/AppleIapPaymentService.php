@@ -2,6 +2,7 @@
 
 namespace App\Services\Payments;
 
+use App\Models\CreditPack;
 use App\Models\Plan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +31,7 @@ class AppleIapPaymentService
      *     is_revoked: bool
      * }
      */
-    public function verifyTransaction(string $transactionData, Plan $expectedPlan): array
+    public function verifyTransaction(string $transactionData, CreditPack|Plan $expectedPlan): array
     {
         $decoded = $this->decodeTransactionPayload($transactionData);
 

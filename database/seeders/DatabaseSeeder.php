@@ -40,7 +40,10 @@ class DatabaseSeeder extends Seeder
         // Seed ad subcategories (job & offer)
         $this->call(AdSubcategorySeeder::class);
 
-        // Seed consumable credit packages
-        $this->call(CreditPackagePlanSeeder::class);
+        // Seed poster duration plans for PosterMan chatbot
+        $this->call(PlanSeeder::class);
+
+        // Seed consumable credit packages for wallet
+        $this->call(CreditPackSeeder::class);
     }
 }

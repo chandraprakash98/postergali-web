@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CreditLedger;
+use App\Models\CreditPack;
 use App\Models\Customer;
 use App\Models\CustomerAccessToken;
 use App\Models\CustomerCredit;
@@ -10,7 +11,7 @@ use App\Models\PaymentTransaction;
 use App\Models\Plan;
 use App\Models\User;
 use App\Services\Payments\CreditTopupService;
-use Database\Seeders\CreditPackagePlanSeeder;
+use Database\Seeders\CreditPackSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -23,15 +24,15 @@ class CreditTopupAndLedgerTest extends TestCase
     protected Customer $customer;
     protected string $customerToken;
     protected User $adminUser;
-    protected Plan $consumablePlan;
+    protected CreditPack $consumablePlan;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         // Seed packages
-        $this->seed(CreditPackagePlanSeeder::class);
-        $this->consumablePlan = Plan::where('plan_code', 'credits_220')->firstOrFail();
+        $this->seed(CreditPackSeeder::class);
+        $this->consumablePlan = CreditPack::where('pack_code', 'credits_220')->firstOrFail();
 
         // Create test customer with token & initial wallet
         $this->customer = Customer::create([
@@ -94,8 +95,8 @@ class CreditTopupAndLedgerTest extends TestCase
                 ],
             ]);
 
-        $this->assertDatabaseHas('plans', [
-            'plan_code' => 'credits_5000',
+        $this->assertDatabaseHas('credit_packs', [
+            'pack_code' => 'credits_5000',
             'product_id' => 'com.postergali.credits.5000',
         ]);
     }
@@ -663,13 +664,13 @@ class CreditTopupAndLedgerTest extends TestCase
      */
     public function test_16_seeder_idempotency(): void
     {
-        $countBefore = Plan::consumable()->count();
+        $countBefore = CreditPack::count();
         $this->assertEquals(5, $countBefore);
 
         // Run seeder again
-        $this->seed(CreditPackagePlanSeeder::class);
+        $this->seed(CreditPackSeeder::class);
 
-        $countAfter = Plan::consumable()->count();
+        $countAfter = CreditPack::count();
         $this->assertEquals(5, $countAfter);
     }
 
@@ -680,8 +681,8 @@ class CreditTopupAndLedgerTest extends TestCase
     {
         // 1. Existing GET /api/v1/plans still returns duration tiers ordered by duration
         $durationPlans = [
-            Plan::create(['plan_title' => '1 Day Tier', 'duration' => '1 days', 'price' => 50, 'plan_type' => 'POSTER_DURATION']),
-            Plan::create(['plan_title' => '10 Day Tier', 'duration' => '10 days', 'price' => 200, 'plan_type' => 'POSTER_DURATION']),
+            Plan::create(['plan_title' => '1 Day Tier', 'duration' => '1 days', 'price' => 50]),
+            Plan::create(['plan_title' => '10 Day Tier', 'duration' => '10 days', 'price' => 200]),
         ];
 
         $response = $this->getJson('/api/v1/plans');

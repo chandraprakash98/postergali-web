@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\CreditLedger;
+use App\Models\CreditPack;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\PaymentTransaction;
@@ -26,10 +27,10 @@ class CreditTopupService
      */
     public function initiateRazorpayOrder(
         Customer $customer,
-        Plan $plan,
+        CreditPack|Plan $pack,
         ?string $idempotencyKey = null
     ): array {
-        $this->ensurePlanIsActiveConsumable($plan);
+        $this->ensurePackIsActiveConsumable($pack);
 
         // Check if an existing pending or successful transaction exists for this idempotency key
         if ($idempotencyKey) {
@@ -50,18 +51,19 @@ class CreditTopupService
             }
         }
 
-        $order = $this->razorpayService->createOrder($customer, $plan);
+        $order = $this->razorpayService->createOrder($customer, $pack);
 
         $transaction = PaymentTransaction::create([
             'transaction_uuid' => (string) Str::uuid(),
             'customer_id' => $customer->customer_id,
-            'plan_id' => $plan->id,
+            'credit_pack_id' => $pack->id,
+            'plan_id' => $pack->id,
             'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
-            'amount' => $plan->price,
-            'currency' => $plan->currency ?? 'INR',
-            'credits_to_add' => (int) $plan->credits,
+            'amount' => $pack->price,
+            'currency' => $pack->currency ?? 'INR',
+            'credits_to_add' => (int) $pack->credits,
             'provider_order_id' => $order['id'] ?? null,
-            'provider_product_id' => $plan->product_id,
+            'provider_product_id' => $pack->product_id,
             'status' => PaymentTransaction::STATUS_PENDING,
             'verification_status' => PaymentTransaction::VERIFICATION_UNVERIFIED,
             'idempotency_key' => $idempotencyKey,
@@ -84,19 +86,19 @@ class CreditTopupService
      */
     public function completeRazorpayPayment(
         Customer $customer,
-        Plan $plan,
+        CreditPack|Plan $pack,
         string $orderId,
         string $paymentId,
         string $signature,
         ?string $idempotencyKey = null
     ): PaymentTransaction {
-        $this->ensurePlanIsActiveConsumable($plan);
+        $this->ensurePackIsActiveConsumable($pack);
 
         // 1. Verify Razorpay cryptographic signature
         if (!$this->razorpayService->verifyPaymentSignature($orderId, $paymentId, $signature)) {
             $this->recordFailedTransaction(
                 $customer,
-                $plan,
+                $pack,
                 PaymentTransaction::PROVIDER_RAZORPAY,
                 $orderId,
                 $paymentId,
@@ -109,7 +111,7 @@ class CreditTopupService
         }
 
         // 2. Process database transaction with strict row locking & concurrency protection
-        return DB::transaction(function () use ($customer, $plan, $orderId, $paymentId, $idempotencyKey) {
+        return DB::transaction(function () use ($customer, $pack, $orderId, $paymentId, $idempotencyKey) {
             // Check if payment already processed by provider_payment_id
             $existing = PaymentTransaction::where('provider_payment_id', $paymentId)
                 ->lockForUpdate()
@@ -133,18 +135,21 @@ class CreditTopupService
                 $transaction = new PaymentTransaction([
                     'transaction_uuid' => (string) Str::uuid(),
                     'customer_id' => $customer->customer_id,
-                    'plan_id' => $plan->id,
+                    'credit_pack_id' => $pack->id,
+                    'plan_id' => $pack->id,
                     'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
-                    'amount' => $plan->price,
-                    'currency' => $plan->currency ?? 'INR',
-                    'credits_to_add' => (int) $plan->credits,
+                    'amount' => $pack->price,
+                    'currency' => $pack->currency ?? 'INR',
+                    'credits_to_add' => (int) $pack->credits,
                     'provider_order_id' => $orderId,
                     'idempotency_key' => $idempotencyKey,
                 ]);
             }
 
+            $packTitle = $pack->name ?? $pack->plan_title ?? 'Credit Pack';
+            $transaction->credit_pack_id = $pack->id;
             $transaction->provider_payment_id = $paymentId;
-            $transaction->provider_product_id = $plan->product_id;
+            $transaction->provider_product_id = $pack->product_id;
             $transaction->status = PaymentTransaction::STATUS_SUCCESS;
             $transaction->verification_status = PaymentTransaction::VERIFICATION_VERIFIED;
             $transaction->paid_at = now();
@@ -154,8 +159,8 @@ class CreditTopupService
             $this->allocateCreditsToCustomer(
                 $customer,
                 $transaction,
-                $plan,
-                "Credit Top-up: {$plan->plan_title} ({$plan->credits} credits)",
+                $pack,
+                "Credit Top-up: {$packTitle} ({$pack->credits} credits)",
                 PaymentTransaction::PROVIDER_RAZORPAY
             );
 
@@ -168,21 +173,21 @@ class CreditTopupService
      */
     public function completeAppleIapPurchase(
         Customer $customer,
-        Plan $plan,
+        CreditPack|Plan $pack,
         string $transactionReceiptOrJws,
         ?string $idempotencyKey = null
     ): PaymentTransaction {
-        $this->ensurePlanIsActiveConsumable($plan);
+        $this->ensurePackIsActiveConsumable($pack);
 
         // 1. Verify Apple IAP transaction data
-        $verifiedData = $this->appleIapService->verifyTransaction($transactionReceiptOrJws, $plan);
+        $verifiedData = $this->appleIapService->verifyTransaction($transactionReceiptOrJws, $pack);
         $providerTxnId = $verifiedData['transaction_id'];
         $originalTxnId = $verifiedData['original_transaction_id'] ?? null;
 
         // 2. Start database transaction with row locking
         return DB::transaction(function () use (
             $customer,
-            $plan,
+            $pack,
             $providerTxnId,
             $originalTxnId,
             $verifiedData,
@@ -201,14 +206,15 @@ class CreditTopupService
             $transaction->fill([
                 'transaction_uuid' => $transaction->transaction_uuid ?: (string) Str::uuid(),
                 'customer_id' => $customer->customer_id,
-                'plan_id' => $plan->id,
+                'credit_pack_id' => $pack->id,
+                'plan_id' => $pack->id,
                 'payment_provider' => PaymentTransaction::PROVIDER_APPLE_IAP,
-                'amount' => $plan->price,
-                'currency' => $plan->currency ?? 'INR',
-                'credits_to_add' => (int) $plan->credits,
+                'amount' => $pack->price,
+                'currency' => $pack->currency ?? 'INR',
+                'credits_to_add' => (int) $pack->credits,
                 'provider_transaction_id' => $providerTxnId,
                 'provider_original_transaction_id' => $originalTxnId,
-                'provider_product_id' => $plan->product_id,
+                'provider_product_id' => $pack->product_id,
                 'status' => PaymentTransaction::STATUS_SUCCESS,
                 'verification_status' => PaymentTransaction::VERIFICATION_VERIFIED,
                 'idempotency_key' => $idempotencyKey,
@@ -217,12 +223,14 @@ class CreditTopupService
             ]);
             $transaction->save();
 
+            $packTitle = $pack->name ?? $pack->plan_title ?? 'Credit Pack';
+
             // Grant credits atomically
             $this->allocateCreditsToCustomer(
                 $customer,
                 $transaction,
-                $plan,
-                "Credit Top-up: {$plan->plan_title} ({$plan->credits} credits)",
+                $pack,
+                "Credit Top-up: {$packTitle} ({$pack->credits} credits)",
                 PaymentTransaction::PROVIDER_APPLE_IAP
             );
 
@@ -231,28 +239,29 @@ class CreditTopupService
     }
 
     /**
-     * Process Razorpay verified Webhook.
+     * Process asynchronous Razorpay Webhook.
      */
     public function processRazorpayWebhook(array $payload, string $rawBody, string $signature): ?PaymentTransaction
     {
         if (!$this->razorpayService->verifyWebhookSignature($rawBody, $signature)) {
-            Log::warning('Razorpay webhook signature mismatch.');
+            Log::warning('Razorpay webhook signature verification failed.');
             throw new RuntimeException('Invalid webhook signature.');
         }
 
-        $event = $payload['event'] ?? null;
+        $event = $payload['event'] ?? '';
+        $paymentEntity = $payload['payload']['payment']['entity'] ?? [];
+        $orderId = $paymentEntity['order_id'] ?? null;
+        $paymentId = $paymentEntity['id'] ?? null;
+        $status = $paymentEntity['status'] ?? '';
 
-        if ($event === 'payment.captured' || $event === 'order.paid') {
-            $paymentEntity = $payload['payload']['payment']['entity'] ?? [];
-            $orderId = $paymentEntity['order_id'] ?? null;
-            $paymentId = $paymentEntity['id'] ?? null;
-
+        if ($event === 'payment.captured' || ($event === 'order.paid' && $status === 'captured')) {
             if (!$orderId || !$paymentId) {
                 return null;
             }
 
             return DB::transaction(function () use ($orderId, $paymentId, $paymentEntity) {
                 $transaction = PaymentTransaction::where('provider_order_id', $orderId)
+                    ->orWhere('provider_payment_id', $paymentId)
                     ->lockForUpdate()
                     ->first();
 
@@ -262,29 +271,36 @@ class CreditTopupService
                 }
 
                 if ($transaction->status === PaymentTransaction::STATUS_SUCCESS) {
-                    return $transaction; // Already processed
+                    return $transaction;
                 }
 
                 $customer = Customer::where('customer_id', $transaction->customer_id)->first();
-                $plan = Plan::find($transaction->plan_id);
+                $pack = CreditPack::find($transaction->credit_pack_id ?? $transaction->plan_id);
 
-                if (!$customer || !$plan) {
+                if (!$customer || !$pack) {
+                    Log::error('Razorpay webhook missing customer or credit pack context', [
+                        'order_id' => $orderId,
+                        'payment_id' => $paymentId,
+                    ]);
                     return null;
                 }
 
+                $transaction->credit_pack_id = $pack->id;
                 $transaction->provider_payment_id = $paymentId;
+                $transaction->provider_product_id = $pack->product_id;
                 $transaction->status = PaymentTransaction::STATUS_SUCCESS;
                 $transaction->verification_status = PaymentTransaction::VERIFICATION_VERIFIED;
                 $transaction->paid_at = now();
                 $transaction->raw_payload = array_merge($transaction->raw_payload ?? [], ['webhook' => $paymentEntity]);
                 $transaction->save();
 
+                $packTitle = $pack->name ?? $pack->plan_title ?? 'Credit Pack';
                 $this->allocateCreditsToCustomer(
                     $customer,
                     $transaction,
-                    $plan,
-                    "Credit Top-up: {$plan->plan_title} ({$plan->credits} credits) [Webhook]",
-                    PaymentTransaction::PROVIDER_RAZORPAY
+                    $pack,
+                    "Credit Top-up: {$packTitle} ({$pack->credits} credits)",
+                    'razorpay_webhook'
                 );
 
                 return $transaction;
@@ -292,10 +308,6 @@ class CreditTopupService
         }
 
         if ($event === 'payment.failed') {
-            $paymentEntity = $payload['payload']['payment']['entity'] ?? [];
-            $orderId = $paymentEntity['order_id'] ?? null;
-            $paymentId = $paymentEntity['id'] ?? null;
-
             if ($orderId) {
                 $transaction = PaymentTransaction::where('provider_order_id', $orderId)->first();
                 if ($transaction && $transaction->status === PaymentTransaction::STATUS_PENDING) {
@@ -305,6 +317,7 @@ class CreditTopupService
                         'failure_code' => $paymentEntity['error_code'] ?? 'PAYMENT_FAILED',
                         'failure_reason' => $paymentEntity['error_description'] ?? 'Payment failed via webhook',
                     ]);
+                    return $transaction;
                 }
             }
         }
@@ -312,61 +325,69 @@ class CreditTopupService
         return null;
     }
 
+    public function handleRazorpayWebhook(array $payload, string $rawBody, string $signature): array
+    {
+        $txn = $this->processRazorpayWebhook($payload, $rawBody, $signature);
+        return [
+            'status' => $txn ? 'processed' : 'ignored',
+            'transaction_id' => $txn?->transaction_uuid,
+        ];
+    }
+
     /**
-     * Process Apple App Store Server Notification V2 (Webhook).
+     * Process Apple Server-to-Server V2 Webhook / Refund notification.
      */
     public function processAppleWebhook(array $payload, string $rawBody): ?PaymentTransaction
     {
-        $decoded = $this->appleIapService->decodeNotificationPayload($payload);
-        $notificationType = $decoded['notificationType'] ?? null;
-        $subtype = $decoded['subtype'] ?? null;
+        $notificationType = $payload['notificationType'] ?? '';
+        $subtype = $payload['subtype'] ?? '';
+        $signedTransactionInfo = $payload['data']['signedTransactionInfo'] ?? null;
 
-        Log::info("Apple Webhook received: type={$notificationType}, subtype={$subtype}");
+        if (!$signedTransactionInfo) {
+            return null;
+        }
 
-        // Handle REFUND / REVOCATION
-        if ($notificationType === 'REFUND' || $notificationType === 'REVOKE') {
-            $transactionData = $decoded['data']['signedTransactionInfo'] ?? null;
-            if ($transactionData) {
-                $info = $this->appleIapService->decodeTransactionPayload($transactionData);
-                $txnId = $info['transaction_id'] ?? null;
+        $decoded = $this->appleIapService->decodeTransactionPayload($signedTransactionInfo);
+        $transactionId = $decoded['transaction_id'] ?? null;
 
-                if ($txnId) {
-                    $transaction = PaymentTransaction::where('provider_transaction_id', $txnId)->first();
-                    if ($transaction && $transaction->status === PaymentTransaction::STATUS_SUCCESS) {
-                        $this->processCompensatingReversal(
-                            $transaction,
-                            "Apple IAP refund: {$notificationType} ({$subtype})",
-                            'apple_webhook'
-                        );
-                        return $transaction;
-                    }
-                }
+        if (!$transactionId) {
+            return null;
+        }
+
+        if (in_array($notificationType, ['REVOKE', 'REFUND'], true)) {
+            $transaction = PaymentTransaction::where('provider_transaction_id', $transactionId)->first();
+
+            if ($transaction && $transaction->status === PaymentTransaction::STATUS_SUCCESS) {
+                $reason = "Apple StoreKit {$notificationType} " . ($subtype ? "({$subtype})" : '');
+                $this->processRefundAndReversal($transaction, $reason, 'apple_webhook');
+
+                return $transaction;
             }
         }
 
         return null;
     }
 
+    public function handleAppleWebhook(array $payload): array
+    {
+        $txn = $this->processAppleWebhook($payload, '');
+        return [
+            'status' => $txn ? 'refunded' : 'ignored',
+            'transaction_uuid' => $txn?->transaction_uuid,
+        ];
+    }
+
     /**
-     * Atomically allocate credits, append ledger record, and update balance.
+     * Atomically increment customer wallet and append ledger entry.
      */
-    public function allocateCreditsToCustomer(
+    protected function allocateCreditsToCustomer(
         Customer $customer,
         PaymentTransaction $transaction,
-        Plan $plan,
+        CreditPack|Plan $pack,
         string $description,
-        string $createdBy
+        string $provider
     ): CreditLedger {
-        // Ensure exactly one ledger entry exists for this payment transaction
-        $existingEntry = CreditLedger::where('payment_transaction_id', $transaction->id)
-            ->where('transaction_category', CreditLedger::CATEGORY_WALLET_TOPUP)
-            ->first();
-
-        if ($existingEntry) {
-            return $existingEntry;
-        }
-
-        // Row-level lock on CustomerCredit
+        // Lock customer credits row
         $creditWallet = CustomerCredit::where('customer_id', $customer->customer_id)
             ->lockForUpdate()
             ->first();
@@ -376,13 +397,16 @@ class CreditTopupService
                 'customer_id' => $customer->customer_id,
                 'balance' => 0.00,
             ]);
+            $creditWallet = CustomerCredit::where('customer_id', $customer->customer_id)
+                ->lockForUpdate()
+                ->first();
         }
 
-        $balanceBefore = number_format((float) $creditWallet->balance, 2, '.', '');
-        $creditsToAdd = number_format((float) $transaction->credits_to_add, 2, '.', '');
-        $balanceAfter = bcadd($balanceBefore, $creditsToAdd, 2);
+        $balanceBefore = (float) $creditWallet->balance;
+        $creditsToAdd = (float) $pack->credits;
+        $balanceAfter = $balanceBefore + $creditsToAdd;
 
-        // Append-only ledger record
+        // Append to immutable ledger
         $ledgerEntry = CreditLedger::create([
             'ledger_uuid' => (string) Str::uuid(),
             'customer_id' => $customer->customer_id,
@@ -396,12 +420,11 @@ class CreditTopupService
             'reference_type' => 'payment_transaction',
             'reference_id' => $transaction->transaction_uuid,
             'description' => $description,
-            'idempotency_key' => $transaction->idempotency_key ? 'ledger_' . $transaction->idempotency_key : 'ledger_txn_' . $transaction->transaction_uuid,
-            'created_by' => $createdBy,
+            'created_by' => $provider,
             'created_at' => now(),
         ]);
 
-        // Update balance
+        // Update wallet balance
         $creditWallet->balance = (float) $balanceAfter;
         $creditWallet->save();
 
@@ -409,9 +432,9 @@ class CreditTopupService
     }
 
     /**
-     * Process compensating reversal (append-only ledger entry) when a transaction is refunded.
+     * Process refund and append compensating debit reversal.
      */
-    public function processCompensatingReversal(
+    public function processRefundAndReversal(
         PaymentTransaction $transaction,
         string $reason,
         ?string $createdBy = null
@@ -423,14 +446,9 @@ class CreditTopupService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $balanceBefore = number_format((float) $creditWallet->balance, 2, '.', '');
-            $debitAmount = number_format((float) $transaction->credits_to_add, 2, '.', '');
-
-            // Deduct credits or floor at 0
-            $balanceAfter = bcsub($balanceBefore, $debitAmount, 2);
-            if (bccomp($balanceAfter, '0.00', 2) < 0) {
-                $balanceAfter = '0.00';
-            }
+            $balanceBefore = (float) $creditWallet->balance;
+            $debitAmount = (float) $transaction->credits_to_add;
+            $balanceAfter = max(0.00, $balanceBefore - $debitAmount);
 
             $ledgerEntry = CreditLedger::create([
                 'ledger_uuid' => (string) Str::uuid(),
@@ -459,9 +477,17 @@ class CreditTopupService
         });
     }
 
+    public function processCompensatingReversal(
+        PaymentTransaction $transaction,
+        string $reason,
+        ?string $createdBy = null
+    ): CreditLedger {
+        return $this->processRefundAndReversal($transaction, $reason, $createdBy);
+    }
+
     protected function recordFailedTransaction(
         Customer $customer,
-        Plan $plan,
+        CreditPack|Plan $pack,
         string $provider,
         ?string $orderId,
         ?string $paymentId,
@@ -472,11 +498,12 @@ class CreditTopupService
         return PaymentTransaction::create([
             'transaction_uuid' => (string) Str::uuid(),
             'customer_id' => $customer->customer_id,
-            'plan_id' => $plan->id,
+            'credit_pack_id' => $pack->id,
+            'plan_id' => $pack->id,
             'payment_provider' => $provider,
-            'amount' => $plan->price,
-            'currency' => $plan->currency ?? 'INR',
-            'credits_to_add' => (int) $plan->credits,
+            'amount' => $pack->price,
+            'currency' => $pack->currency ?? 'INR',
+            'credits_to_add' => (int) $pack->credits,
             'provider_order_id' => $orderId,
             'provider_payment_id' => $paymentId,
             'status' => PaymentTransaction::STATUS_FAILED,
@@ -487,18 +514,19 @@ class CreditTopupService
         ]);
     }
 
-    protected function ensurePlanIsActiveConsumable(Plan $plan): void
+    public function ensurePackIsActiveConsumable(CreditPack|Plan $pack): void
     {
-        if ($plan->plan_type !== Plan::TYPE_CONSUMABLE) {
-            throw new InvalidArgumentException("Selected plan is not a consumable credit package.");
-        }
-
-        if (!$plan->is_active) {
+        if (isset($pack->is_active) && !$pack->is_active) {
             throw new InvalidArgumentException("Selected credit package is currently inactive.");
         }
 
-        if (empty($plan->credits) || $plan->credits < 1) {
+        if (empty($pack->credits) || $pack->credits < 1) {
             throw new InvalidArgumentException("Selected credit package has no valid credit allocation.");
         }
+    }
+
+    public function ensurePlanIsActiveConsumable(CreditPack|Plan $pack): void
+    {
+        $this->ensurePackIsActiveConsumable($pack);
     }
 }

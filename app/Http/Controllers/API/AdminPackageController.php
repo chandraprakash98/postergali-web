@@ -6,25 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePlanRequest;
 use App\Http\Requests\UpdatePlanRequest;
 use App\Models\CreditLedger;
+use App\Models\CreditPack;
 use App\Models\PaymentTransaction;
-use App\Models\Plan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AdminPackageController extends Controller
 {
     /**
-     * List all packages (consumable and duration tiers) with administrative filters.
+     * List all credit packages with administrative filters.
      * 
      * @route GET /api/v1/admin/packages
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Plan::query();
-
-        if ($request->filled('type')) {
-            $query->where('plan_type', strtoupper($request->input('type')));
-        }
+        $query = CreditPack::query();
 
         if ($request->has('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
@@ -41,54 +37,53 @@ class AdminPackageController extends Controller
     }
 
     /**
-     * View single package details.
+     * View single credit package details.
      * 
      * @route GET /api/v1/admin/packages/{id}
      */
     public function show(int $id): JsonResponse
     {
-        $plan = Plan::findOrFail($id);
+        $pack = CreditPack::findOrFail($id);
 
         return response()->json([
             'success' => true,
-            'data' => $plan,
+            'data' => $pack,
         ]);
     }
 
     /**
-     * Create a new package (validated with StorePlanRequest).
+     * Create a new credit package.
      * 
      * @route POST /api/v1/admin/packages
      */
     public function store(StorePlanRequest $request): JsonResponse
     {
-        $validated = $request->validated();
-
-        $plan = Plan::create($validated);
+        $data = $request->getCreditPackData();
+        $pack = CreditPack::create($data);
 
         return response()->json([
             'success' => true,
             'message' => 'Package created successfully.',
-            'data' => $plan,
+            'data' => $pack,
         ], 201);
     }
 
     /**
-     * Update an existing package (validated with UpdatePlanRequest).
+     * Update an existing credit package.
      * 
      * @route PUT /api/v1/admin/packages/{id}
      */
     public function update(UpdatePlanRequest $request, int $id): JsonResponse
     {
-        $plan = Plan::findOrFail($id);
-        $validated = $request->validated();
+        $pack = CreditPack::findOrFail($id);
+        $data = $request->getCreditPackData();
 
-        $plan->update($validated);
+        $pack->update($data);
 
         return response()->json([
             'success' => true,
             'message' => 'Package updated successfully.',
-            'data' => $plan,
+            'data' => $pack,
         ]);
     }
 
@@ -99,21 +94,21 @@ class AdminPackageController extends Controller
      */
     public function toggleStatus(Request $request, int $id): JsonResponse
     {
-        $plan = Plan::findOrFail($id);
+        $pack = CreditPack::findOrFail($id);
 
         $validated = $request->validate([
             'is_active' => ['required', 'boolean'],
         ]);
 
-        $plan->is_active = $validated['is_active'];
-        $plan->save();
+        $pack->is_active = $validated['is_active'];
+        $pack->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Package status updated.',
             'data' => [
-                'id' => $plan->id,
-                'is_active' => $plan->is_active,
+                'id' => $pack->id,
+                'is_active' => $pack->is_active,
             ],
         ]);
     }
@@ -125,7 +120,7 @@ class AdminPackageController extends Controller
      */
     public function transactions(Request $request): JsonResponse
     {
-        $query = PaymentTransaction::with(['customer', 'plan']);
+        $query = PaymentTransaction::with(['customer', 'creditPack']);
 
         if ($request->filled('customer_id')) {
             $query->where('customer_id', $request->input('customer_id'));

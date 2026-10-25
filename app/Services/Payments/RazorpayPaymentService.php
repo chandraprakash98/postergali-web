@@ -2,6 +2,7 @@
 
 namespace App\Services\Payments;
 
+use App\Models\CreditPack;
 use App\Models\Customer;
 use App\Models\Plan;
 use Illuminate\Support\Facades\Http;
@@ -24,23 +25,23 @@ class RazorpayPaymentService
     }
 
     /**
-     * Create a Razorpay order for a customer and plan.
+     * Create a Razorpay order for a customer and credit pack.
      * Note: Amount is in paise (INR * 100).
      */
-    public function createOrder(Customer $customer, Plan $plan, ?string $receipt = null): array
+    public function createOrder(Customer $customer, CreditPack|Plan $pack, ?string $receipt = null): array
     {
-        $amountInSubunits = (int) round((float) $plan->price * 100);
+        $amountInSubunits = (int) round((float) $pack->price * 100);
 
         $payload = [
             'amount' => $amountInSubunits,
-            'currency' => $plan->currency ?? 'INR',
+            'currency' => $pack->currency ?? 'INR',
             'receipt' => $receipt ?? 'rcpt_' . bin2hex(random_bytes(8)),
             'notes' => [
                 'customer_id' => $customer->customer_id,
                 'mobile' => $customer->mobile,
-                'plan_id' => (string) $plan->id,
-                'plan_code' => (string) $plan->plan_code,
-                'credits' => (string) $plan->credits,
+                'credit_pack_id' => (string) $pack->id,
+                'pack_code' => (string) ($pack->pack_code ?? $pack->plan_code ?? ''),
+                'credits' => (string) $pack->credits,
             ],
         ];
 

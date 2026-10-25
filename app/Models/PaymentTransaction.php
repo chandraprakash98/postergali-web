@@ -30,6 +30,7 @@ class PaymentTransaction extends Model
     protected $fillable = [
         'transaction_uuid',
         'customer_id',
+        'credit_pack_id',
         'plan_id',
         'payment_provider',
         'amount',
@@ -64,6 +65,14 @@ class PaymentTransaction extends Model
             if (empty($txn->transaction_uuid)) {
                 $txn->transaction_uuid = (string) Str::uuid();
             }
+
+            if (empty($txn->credit_pack_id) && !empty($txn->plan_id)) {
+                $txn->credit_pack_id = $txn->plan_id;
+            }
+
+            if (empty($txn->plan_id) && !empty($txn->credit_pack_id)) {
+                $txn->plan_id = $txn->credit_pack_id;
+            }
         });
     }
 
@@ -72,9 +81,14 @@ class PaymentTransaction extends Model
         return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
     }
 
+    public function creditPack(): BelongsTo
+    {
+        return $this->belongsTo(CreditPack::class, 'credit_pack_id');
+    }
+
     public function plan(): BelongsTo
     {
-        return $this->belongsTo(Plan::class, 'plan_id');
+        return $this->creditPack();
     }
 
     public function ledgerEntries(): HasMany

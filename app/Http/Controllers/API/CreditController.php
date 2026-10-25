@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\CreditLedger;
+use App\Models\CreditPack;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\PaymentTransaction;
@@ -28,19 +29,19 @@ class CreditController extends Controller
      */
     public function packages(): JsonResponse
     {
-        $packages = Plan::consumable()
-            ->active()
+        $packages = CreditPack::active()
             ->orderBy('sort_order')
             ->orderBy('price')
             ->get([
                 'id',
-                'plan_title',
-                'plan_code',
+                'name',
+                'name as plan_title',
+                'pack_code',
+                'pack_code as plan_code',
                 'product_id',
                 'credits',
                 'price',
                 'currency',
-                'plan_type',
                 'is_active',
                 'sort_order',
             ]);
@@ -58,11 +59,11 @@ class CreditController extends Controller
      */
     public function package(int|string $id): JsonResponse
     {
-        $package = Plan::consumable()->where(function ($query) use ($id) {
+        $package = CreditPack::where(function ($query) use ($id) {
             if (is_numeric($id)) {
                 $query->where('id', (int) $id);
             } else {
-                $query->where('plan_code', $id)->orWhere('product_id', $id);
+                $query->where('pack_code', $id)->orWhere('product_id', $id);
             }
         })->first();
 
@@ -449,9 +450,9 @@ class CreditController extends Controller
         }
     }
 
-    protected function resolveConsumablePlan(mixed $packageId, ?string $planCode): ?Plan
+    protected function resolveConsumablePlan(mixed $packageId, ?string $planCode): ?CreditPack
     {
-        $query = Plan::consumable()->active();
+        $query = CreditPack::active();
 
         if (!empty($packageId)) {
             if (is_numeric($packageId)) {
@@ -459,13 +460,13 @@ class CreditController extends Controller
             }
 
             return $query->where(function ($q) use ($packageId) {
-                $q->where('plan_code', $packageId)
+                $q->where('pack_code', $packageId)
                   ->orWhere('product_id', $packageId);
             })->first();
         }
 
         if (!empty($planCode)) {
-            return $query->where('plan_code', $planCode)->first();
+            return $query->where('pack_code', $planCode)->first();
         }
 
         return null;
