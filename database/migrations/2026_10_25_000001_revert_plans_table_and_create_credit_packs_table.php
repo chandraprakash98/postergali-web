@@ -12,75 +12,63 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Create credit_packs table for wallet top-up packages
-        if (!Schema::hasTable('credit_packs')) {
-            Schema::create('credit_packs', function (Blueprint $table) {
-                $table->id();
-                $table->string('name', 100);
-                $table->string('pack_code', 50)->unique();
-                $table->string('product_id', 150)->unique();
-                $table->unsignedInteger('credits');
-                $table->decimal('price', 10, 2);
-                $table->string('currency', 3)->default('INR');
-                $table->boolean('is_active')->default(true)->index();
-                $table->unsignedInteger('sort_order')->default(0)->index();
-                $table->timestamps();
-            });
-        }
+        Schema::disableForeignKeyConstraints();
 
-        // 2. Remove consumable wallet records from plans table so plans table only contains duration tiers
-        if (Schema::hasTable('plans') && Schema::hasColumn('plans', 'credits')) {
-            DB::table('plans')->whereNotNull('credits')->delete();
-        }
+        try {
+            // 1. Create credit_packs table for wallet top-up packages
+            if (!Schema::hasTable('credit_packs')) {
+                Schema::create('credit_packs', function (Blueprint $table) {
+                    $table->id();
+                    $table->string('name', 100);
+                    $table->string('pack_code', 50)->unique();
+                    $table->string('product_id', 150)->unique();
+                    $table->unsignedInteger('credits');
+                    $table->decimal('price', 10, 2);
+                    $table->string('currency', 3)->default('INR');
+                    $table->boolean('is_active')->default(true)->index();
+                    $table->unsignedInteger('sort_order')->default(0)->index();
+                    $table->timestamps();
+                });
+            }
 
-        // 3. Drop foreign key constraint on payment_transactions and transition to credit_pack_id
-        if (Schema::hasTable('payment_transactions')) {
-            if (DB::getDriverName() === 'mysql') {
-                try {
-                    // Check if foreign key exists before dropping
-                    $fkExists = DB::select("
-                        SELECT CONSTRAINT_NAME 
-                        FROM information_schema.TABLE_CONSTRAINTS 
-                        WHERE TABLE_SCHEMA = DATABASE() 
-                          AND TABLE_NAME = 'payment_transactions' 
-                          AND CONSTRAINT_NAME = 'payment_transactions_plan_id_foreign'
-                    ");
+            // 2. Drop foreign key constraint on payment_transactions first
+            if (Schema::hasTable('payment_transactions')) {
+                if (DB::getDriverName() === 'mysql') {
+                    try {
+                        $fkExists = DB::select("
+                            SELECT CONSTRAINT_NAME 
+                            FROM information_schema.TABLE_CONSTRAINTS 
+                            WHERE TABLE_SCHEMA = DATABASE() 
+                              AND TABLE_NAME = 'payment_transactions' 
+                              AND CONSTRAINT_NAME = 'payment_transactions_plan_id_foreign'
+                        ");
 
-                    if (!empty($fkExists)) {
-                        DB::statement("ALTER TABLE payment_transactions DROP FOREIGN KEY payment_transactions_plan_id_foreign");
+                        if (!empty($fkExists)) {
+                            DB::statement("ALTER TABLE payment_transactions DROP FOREIGN KEY payment_transactions_plan_id_foreign");
+                        }
+                    } catch (\Throwable $e) {
+                        // Ignore if foreign key does not exist
                     }
-                } catch (\Throwable $e) {
-                    // Ignore if foreign key does not exist
+                }
+
+                Schema::table('payment_transactions', function (Blueprint $table) {
+                    if (!Schema::hasColumn('payment_transactions', 'credit_pack_id')) {
+                        $table->unsignedBigInteger('credit_pack_id')->nullable()->after('customer_id')->index();
+                    }
+                });
+
+                // If plan_id exists and credit_pack_id is null, copy plan_id
+                if (Schema::hasColumn('payment_transactions', 'plan_id') && Schema::hasColumn('payment_transactions', 'credit_pack_id')) {
+                    DB::table('payment_transactions')
+                        ->whereNull('credit_pack_id')
+                        ->update(['credit_pack_id' => DB::raw('plan_id')]);
                 }
             }
 
-            Schema::table('payment_transactions', function (Blueprint $table) {
-                if (!Schema::hasColumn('payment_transactions', 'credit_pack_id')) {
-                    $table->unsignedBigInteger('credit_pack_id')->nullable()->after('customer_id')->index();
-                }
-            });
-
-            // If plan_id exists, migrate value to credit_pack_id
-            if (Schema::hasColumn('payment_transactions', 'plan_id') && Schema::hasColumn('payment_transactions', 'credit_pack_id')) {
-                DB::table('payment_transactions')
-                    ->whereNull('credit_pack_id')
-                    ->update(['credit_pack_id' => DB::raw('plan_id')]);
+            // 3. Remove consumable wallet records from plans table so plans table only contains duration tiers
+            if (Schema::hasTable('plans') && Schema::hasColumn('plans', 'credits')) {
+                DB::table('plans')->whereNotNull('credits')->delete();
             }
-
-            // Add foreign key constraint to credit_packs
-            if (DB::getDriverName() === 'mysql') {
-                try {
-                    Schema::table('payment_transactions', function (Blueprint $table) {
-                        $table->foreign('credit_pack_id')
-                            ->references('id')
-                            ->on('credit_packs')
-                            ->onDelete('restrict');
-                    });
-                } catch (\Throwable $e) {
-                    // Ignore if already exists
-                }
-            }
-        }
 
         // 4. Revert plans table: drop extra columns added for credit packs
         if (Schema::hasTable('plans')) {
@@ -107,7 +95,10 @@ return new class extends Migration
                 }
             });
         }
+    } finally {
+        Schema::enableForeignKeyConstraints();
     }
+}
 
     /**
      * Reverse the migrations.
