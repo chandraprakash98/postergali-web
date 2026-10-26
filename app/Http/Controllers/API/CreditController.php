@@ -321,7 +321,7 @@ class CreditController extends Controller
         $perPage = min((int) $request->input('per_page', 20), 100);
 
         $transactions = PaymentTransaction::byCustomer($customer->customer_id)
-            ->with(['plan:id,plan_title,plan_code,credits'])
+            ->with(['plan:id,name,pack_code,credits'])
             ->orderByDesc('id')
             ->paginate($perPage);
 

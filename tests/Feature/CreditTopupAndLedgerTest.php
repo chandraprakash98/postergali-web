@@ -610,6 +610,11 @@ class CreditTopupAndLedgerTest extends TestCase
         $responseB->assertStatus(200)
             ->assertJsonCount(0, 'data'); // Customer B sees 0 transactions
 
+        $responseA = $this->getJson('/api/v1/credits/transactions', $this->customerHeaders());
+        $responseA->assertStatus(200)
+            ->assertJsonPath('data.0.transaction_uuid', $txnA->transaction_uuid)
+            ->assertJsonPath('data.0.plan_title', $this->consumablePlan->name);
+
         // Customer B cannot view Customer A's single transaction by UUID
         $this->getJson("/api/v1/credits/transactions/{$txnA->transaction_uuid}", [
             'Authorization' => 'Bearer ' . $tokenB,
