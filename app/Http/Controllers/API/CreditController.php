@@ -240,7 +240,15 @@ class CreditController extends Controller
         } catch (ValidationException $e) {
             throw $e;
         } catch (Throwable $e) {
-            Log::error('Topup failed', ['error' => $e->getMessage()]);
+            Log::error('Topup failed', [
+                'customer_id' => $customer->customer_id,
+                'credit_pack_id' => $plan->id,
+                'payment_provider' => $provider,
+                'action' => $validated['action'] ?? null,
+                'order_id' => $validated['razorpay_order_id'] ?? null,
+                'payment_id' => $validated['razorpay_payment_id'] ?? null,
+                'error' => $e->getMessage(),
+            ]);
 
             return response()->json([
                 'success' => false,

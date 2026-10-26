@@ -39,6 +39,14 @@ class CreditTopupService
                 ->first();
 
             if ($existing) {
+                Log::info('Razorpay order initiation reused existing transaction', [
+                    'customer_id' => $customer->customer_id,
+                    'credit_pack_id' => $pack->id,
+                    'transaction_uuid' => $existing->transaction_uuid,
+                    'order_id' => $existing->provider_order_id,
+                    'status' => $existing->status,
+                ]);
+
                 return [
                     'transaction_uuid' => $existing->transaction_uuid,
                     'order_id' => $existing->provider_order_id,
@@ -70,6 +78,17 @@ class CreditTopupService
             'raw_payload' => $order,
         ]);
 
+        Log::info('Razorpay order initiation recorded', [
+            'customer_id' => $customer->customer_id,
+            'credit_pack_id' => $pack->id,
+            'transaction_uuid' => $transaction->transaction_uuid,
+            'order_id' => $transaction->provider_order_id,
+            'amount' => (float) $transaction->amount,
+            'currency' => $transaction->currency,
+            'credits_to_add' => $transaction->credits_to_add,
+            'status' => $transaction->status,
+        ]);
+
         return [
             'transaction_uuid' => $transaction->transaction_uuid,
             'order_id' => $transaction->provider_order_id,
@@ -94,8 +113,22 @@ class CreditTopupService
     ): PaymentTransaction {
         $this->ensurePackIsActiveConsumable($pack);
 
+        Log::info('Razorpay payment completion received', [
+            'customer_id' => $customer->customer_id,
+            'credit_pack_id' => $pack->id,
+            'order_id' => $orderId,
+            'payment_id' => $paymentId,
+        ]);
+
         // 1. Verify Razorpay cryptographic signature
         if (!$this->razorpayService->verifyPaymentSignature($orderId, $paymentId, $signature)) {
+            Log::warning('Razorpay payment signature verification failed', [
+                'customer_id' => $customer->customer_id,
+                'credit_pack_id' => $pack->id,
+                'order_id' => $orderId,
+                'payment_id' => $paymentId,
+            ]);
+
             $this->recordFailedTransaction(
                 $customer,
                 $pack,
@@ -111,13 +144,21 @@ class CreditTopupService
         }
 
         // 2. Process database transaction with strict row locking & concurrency protection
-        return DB::transaction(function () use ($customer, $pack, $orderId, $paymentId, $idempotencyKey) {
+        $transaction = DB::transaction(function () use ($customer, $pack, $orderId, $paymentId, $idempotencyKey) {
             // Check if payment already processed by provider_payment_id
             $existing = PaymentTransaction::where('provider_payment_id', $paymentId)
                 ->lockForUpdate()
                 ->first();
 
             if ($existing && $existing->status === PaymentTransaction::STATUS_SUCCESS) {
+                Log::info('Razorpay payment already processed', [
+                    'customer_id' => $customer->customer_id,
+                    'transaction_uuid' => $existing->transaction_uuid,
+                    'order_id' => $existing->provider_order_id ?? $orderId,
+                    'payment_id' => $existing->provider_payment_id ?? $paymentId,
+                    'status' => $existing->status,
+                ]);
+
                 return $existing;
             }
 
@@ -128,6 +169,14 @@ class CreditTopupService
                 ->first();
 
             if ($transaction && $transaction->status === PaymentTransaction::STATUS_SUCCESS) {
+                Log::info('Razorpay order already completed', [
+                    'customer_id' => $customer->customer_id,
+                    'transaction_uuid' => $transaction->transaction_uuid,
+                    'order_id' => $orderId,
+                    'payment_id' => $paymentId,
+                    'status' => $transaction->status,
+                ]);
+
                 return $transaction;
             }
 
@@ -166,6 +215,20 @@ class CreditTopupService
 
             return $transaction;
         });
+
+        Log::info('Razorpay payment completed and credits allocated', [
+            'customer_id' => $customer->customer_id,
+            'credit_pack_id' => $pack->id,
+            'transaction_uuid' => $transaction->transaction_uuid,
+            'order_id' => $orderId,
+            'payment_id' => $paymentId,
+            'amount' => (float) $transaction->amount,
+            'currency' => $transaction->currency,
+            'credits_granted' => $transaction->credits_to_add,
+            'status' => $transaction->status,
+        ]);
+
+        return $transaction;
     }
 
     /**

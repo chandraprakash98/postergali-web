@@ -47,13 +47,23 @@ class RazorpayPaymentService
 
         // If credentials are empty (e.g. In tests without mocking Http), generate a mocked order ID
         if (empty($this->keyId) || empty($this->keySecret)) {
-            return [
+            $order = [
                 'id' => 'order_' . bin2hex(random_bytes(10)),
                 'amount' => $amountInSubunits,
-                'currency' => $plan->currency ?? 'INR',
+                'currency' => $pack->currency ?? 'INR',
                 'receipt' => $payload['receipt'],
                 'status' => 'created',
             ];
+
+            Log::warning('Razorpay order created without configured credentials', [
+                'customer_id' => $customer->customer_id,
+                'credit_pack_id' => $pack->id,
+                'order_id' => $order['id'],
+                'amount' => $amountInSubunits,
+                'currency' => $order['currency'],
+            ]);
+
+            return $order;
         }
 
         $response = Http::withBasicAuth($this->keyId, $this->keySecret)
@@ -61,13 +71,29 @@ class RazorpayPaymentService
 
         if (!$response->successful()) {
             Log::error('Razorpay order creation failed', [
+                'customer_id' => $customer->customer_id,
+                'credit_pack_id' => $pack->id,
+                'receipt' => $payload['receipt'],
+                'amount' => $amountInSubunits,
+                'currency' => $payload['currency'],
                 'status' => $response->status(),
                 'response' => $response->body(),
             ]);
             throw new RuntimeException('Failed to create Razorpay payment order: ' . $response->body());
         }
 
-        return $response->json();
+        $order = $response->json();
+
+        Log::info('Razorpay order created with provider', [
+            'customer_id' => $customer->customer_id,
+            'credit_pack_id' => $pack->id,
+            'order_id' => $order['id'] ?? null,
+            'amount' => $amountInSubunits,
+            'currency' => $payload['currency'],
+            'status' => $order['status'] ?? null,
+        ]);
+
+        return $order;
     }
 
     /**
@@ -77,12 +103,29 @@ class RazorpayPaymentService
     {
         if (empty($this->keySecret)) {
             // For testing environments without secret configured, accept valid simulated signature
-            return !empty($signature) && $signature !== 'invalid_signature';
+            $isValid = !empty($signature) && $signature !== 'invalid_signature';
+
+            Log::warning('Razorpay signature checked without configured key secret', [
+                'order_id' => $orderId,
+                'payment_id' => $paymentId,
+                'verification_mode' => 'simulated_fallback',
+                'valid' => $isValid,
+            ]);
+
+            return $isValid;
         }
 
         $expectedSignature = hash_hmac('sha256', $orderId . '|' . $paymentId, $this->keySecret);
+        $isValid = hash_equals($expectedSignature, $signature);
 
-        return hash_equals($expectedSignature, $signature);
+        Log::info('Razorpay payment signature verification completed', [
+            'order_id' => $orderId,
+            'payment_id' => $paymentId,
+            'verification_mode' => 'hmac_sha256',
+            'valid' => $isValid,
+        ]);
+
+        return $isValid;
     }
 
     /**
