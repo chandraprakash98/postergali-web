@@ -120,10 +120,22 @@ class AdminPackageController extends Controller
      */
     public function transactions(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'mobile_number' => ['sometimes', 'nullable', 'string', 'max:20', 'regex:/^\+?[0-9\-\s]{7,20}$/'],
+        ]);
+
         $query = PaymentTransaction::with(['customer', 'creditPack']);
 
         if ($request->filled('customer_id')) {
             $query->where('customer_id', $request->input('customer_id'));
+        }
+
+        if (!empty($validated['mobile_number'])) {
+            $normalizedMobile = preg_replace('/[^0-9]/', '', $validated['mobile_number']);
+
+            $query->whereHas('customer', function ($customerQuery) use ($normalizedMobile) {
+                $customerQuery->where('mobile', $normalizedMobile);
+            });
         }
 
         if ($request->filled('status')) {

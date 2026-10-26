@@ -282,6 +282,44 @@ class CreditTopupAndLedgerTest extends TestCase
         $this->assertEquals(1220.00, (float) $wallet->balance);
     }
 
+    public function test_admin_can_filter_payment_transactions_by_mobile_number(): void
+    {
+        $otherCustomer = Customer::create([
+            'customer_id' => 'PSTGL_TEST_02',
+            'mobile' => '9876500000',
+        ]);
+
+        PaymentTransaction::create([
+            'customer_id' => $this->customer->customer_id,
+            'plan_id' => $this->consumablePlan->id,
+            'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
+            'amount' => $this->consumablePlan->price,
+            'currency' => 'INR',
+            'credits_to_add' => $this->consumablePlan->credits,
+            'provider_order_id' => 'order_mobile_filter_match',
+            'status' => PaymentTransaction::STATUS_PENDING,
+        ]);
+
+        PaymentTransaction::create([
+            'customer_id' => $otherCustomer->customer_id,
+            'plan_id' => $this->consumablePlan->id,
+            'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
+            'amount' => $this->consumablePlan->price,
+            'currency' => 'INR',
+            'credits_to_add' => $this->consumablePlan->credits,
+            'provider_order_id' => 'order_mobile_filter_other',
+            'status' => PaymentTransaction::STATUS_PENDING,
+        ]);
+
+        $response = $this->actingAs($this->adminUser)
+            ->getJson('/api/v1/admin/credits/transactions?mobile_number=987-654-3210');
+
+        $response->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.customer.mobile', $this->customer->mobile)
+            ->assertJsonPath('data.0.provider_order_id', 'order_mobile_filter_match');
+    }
+
     /**
      * Test 7: Successful Apple IAP processing using mocked transaction verification.
      */

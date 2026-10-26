@@ -534,7 +534,7 @@ Protected by `auth` & `admin` middleware:
 | `POST` | `/admin/packages` | Create new package (`StorePlanRequest`) |
 | `PUT` | `/admin/packages/{id}` | Update package (`UpdatePlanRequest`) |
 | `PATCH`| `/admin/packages/{id}/status` | Activate or deactivate package (`{ is_active: boolean }`) |
-| `GET` | `/admin/credits/transactions` | Paginated transactions with `status`, `provider`, `customer_id` filters |
+| `GET` | `/admin/credits/transactions` | Paginated transactions with `status`, `provider`, `customer_id`, and `mobile_number` filters |
 | `GET` | `/admin/credits/ledger` | Paginated ledger audit logs with `entry_type`, `category` filters |
 
 ---
