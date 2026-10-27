@@ -201,10 +201,23 @@ class CreditController extends Controller
                     ?? null;
 
                 if (empty($receiptData)) {
+                    Log::warning('Apple IAP top-up request rejected: transaction data missing', [
+                        'customer_id' => $customer->customer_id,
+                        'credit_pack_id' => $plan->id,
+                    ]);
                     throw ValidationException::withMessages([
                         'signed_transaction' => ['Apple IAP transaction data or receipt is required.'],
                     ]);
                 }
+
+                Log::info('Apple IAP top-up request accepted', [
+                    'customer_id' => $customer->customer_id,
+                    'credit_pack_id' => $plan->id,
+                    'product_id' => $plan->product_id,
+                    'transaction_data_field' => isset($validated['signed_transaction'])
+                        ? 'signed_transaction'
+                        : (isset($validated['transaction_receipt']) ? 'transaction_receipt' : 'transaction_id'),
+                ]);
 
                 $transaction = $this->topupService->completeAppleIapPurchase(
                     $customer,
@@ -247,6 +260,10 @@ class CreditController extends Controller
                 'action' => $validated['action'] ?? null,
                 'order_id' => $validated['razorpay_order_id'] ?? null,
                 'payment_id' => $validated['razorpay_payment_id'] ?? null,
+                'apple_transaction_id' => $provider === PaymentTransaction::PROVIDER_APPLE_IAP
+                    ? ($validated['transaction_id'] ?? null)
+                    : null,
+                'exception_class' => get_class($e),
                 'error' => $e->getMessage(),
             ]);
 
@@ -449,7 +466,12 @@ class CreditController extends Controller
                 'message' => 'Apple notification processed successfully.',
             ]);
         } catch (Throwable $e) {
-            Log::warning('Apple notification processing error', ['error' => $e->getMessage()]);
+            Log::warning('Apple notification processing error', [
+                'notification_type' => $payload['notificationType'] ?? null,
+                'subtype' => $payload['subtype'] ?? null,
+                'exception_class' => get_class($e),
+                'error' => $e->getMessage(),
+            ]);
 
             return response()->json([
                 'success' => false,

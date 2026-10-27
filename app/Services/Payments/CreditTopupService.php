@@ -242,10 +242,25 @@ class CreditTopupService
     ): PaymentTransaction {
         $this->ensurePackIsActiveConsumable($pack);
 
+        Log::info('Apple IAP purchase received for verification', [
+            'customer_id' => $customer->customer_id,
+            'credit_pack_id' => $pack->id,
+            'product_id' => $pack->product_id,
+            'credits_to_add' => (int) $pack->credits,
+        ]);
+
         // 1. Verify Apple IAP transaction data
         $verifiedData = $this->appleIapService->verifyTransaction($transactionReceiptOrJws, $pack);
         $providerTxnId = $verifiedData['transaction_id'];
         $originalTxnId = $verifiedData['original_transaction_id'] ?? null;
+
+        Log::info('Apple IAP purchase passed transaction checks', [
+            'customer_id' => $customer->customer_id,
+            'credit_pack_id' => $pack->id,
+            'provider_transaction_id' => $providerTxnId,
+            'original_transaction_id' => $originalTxnId,
+            'environment' => $verifiedData['environment'] ?? null,
+        ]);
 
         // 2. Start database transaction with row locking
         return DB::transaction(function () use (
@@ -262,6 +277,14 @@ class CreditTopupService
                 ->first();
 
             if ($existing && $existing->status === PaymentTransaction::STATUS_SUCCESS) {
+                Log::info('Apple IAP transaction already processed; skipping duplicate credit grant', [
+                    'customer_id' => $customer->customer_id,
+                    'provider_transaction_id' => $providerTxnId,
+                    'transaction_uuid' => $existing->transaction_uuid,
+                    'existing_customer_id' => $existing->customer_id,
+                    'existing_status' => $existing->status,
+                ]);
+
                 return $existing;
             }
 
@@ -289,13 +312,23 @@ class CreditTopupService
             $packTitle = $pack->name ?? $pack->plan_title ?? 'Credit Pack';
 
             // Grant credits atomically
-            $this->allocateCreditsToCustomer(
+            $ledgerEntry = $this->allocateCreditsToCustomer(
                 $customer,
                 $transaction,
                 $pack,
                 "Credit Top-up: {$packTitle} ({$pack->credits} credits)",
                 PaymentTransaction::PROVIDER_APPLE_IAP
             );
+
+            Log::info('Apple IAP purchase completed and credits granted', [
+                'customer_id' => $customer->customer_id,
+                'credit_pack_id' => $pack->id,
+                'provider_transaction_id' => $providerTxnId,
+                'transaction_uuid' => $transaction->transaction_uuid,
+                'credits_granted' => $transaction->credits_to_add,
+                'balance_after' => (float) $ledgerEntry->balance_after,
+                'payment_status' => $transaction->status,
+            ]);
 
             return $transaction;
         });
@@ -406,7 +439,17 @@ class CreditTopupService
         $subtype = $payload['subtype'] ?? '';
         $signedTransactionInfo = $payload['data']['signedTransactionInfo'] ?? null;
 
+        Log::info('Apple IAP server notification received', [
+            'notification_type' => $notificationType ?: null,
+            'subtype' => $subtype ?: null,
+            'has_signed_transaction_info' => !empty($signedTransactionInfo),
+        ]);
+
         if (!$signedTransactionInfo) {
+            Log::warning('Apple IAP server notification ignored: signed transaction info missing', [
+                'notification_type' => $notificationType ?: null,
+                'subtype' => $subtype ?: null,
+            ]);
             return null;
         }
 
@@ -414,6 +457,10 @@ class CreditTopupService
         $transactionId = $decoded['transaction_id'] ?? null;
 
         if (!$transactionId) {
+            Log::warning('Apple IAP server notification ignored: transaction ID missing', [
+                'notification_type' => $notificationType ?: null,
+                'subtype' => $subtype ?: null,
+            ]);
             return null;
         }
 
@@ -424,9 +471,33 @@ class CreditTopupService
                 $reason = "Apple StoreKit {$notificationType} " . ($subtype ? "({$subtype})" : '');
                 $this->processRefundAndReversal($transaction, $reason, 'apple_webhook');
 
+                Log::info('Apple IAP refund notification applied', [
+                    'notification_type' => $notificationType,
+                    'subtype' => $subtype ?: null,
+                    'provider_transaction_id' => $transactionId,
+                    'transaction_uuid' => $transaction->transaction_uuid,
+                    'customer_id' => $transaction->customer_id,
+                    'credits_reversed' => $transaction->credits_to_add,
+                ]);
+
                 return $transaction;
             }
+
+            Log::warning('Apple IAP refund notification did not match a successful transaction', [
+                'notification_type' => $notificationType,
+                'subtype' => $subtype ?: null,
+                'provider_transaction_id' => $transactionId,
+                'matched_transaction_status' => $transaction?->status,
+            ]);
+
+            return null;
         }
+
+        Log::info('Apple IAP server notification ignored: no refund action required', [
+            'notification_type' => $notificationType ?: null,
+            'subtype' => $subtype ?: null,
+            'provider_transaction_id' => $transactionId,
+        ]);
 
         return null;
     }

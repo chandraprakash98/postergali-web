@@ -33,23 +33,55 @@ class AppleIapPaymentService
      */
     public function verifyTransaction(string $transactionData, CreditPack|Plan $expectedPlan): array
     {
+        $trimmedData = trim($transactionData);
+        $sourceFormat = substr_count($trimmedData, '.') === 2
+            ? 'jws'
+            : (is_array(json_decode($trimmedData, true)) ? 'json' : 'transaction_id');
+
+        Log::info('Apple IAP transaction verification started', [
+            'expected_product_id' => $expectedPlan->product_id,
+            'source_format' => $sourceFormat,
+            'configured_environment' => $this->environment,
+        ]);
+
         $decoded = $this->decodeTransactionPayload($transactionData);
+        $verificationContext = [
+            'transaction_id' => $decoded['transaction_id'] ?? null,
+            'product_id' => $decoded['product_id'] ?? null,
+            'environment' => $decoded['environment'] ?? null,
+        ];
 
         // 1. Verify product_id matches the plan
         $productId = $decoded['product_id'] ?? null;
         if ($productId !== $expectedPlan->product_id) {
+            Log::warning('Apple IAP transaction verification rejected', $verificationContext + [
+                'reason' => 'product_mismatch',
+                'expected_product_id' => $expectedPlan->product_id,
+            ]);
             throw new RuntimeException("Apple IAP product mismatch: expected '{$expectedPlan->product_id}', got '{$productId}'.");
         }
 
         // 2. Verify transaction is not revoked/refunded
         if (!empty($decoded['is_revoked'])) {
+            Log::warning('Apple IAP transaction verification rejected', $verificationContext + [
+                'reason' => 'transaction_revoked',
+            ]);
             throw new RuntimeException("Apple IAP transaction has been revoked or refunded.");
         }
 
         // 3. Verify transaction id exists
         if (empty($decoded['transaction_id'])) {
+            Log::warning('Apple IAP transaction verification rejected', $verificationContext + [
+                'reason' => 'transaction_id_missing',
+            ]);
             throw new RuntimeException("Apple IAP transaction ID is missing from verification payload.");
         }
+
+        Log::info('Apple IAP transaction verification accepted', $verificationContext + [
+            'original_transaction_id' => $decoded['original_transaction_id'] ?? null,
+            'purchase_date' => $decoded['purchase_date'] ?? null,
+            'is_revoked' => false,
+        ]);
 
         return $decoded;
     }
