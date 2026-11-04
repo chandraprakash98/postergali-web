@@ -23,11 +23,26 @@ class GenerateInvoiceRequest extends FormRequest
     {
         return [
             'mobile' => [
-                'required',
+                'required_without_all:customer_id,postergali_id,postergaliid,mobile_number',
+                'nullable',
                 'string',
                 'max:20',
                 'regex:/^\+?[0-9\-\s]{7,15}$/',
             ],
+            'mobile_number' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'max:20',
+                'regex:/^\+?[0-9\-\s]{7,15}$/',
+            ],
+            'customer_id' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'postergali_id' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'postergaliid' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'transaction_uuid' => ['sometimes', 'nullable', 'string'],
+            'transaction_id' => ['sometimes', 'nullable', 'string'],
+            'order_id' => ['sometimes', 'nullable', 'string'],
+            'download' => ['sometimes', 'nullable', 'boolean'],
         ];
     }
 
@@ -39,16 +54,46 @@ class GenerateInvoiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'mobile.required' => 'Mobile number is required to generate the invoice.',
+            'mobile.required_without_all' => 'Mobile number or PosterGali ID is required to generate the invoice.',
             'mobile.regex' => 'Please provide a valid mobile phone number format.',
+            'mobile_number.regex' => 'Please provide a valid mobile phone number format.',
         ];
     }
 
     /**
      * Get sanitized normalized mobile number.
      */
-    public function normalizedMobile(): string
+    public function normalizedMobile(): ?string
     {
-        return preg_replace('/[^0-9]/', '', (string) $this->input('mobile', ''));
+        $raw = $this->input('mobile') ?? $this->input('mobile_number');
+        return $raw ? preg_replace('/[^0-9]/', '', (string) $raw) : null;
+    }
+
+    /**
+     * Get resolved PosterGali Customer ID.
+     */
+    public function resolvedCustomerId(): ?string
+    {
+        return $this->input('customer_id')
+            ?? $this->input('postergali_id')
+            ?? $this->input('postergaliid');
+    }
+
+    /**
+     * Get resolved transaction identifier (UUID, Apple txn ID, or Razorpay order ID).
+     */
+    public function resolvedTransactionId(): ?string
+    {
+        return $this->input('transaction_uuid')
+            ?? $this->input('transaction_id')
+            ?? $this->input('order_id');
+    }
+
+    /**
+     * Check if user explicitly requested forced download attachment instead of direct inline open.
+     */
+    public function wantsDownload(): bool
+    {
+        return $this->boolean('download', false);
     }
 }

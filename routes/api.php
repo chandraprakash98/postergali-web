@@ -39,6 +39,8 @@ Route::prefix('v1')->group(function () {
     Route::get('customers/{customerId}/balance', [CustomerController::class, 'balance']);
     Route::match(['get', 'post'], 'customers/invoice', [InvoiceController::class, 'downloadInvoice']);
     Route::match(['get', 'post'], 'payments/invoice', [InvoiceController::class, 'downloadInvoice']);
+    Route::match(['get', 'post'], 'credits/invoice', [InvoiceController::class, 'creditInvoice']);
+    Route::match(['get', 'post'], 'payments/transaction-invoice', [InvoiceController::class, 'creditInvoice']);
 
     // Public / App Credit Package Endpoints
     Route::get('credits/packages', [CreditController::class, 'packages']);
