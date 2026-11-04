@@ -144,6 +144,18 @@ class CreditController extends Controller
         $provider = strtoupper($validated['payment_provider']);
         $idempotencyKey = $request->header('Idempotency-Key');
 
+        Log::info('[CreditController] Topup request received', [
+            'customer_id' => $customer->customer_id,
+            'mobile' => $customer->mobile,
+            'payment_provider' => $provider,
+            'package_id' => $plan->id,
+            'plan_code' => $plan->pack_code ?? $plan->plan_code,
+            'credits' => $plan->credits,
+            'price' => (float) $plan->price,
+            'action' => $validated['action'] ?? null,
+            'idempotency_key' => $idempotencyKey,
+        ]);
+
         try {
             if ($provider === PaymentTransaction::PROVIDER_RAZORPAY) {
                 $isCompletion = !empty($validated['razorpay_payment_id']) && !empty($validated['razorpay_signature']);
@@ -151,6 +163,12 @@ class CreditController extends Controller
 
                 if ($action === 'initiate' || $action === 'create_order' || !$isCompletion) {
                     $orderData = $this->topupService->initiateRazorpayOrder($customer, $plan, $idempotencyKey);
+
+                    Log::info('[CreditController][Razorpay] Order created and returned to client', [
+                        'customer_id' => $customer->customer_id,
+                        'order_id' => $orderData['order_id'] ?? null,
+                        'transaction_uuid' => $orderData['transaction_uuid'] ?? null,
+                    ]);
 
                     return response()->json([
                         'success' => true,
@@ -177,6 +195,13 @@ class CreditController extends Controller
                 );
 
                 $currentBalance = CustomerCredit::where('customer_id', $customer->customer_id)->value('balance') ?? 0;
+
+                Log::info('[CreditController][Razorpay] Payment verified and credits granted', [
+                    'customer_id' => $customer->customer_id,
+                    'transaction_uuid' => $transaction->transaction_uuid,
+                    'credits_granted' => $transaction->credits_to_add,
+                    'current_balance' => (float) $currentBalance,
+                ]);
 
                 return response()->json([
                     'success' => true,
@@ -227,6 +252,14 @@ class CreditController extends Controller
                 );
 
                 $currentBalance = CustomerCredit::where('customer_id', $customer->customer_id)->value('balance') ?? 0;
+
+                Log::info('[CreditController][AppleIAP] Topup completed successfully', [
+                    'customer_id' => $customer->customer_id,
+                    'provider_transaction_id' => $transaction->provider_transaction_id,
+                    'transaction_uuid' => $transaction->transaction_uuid,
+                    'credits_granted' => $transaction->credits_to_add,
+                    'current_balance' => (float) $currentBalance,
+                ]);
 
                 return response()->json([
                     'success' => true,

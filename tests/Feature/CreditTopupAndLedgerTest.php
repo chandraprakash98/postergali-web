@@ -366,6 +366,180 @@ class CreditTopupAndLedgerTest extends TestCase
     }
 
     /**
+     * Test: Apple IAP with invalid signature is rejected and grants no credits.
+     */
+    public function test_apple_iap_invalid_signature_rejected(): void
+    {
+        $initialBalance = (float) CustomerCredit::where('customer_id', $this->customer->customer_id)->value('balance');
+
+        $jwsPayload = json_encode([
+            'transactionId' => '1000000999999999',
+            'productId' => $this->consumablePlan->product_id,
+            'purchaseDate' => time(),
+            'environment' => 'Sandbox',
+        ]);
+        $mockJws = 'header.' . base64_encode($jwsPayload) . '.invalid_signature';
+
+        $response = $this->postJson('/api/v1/credits/topup', [
+            'package_id' => $this->consumablePlan->id,
+            'payment_provider' => 'APPLE_IAP',
+            'signed_transaction' => $mockJws,
+        ], $this->customerHeaders());
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'credits_added' => false,
+            ]);
+
+        $afterBalance = (float) CustomerCredit::where('customer_id', $this->customer->customer_id)->value('balance');
+        $this->assertEquals($initialBalance, $afterBalance);
+
+        $this->assertDatabaseHas('payment_transactions', [
+            'customer_id' => $this->customer->customer_id,
+            'payment_provider' => PaymentTransaction::PROVIDER_APPLE_IAP,
+            'status' => PaymentTransaction::STATUS_FAILED,
+            'verification_status' => PaymentTransaction::VERIFICATION_FAILED,
+        ]);
+    }
+
+    /**
+     * Test: Apple IAP with mismatched product_id is rejected.
+     */
+    public function test_apple_iap_product_mismatch_rejected(): void
+    {
+        $initialBalance = (float) CustomerCredit::where('customer_id', $this->customer->customer_id)->value('balance');
+
+        $jwsPayload = json_encode([
+            'transactionId' => '1000000888888888',
+            'productId' => 'com.postergali.credits.other_unmatched_pack',
+            'purchaseDate' => time(),
+            'environment' => 'Sandbox',
+        ]);
+        $mockJws = 'header.' . base64_encode($jwsPayload) . '.valid_mock_sig';
+
+        $response = $this->postJson('/api/v1/credits/topup', [
+            'package_id' => $this->consumablePlan->id,
+            'payment_provider' => 'APPLE_IAP',
+            'signed_transaction' => $mockJws,
+        ], $this->customerHeaders());
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'credits_added' => false,
+            ]);
+
+        $afterBalance = (float) CustomerCredit::where('customer_id', $this->customer->customer_id)->value('balance');
+        $this->assertEquals($initialBalance, $afterBalance);
+    }
+
+    /**
+     * Test: Apple IAP with revoked transaction is rejected.
+     */
+    public function test_apple_iap_revoked_transaction_rejected(): void
+    {
+        $jwsPayload = json_encode([
+            'transactionId' => '1000000777777777',
+            'productId' => $this->consumablePlan->product_id,
+            'purchaseDate' => time(),
+            'revocationDate' => time(),
+            'environment' => 'Sandbox',
+        ]);
+        $mockJws = 'header.' . base64_encode($jwsPayload) . '.valid_mock_sig';
+
+        $response = $this->postJson('/api/v1/credits/topup', [
+            'package_id' => $this->consumablePlan->id,
+            'payment_provider' => 'APPLE_IAP',
+            'signed_transaction' => $mockJws,
+        ], $this->customerHeaders());
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'credits_added' => false,
+            ]);
+    }
+
+    /**
+     * Test: Apple IAP with bundle ID mismatch is rejected.
+     */
+    public function test_apple_iap_bundle_id_mismatch_rejected(): void
+    {
+        $jwsPayload = json_encode([
+            'transactionId' => '1000000666666666',
+            'productId' => $this->consumablePlan->product_id,
+            'bundleId' => 'com.hacker.fakeapp',
+            'purchaseDate' => time(),
+            'environment' => 'Sandbox',
+        ]);
+        $mockJws = 'header.' . base64_encode($jwsPayload) . '.valid_mock_sig';
+
+        $response = $this->postJson('/api/v1/credits/topup', [
+            'package_id' => $this->consumablePlan->id,
+            'payment_provider' => 'APPLE_IAP',
+            'signed_transaction' => $mockJws,
+        ], $this->customerHeaders());
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'credits_added' => false,
+            ]);
+    }
+
+    /**
+     * Test: Apple legacy receipt verification via Apple endpoint.
+     */
+    public function test_apple_iap_legacy_receipt_verification(): void
+    {
+        $appleTxnId = '1000000555555555';
+        $fakeReceiptData = base64_encode('fake_app_store_receipt_data_longer_than_fifty_characters_for_testing');
+
+        Http::fake([
+            'https://sandbox.itunes.apple.com/verifyReceipt' => Http::response([
+                'status' => 0,
+                'environment' => 'Sandbox',
+                'receipt' => [
+                    'bundle_id' => 'com.postergali.postergali',
+                    'in_app' => [
+                        [
+                            'transaction_id' => $appleTxnId,
+                            'original_transaction_id' => $appleTxnId,
+                            'product_id' => $this->consumablePlan->product_id,
+                            'purchase_date_ms' => time() * 1000,
+                        ],
+                    ],
+                ],
+            ], 200),
+            'https://buy.itunes.apple.com/verifyReceipt' => Http::response([
+                'status' => 21007, // Sandbox receipt sent to production
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/v1/credits/topup', [
+            'package_id' => $this->consumablePlan->id,
+            'payment_provider' => 'APPLE_IAP',
+            'transaction_receipt' => $fakeReceiptData,
+        ], $this->customerHeaders());
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'credits_added' => true,
+                'credits_granted' => 220,
+                'current_balance' => 1220.00,
+            ]);
+
+        $this->assertDatabaseHas('payment_transactions', [
+            'customer_id' => $this->customer->customer_id,
+            'payment_provider' => PaymentTransaction::PROVIDER_APPLE_IAP,
+            'provider_transaction_id' => $appleTxnId,
+            'status' => PaymentTransaction::STATUS_SUCCESS,
+        ]);
+    }
+
+    /**
      * Test 8: Failed payment grants NO credits.
      */
     public function test_8_failed_payment_grants_no_credits(): void

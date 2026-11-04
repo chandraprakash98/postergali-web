@@ -242,19 +242,43 @@ class CreditTopupService
     ): PaymentTransaction {
         $this->ensurePackIsActiveConsumable($pack);
 
-        Log::info('Apple IAP purchase received for verification', [
+        Log::info('[CreditTopup][AppleIAP] Step 1: Top-up completion request received', [
             'customer_id' => $customer->customer_id,
+            'mobile' => $customer->mobile,
             'credit_pack_id' => $pack->id,
             'product_id' => $pack->product_id,
             'credits_to_add' => (int) $pack->credits,
+            'price' => (float) $pack->price,
+            'idempotency_key' => $idempotencyKey,
         ]);
 
-        // 1. Verify Apple IAP transaction data
-        $verifiedData = $this->appleIapService->verifyTransaction($transactionReceiptOrJws, $pack);
+        // 1. Verify Apple IAP transaction data with Apple
+        try {
+            $verifiedData = $this->appleIapService->verifyTransaction($transactionReceiptOrJws, $pack);
+        } catch (\Throwable $e) {
+            Log::error('[CreditTopup][AppleIAP] Verification failed: recording failed transaction', [
+                'customer_id' => $customer->customer_id,
+                'credit_pack_id' => $pack->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->recordFailedTransaction(
+                $customer,
+                $pack,
+                PaymentTransaction::PROVIDER_APPLE_IAP,
+                null,
+                null,
+                'APPLE_IAP_VERIFICATION_FAILED',
+                $e->getMessage(),
+                $idempotencyKey
+            );
+            throw $e;
+        }
+
         $providerTxnId = $verifiedData['transaction_id'];
         $originalTxnId = $verifiedData['original_transaction_id'] ?? null;
 
-        Log::info('Apple IAP purchase passed transaction checks', [
+        Log::info('[CreditTopup][AppleIAP] Step 2: Verification passed', [
             'customer_id' => $customer->customer_id,
             'credit_pack_id' => $pack->id,
             'provider_transaction_id' => $providerTxnId,
@@ -271,22 +295,44 @@ class CreditTopupService
             $verifiedData,
             $idempotencyKey
         ) {
+            Log::info('[CreditTopup][AppleIAP] Step 3: Acquiring row lock & checking for existing transaction (Anti-Replay)', [
+                'customer_id' => $customer->customer_id,
+                'provider_transaction_id' => $providerTxnId,
+            ]);
+
             // Check if provider_transaction_id already processed
             $existing = PaymentTransaction::where('provider_transaction_id', $providerTxnId)
                 ->lockForUpdate()
                 ->first();
 
             if ($existing && $existing->status === PaymentTransaction::STATUS_SUCCESS) {
-                Log::info('Apple IAP transaction already processed; skipping duplicate credit grant', [
+                // Anti-replay / avoid duplicate payment: reject if already claimed by another user
+                if ($existing->customer_id !== $customer->customer_id) {
+                    Log::error('[CreditTopup][AppleIAP] Fraudulent replay attempt: transaction already redeemed by another account', [
+                        'attempted_customer_id' => $customer->customer_id,
+                        'original_customer_id' => $existing->customer_id,
+                        'provider_transaction_id' => $providerTxnId,
+                        'existing_transaction_uuid' => $existing->transaction_uuid,
+                    ]);
+                    throw new RuntimeException("This Apple purchase has already been redeemed by another account.");
+                }
+
+                Log::warning('[CreditTopup][AppleIAP] Replay detected: transaction already completed for this customer, skipping duplicate credit grant', [
                     'customer_id' => $customer->customer_id,
                     'provider_transaction_id' => $providerTxnId,
                     'transaction_uuid' => $existing->transaction_uuid,
-                    'existing_customer_id' => $existing->customer_id,
-                    'existing_status' => $existing->status,
+                    'status' => $existing->status,
                 ]);
 
                 return $existing;
             }
+
+            Log::info('[CreditTopup][AppleIAP] Step 4: Recording successful payment transaction', [
+                'customer_id' => $customer->customer_id,
+                'provider_transaction_id' => $providerTxnId,
+                'amount' => (float) $pack->price,
+                'credits_to_add' => (int) $pack->credits,
+            ]);
 
             $transaction = $existing ?? new PaymentTransaction();
             $transaction->fill([
@@ -312,6 +358,12 @@ class CreditTopupService
             $packTitle = $pack->name ?? $pack->plan_title ?? 'Credit Pack';
 
             // Grant credits atomically
+            Log::info('[CreditTopup][AppleIAP] Step 5: Allocating credits to customer wallet', [
+                'customer_id' => $customer->customer_id,
+                'transaction_uuid' => $transaction->transaction_uuid,
+                'credits' => (int) $pack->credits,
+            ]);
+
             $ledgerEntry = $this->allocateCreditsToCustomer(
                 $customer,
                 $transaction,
@@ -561,6 +613,16 @@ class CreditTopupService
         // Update wallet balance
         $creditWallet->balance = (float) $balanceAfter;
         $creditWallet->save();
+
+        Log::info('[Wallet][CreditAllocation] Customer wallet balance updated successfully', [
+            'customer_id' => $customer->customer_id,
+            'payment_provider' => $provider,
+            'transaction_uuid' => $transaction->transaction_uuid,
+            'credits_added' => $creditsToAdd,
+            'balance_before' => $balanceBefore,
+            'balance_after' => $balanceAfter,
+            'ledger_uuid' => $ledgerEntry->ledger_uuid,
+        ]);
 
         return $ledgerEntry;
     }
