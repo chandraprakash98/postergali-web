@@ -7,12 +7,52 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Customer extends Model
 {
+    public const LANG_EN = 'en';
+    public const LANG_HI = 'hi';
+    public const ALLOWED_LANGUAGES = ['en', 'hi'];
+
     protected $fillable = [
         'customer_id',
         'mobile',
         'fcm',
+        'language',
         'influencer_bonus_coupon_id',
     ];
+
+    /**
+     * Normalize language string to supported languages ('en' or 'hi'), defaulting to 'en'.
+     */
+    public static function normalizeLanguage(?string $lang): string
+    {
+        $lang = strtolower(trim((string) $lang));
+        return in_array($lang, self::ALLOWED_LANGUAGES, true) ? $lang : self::LANG_EN;
+    }
+
+    /**
+     * Resolve customer by phone number variants.
+     */
+    public static function resolveByPhone(?string $phoneNumber): ?self
+    {
+        if (empty($phoneNumber)) {
+            return null;
+        }
+        $raw = trim((string) $phoneNumber);
+        $normalized = preg_replace('/[^0-9]/', '', $raw);
+
+        $query = self::where('mobile', $raw);
+        if ($normalized !== '') {
+            $query->orWhere('mobile', $normalized)
+                  ->orWhere('mobile', '+' . $normalized);
+            if (strlen($normalized) >= 10) {
+                $last10 = substr($normalized, -10);
+                $query->orWhere('mobile', $last10)
+                      ->orWhere('mobile', '+91' . $last10)
+                      ->orWhere('mobile', '91' . $last10)
+                      ->orWhere('mobile', '0' . $last10);
+            }
+        }
+        return $query->first();
+    }
 
     public function payments(): HasMany
     {

@@ -24,12 +24,14 @@ class CustomerController extends Controller
         $request->merge([
             'coupon_code' => $request->input('coupon_code', $request->input('couponcode')),
             'fcm' => $request->input('fcm', $request->input('fcm_token')),
+            'language' => $request->input('language', $request->input('lang')),
         ]);
 
         $validated = $request->validate([
             'mobile' => ['required', 'string', 'max:20', 'regex:/^\+?[0-9\-\s]{7,15}$/'],
             'fcm' => ['nullable', 'string', 'max:255'],
             'coupon_code' => ['nullable', 'string', 'max:255'],
+            'language' => ['nullable', 'string', 'in:en,hi,EN,HI'],
         ]);
 
         $normalizedMobile = $this->normalizeMobile($validated['mobile']);
@@ -42,11 +44,13 @@ class CustomerController extends Controller
                 : null;
             $couponIsActive = $coupon && strtolower($coupon->bonus_coupon_status) === 'active';
             $balance = $couponIsActive ? $coupon->bonus_coupon_poster_credit : 1000;
+            $language = Customer::normalizeLanguage($validated['language'] ?? 'en');
 
-            [$customer, $credit] = DB::transaction(function () use ($normalizedMobile, $validated, $couponCode, $couponIsActive, $balance) {
+            [$customer, $credit] = DB::transaction(function () use ($normalizedMobile, $validated, $couponCode, $couponIsActive, $balance, $language) {
                 $newCustomer = Customer::create([
                     'mobile' => $normalizedMobile,
                     'fcm' => $validated['fcm'] ?? null,
+                    'language' => $language,
                     'influencer_bonus_coupon_id' => $couponIsActive ? $couponCode : null,
                 ]);
 
@@ -63,6 +67,7 @@ class CustomerController extends Controller
                 'created' => true,
                 'customer_id' => $customer->customer_id,
                 'mobile' => $customer->mobile,
+                'language' => $customer->language ?? 'en',
                 'balance' => $credit->balance,
                 'coupon_applied' => (bool) $couponIsActive,
             ];
@@ -80,8 +85,16 @@ class CustomerController extends Controller
             return response()->json($response, 201);
         }
 
+        $dirty = false;
         if (isset($validated['fcm'])) {
             $customer->fcm = $validated['fcm'];
+            $dirty = true;
+        }
+        if (!empty($validated['language'])) {
+            $customer->language = Customer::normalizeLanguage($validated['language']);
+            $dirty = true;
+        }
+        if ($dirty) {
             $customer->save();
         }
 
@@ -92,6 +105,7 @@ class CustomerController extends Controller
             'created' => false,
             'customer_id' => $customer->customer_id,
             'mobile' => $customer->mobile,
+            'language' => $customer->language ?? 'en',
             'balance' => $credit?->balance ?? 0,
             'fcm' => $customer->fcm,
         ]);

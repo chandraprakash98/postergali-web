@@ -218,9 +218,10 @@ class AdminAuthController extends Controller
                 if (empty($fcmToken)) {
                     Log::warning("Customer FCM token not found in customers table for ad #{$model->id} (phone: " . ($phoneNumber ?? 'unknown') . ")");
                 } else {
+                    $lang = Customer::normalizeLanguage($customer?->language ?? 'en');
                     $content = $data['status'] === 'approved'
-                        ? NotificationContent::adApproved('en')
-                        : NotificationContent::adRejected($data['comment'] ?? null, 'en');
+                        ? NotificationContent::adApproved($lang)
+                        : NotificationContent::adRejected($data['comment'] ?? null, $lang);
 
                     $title = $content['title'];
                     $body  = $content['body'];
@@ -514,7 +515,8 @@ class AdminAuthController extends Controller
 
             if ($token) {
                 $firebaseService = new FirebaseNotificationService();
-                $content = NotificationContent::referralReward(100, 'en');
+                $lang    = Customer::normalizeLanguage($referrerCustomer->language ?? 'en');
+                $content = NotificationContent::referralReward(100, $lang);
                 $title   = $content['title'];
                 $body    = $content['body'];
 

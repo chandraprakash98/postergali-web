@@ -29,7 +29,7 @@ Route::prefix('v1')->group(function () {
     Route::post('notifications', [AdminAuthController::class, 'storeNotification']);
     Route::post('referrals', [ReferralController::class, 'store']);
     Route::get('referrals/check', [ReferralController::class, 'check']);
-    Route::get('customers/check', [CustomerController::class, 'check']);
+    Route::match(['get', 'post'], 'customers/check', [CustomerController::class, 'check']);
     Route::get('customers/exists', [CustomerController::class, 'exists']);
     Route::post('auth/otp/send', [OtpController::class, 'send']);
     Route::post('auth/otp/verify', [OtpController::class, 'verify']);
