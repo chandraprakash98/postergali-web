@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Job;
 use App\Models\Offer;
+use App\Models\Payment;
 use App\Services\FilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -169,6 +170,7 @@ class CustomerController extends Controller
                 'message' => 'No customer found for this mobile number.',
                 'jobs' => [],
                 'offers' => [],
+                'payments' => [],
             ]);
         }
 
@@ -296,12 +298,18 @@ class CustomerController extends Controller
             }
         }
 
+        // Fetch payment history from payments table for this customer
+        $payments = Payment::where('customer_id', $customer->customer_id)
+            ->orderByDesc('created_at')
+            ->get();
+
         $response = [
             'success' => true,
             'customer_id' => $customer->customer_id,
             'mobile' => $customer->mobile,
             'jobs' => $jobs,
             'offers' => $offers,
+            'payments' => $payments,
         ];
 
         if ($hasLocation && $distanceRange) {

@@ -7,6 +7,7 @@ use App\Models\CreditLedger;
 use App\Models\CreditPack;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
+use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Models\Plan;
 use App\Services\Payments\CreditTopupService;
@@ -390,9 +391,29 @@ class CreditController extends Controller
             ];
         });
 
+        $orderTrans = Payment::where('customer_id', $customer->customer_id)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function (Payment $p) {
+                return [
+                    'transaction_id' => $p->transaction_id,
+                    'job_or_offer_id' => $p->job_or_offer_id,
+                    'item_type' => $p->item_type,
+                    'payment_type' => $p->payment_type,
+                    'total_amount' => (float) $p->total_amount,
+                    'razorpay_amount' => (float) $p->razorpay_amount,
+                    'credit_amount' => (float) $p->credit_amount,
+                    'payment_status' => $p->payment_status,
+                    'created_at' => $p->created_at?->toIso8601String(),
+                ];
+            });
+
         return response()->json([
             'success' => true,
-            'data' => $transformed,
+            'data' => [
+                'wallet_trans' => $transformed,
+                'order_trans' => $orderTrans,
+            ],
             'meta' => [
                 'current_page' => $transactions->currentPage(),
                 'per_page' => $transactions->perPage(),
