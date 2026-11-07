@@ -38,6 +38,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('plans/{plan}', [AdminAuthController::class, 'updatePlan'])->name('plans.update');
         Route::get('referrals', [AdminAuthController::class, 'referrals'])->name('referrals');
         Route::get('ugc-reports', [AdminAuthController::class, 'ugcReports'])->name('ugcReports');
+        Route::get('credit-settings', [AdminAuthController::class, 'creditSettings'])->name('creditSettings');
+        Route::post('credit-settings', [AdminAuthController::class, 'updateCreditSettings'])->name('creditSettings.update');
 
         Route::get('batch-status', [AdminAuthController::class, 'batchStatus'])->name('batch.status');
         Route::get('ads/{type}/{id}', [AdminAuthController::class, 'showAd'])->name('ad.show');

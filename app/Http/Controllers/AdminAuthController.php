@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdSubcategory;
 use App\Models\BatchRunLog;
+use App\Models\CreditSetting;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Referral;
@@ -417,6 +418,31 @@ class AdminAuthController extends Controller
         return $this->renderDashboard('reports', ['reports' => $reports]);
     }
 
+    public function creditSettings()
+    {
+        $settings = CreditSetting::getSettings();
+        return $this->renderDashboard('credit-settings', ['creditSettings' => $settings]);
+    }
+
+    public function updateCreditSettings(Request $request)
+    {
+        $data = $request->validate([
+            'signup_credit'   => ['required', 'numeric', 'min:0', 'max:1000000'],
+            'otp_credit'      => ['required', 'numeric', 'min:0', 'max:1000000'],
+            'referral_credit' => ['required', 'numeric', 'min:0', 'max:1000000'],
+        ]);
+
+        $settings = CreditSetting::getSettings();
+        $settings->update([
+            'signup_credit'   => $data['signup_credit'],
+            'otp_credit'      => $data['otp_credit'],
+            'referral_credit' => $data['referral_credit'],
+            'updated_by'      => Auth::user()->name ?? 'Admin',
+        ]);
+
+        return redirect()->route('admin.creditSettings')->with('success', 'Credit configuration amounts updated successfully.');
+    }
+
     private function getAllAds()
     {
         $jobs = Job::all()->map(fn($job) => [
@@ -492,20 +518,21 @@ class AdminAuthController extends Controller
             ]);
         }
 
-        $credit->balance = (float) $credit->balance + 100;
+        $referralReward = CreditSetting::getReferralCredit();
+        $credit->balance = (float) $credit->balance + $referralReward;
         $credit->save();
 
         $referral->status = 'Success';
         $referral->save();
 
         // Dispatch congratulations push notification to the referrer customer
-        $this->sendReferralRewardNotification($referrerCustomer, (float) $credit->balance);
+        $this->sendReferralRewardNotification($referrerCustomer, (float) $credit->balance, $referralReward);
     }
 
     /**
      * Dispatch FCM notification to referrer customer upon successful referral reward.
      */
-    private function sendReferralRewardNotification(Customer $referrerCustomer, float $newBalance): void
+    private function sendReferralRewardNotification(Customer $referrerCustomer, float $newBalance, float|int $rewardAmount = 100): void
     {
         try {
             $token = (new FcmTokenResolver())->resolve($referrerCustomer->mobile, $referrerCustomer->device_id ?? null);
@@ -516,18 +543,18 @@ class AdminAuthController extends Controller
             if ($token) {
                 $firebaseService = new FirebaseNotificationService();
                 $lang    = Customer::normalizeLanguage($referrerCustomer->language ?? 'en');
-                $content = NotificationContent::referralReward(100, $lang);
+                $content = NotificationContent::referralReward($rewardAmount, $lang);
                 $title   = $content['title'];
                 $body    = $content['body'];
 
                 $firebaseService->sendToToken($token, $title, $body, [
                     'type'          => 'referral_credit',
                     'customer_id'   => (string) $referrerCustomer->customer_id,
-                    'credits_added' => '100',
+                    'credits_added' => (string) $rewardAmount,
                     'balance'       => (string) $newBalance,
                 ]);
 
-                Log::info("Referral reward FCM sent to customer #{$referrerCustomer->customer_id}");
+                Log::info("Referral reward FCM sent to customer #{$referrerCustomer->customer_id} (amount: {$rewardAmount})");
             } else {
                 Log::info("No FCM token found for referrer customer #{$referrerCustomer->customer_id}");
             }

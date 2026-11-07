@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\BonusCoupon;
+use App\Models\CreditSetting;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Job;
@@ -43,7 +44,8 @@ class CustomerController extends Controller
                 ? BonusCoupon::where('influencer_bonus_coupon_id', $couponCode)->first()
                 : null;
             $couponIsActive = $coupon && strtolower($coupon->bonus_coupon_status) === 'active';
-            $balance = $couponIsActive ? $coupon->bonus_coupon_poster_credit : 1000;
+            $defaultSignupCredit = CreditSetting::getSignupCredit();
+            $balance = $couponIsActive ? $coupon->bonus_coupon_poster_credit : $defaultSignupCredit;
             $language = Customer::normalizeLanguage($validated['language'] ?? 'en');
 
             [$customer, $credit] = DB::transaction(function () use ($normalizedMobile, $validated, $couponCode, $couponIsActive, $balance, $language) {
