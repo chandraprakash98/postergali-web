@@ -92,7 +92,8 @@
 
         .empty-state{ padding:40px 18px; text-align:center; color:#8b8179; display:none; }
 
-        @media (max-width: 900px){ .stats-grid{ grid-template-columns:1fr; } .main-content{ margin-left:0; } .sidebar{ display:none; } }
+        .credit-settings-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; margin-bottom:24px; }
+        @media (max-width: 900px){ .stats-grid, .credit-settings-grid{ grid-template-columns:1fr; } .main-content{ margin-left:0; } .sidebar{ display:none; } }
     </style>
 </head>
 <body>
@@ -314,14 +315,14 @@
                     </div>
 
                 @elseif(($active ?? 'all') === 'credit-settings')
-                    <div class="table-section" style="max-width: 860px;">
-                        <div class="table-header" style="margin-bottom: 12px; padding: 0 0 12px 0;">
+                    <div class="table-section">
+                        <div class="table-header" style="padding: 0 0 16px 0;">
                             <div>
-                                <h3 style="font-size: 18px; margin-bottom: 4px;">Automated Credit Configuration</h3>
-                                <p style="color: #8b8179; font-size: 13px;">Configure the exact credit amounts automatically granted across customer lifecycle events.</p>
+                                <h3 style="font-size: 20px;">Automated Credit Configuration</h3>
+                                <p style="color: #8b8179; font-size: 13px;">Configure credits awarded across customer lifecycle events</p>
                             </div>
                             @if(isset($creditSettings) && $creditSettings->updated_by)
-                                <div style="font-size: 12px; color: #8b8179; background: var(--panel); padding: 8px 14px; border-radius: 999px; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+                                <div style="font-size: 12px; color: #8b8179; background: var(--panel); padding: 8px 14px; border-radius: 999px; box-shadow: 0 2px 6px rgba(43,30,24,0.04);">
                                     Last updated by <strong>{{ $creditSettings->updated_by }}</strong> on {{ $creditSettings->updated_at?->format('M d, Y \a\t H:i') }}
                                 </div>
                             @endif
@@ -329,112 +330,104 @@
 
                         <form method="POST" action="{{ route('admin.creditSettings.update') }}">
                             @csrf
-                            <div style="display: flex; flex-direction: column; gap: 20px;">
-
-                                {{-- Scenario 1 --}}
-                                <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); border-left: 5px solid var(--accent);">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
-                                        <div>
-                                            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--accent); margin-bottom: 4px;">
-                                                Scenario 1
-                                            </div>
-                                            <h4 style="font-size: 16px; font-weight: 800; color: #2f2a26; margin: 0 0 6px 0;">
-                                                New Customer Sign-Up / Check-in (API)
-                                            </h4>
-                                            <p style="font-size: 13px; color: #79706b; line-height: 1.5; margin: 0;">
-                                                Complimentary credits granted to newly created customer accounts upon their first API check-in (<code>POST /api/v1/customers/check</code>), when no active influencer bonus coupon applies.
-                                            </p>
+                            
+                            <!-- 3 Horizontal Boxes -->
+                            <div class="credit-settings-grid">
+                                
+                                <!-- Box 1: Scenario 1 -->
+                                <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--accent);">
+                                    <div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent);">Scenario 1</span>
+                                            <span style="font-size: 20px;">👤</span>
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                                            <span style="font-size: 13px; font-weight: 700; color: #8b8179;">Credits:</span>
-                                            <input 
-                                                type="number" 
-                                                name="signup_credit" 
-                                                id="signup_credit" 
-                                                min="0" 
-                                                step="1" 
-                                                value="{{ old('signup_credit', $creditSettings->signup_credit ?? 1000) }}" 
-                                                required
-                                                style="width: 140px; padding: 10px 14px; border-radius: 10px; border: 1px solid #d7cfc7; font-size: 15px; font-weight: 700; color: #2f2a26; background: #fff;"
-                                            >
-                                        </div>
+                                        <label for="signup_credit" style="display: block; font-size: 15px; font-weight: 800; color: #2f2a26; margin-bottom: 4px;">
+                                            Sign-Up / Check-in
+                                        </label>
+                                        <p style="font-size: 12px; color: #8b8179; margin-bottom: 16px; line-height: 1.4;">
+                                            New customer check-in via API (default welcome balance).
+                                        </p>
                                     </div>
-                                    <div style="font-size: 12px; color: #a49a90; font-style: italic;">
-                                        Default: 1,000 credits. (Note: If an active influencer coupon is entered by the user, that coupon's credit amount takes precedence).
+                                    <div>
+                                        <input 
+                                            type="number" 
+                                            name="signup_credit" 
+                                            id="signup_credit" 
+                                            min="0" 
+                                            step="1" 
+                                            value="{{ old('signup_credit', $creditSettings->signup_credit ?? 1000) }}" 
+                                            required
+                                            style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #d7cfc7; font-size: 18px; font-weight: 800; color: #2f2a26; background: #fff; box-sizing: border-box;"
+                                        >
+                                        <span style="display: block; font-size: 11px; color: #a49a90; margin-top: 6px;">Default: 1,000 credits</span>
                                     </div>
                                 </div>
 
-                                {{-- Scenario 2 --}}
-                                <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); border-left: 5px solid #2f8f6b;">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
-                                        <div>
-                                            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #2f8f6b; margin-bottom: 4px;">
-                                                Scenario 2
-                                            </div>
-                                            <h4 style="font-size: 16px; font-weight: 800; color: #2f2a26; margin: 0 0 6px 0;">
-                                                OTP Verification / First Login
-                                            </h4>
-                                            <p style="font-size: 13px; color: #79706b; line-height: 1.5; margin: 0;">
-                                                Initial credit balance provisioned when a newly verified phone number logs in via OTP (<code>POST /api/v1/auth/otp/verify</code>) and does not already have an established credit balance.
-                                            </p>
+                                <!-- Box 2: Scenario 2 -->
+                                <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid #2f8f6b;">
+                                    <div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #2f8f6b;">Scenario 2</span>
+                                            <span style="font-size: 20px;">📱</span>
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                                            <span style="font-size: 13px; font-weight: 700; color: #8b8179;">Credits:</span>
-                                            <input 
-                                                type="number" 
-                                                name="otp_credit" 
-                                                id="otp_credit" 
-                                                min="0" 
-                                                step="1" 
-                                                value="{{ old('otp_credit', $creditSettings->otp_credit ?? 1000) }}" 
-                                                required
-                                                style="width: 140px; padding: 10px 14px; border-radius: 10px; border: 1px solid #d7cfc7; font-size: 15px; font-weight: 700; color: #2f2a26; background: #fff;"
-                                            >
-                                        </div>
+                                        <label for="otp_credit" style="display: block; font-size: 15px; font-weight: 800; color: #2f2a26; margin-bottom: 4px;">
+                                            OTP First Login
+                                        </label>
+                                        <p style="font-size: 12px; color: #8b8179; margin-bottom: 16px; line-height: 1.4;">
+                                            First-time OTP verification initial wallet balance.
+                                        </p>
                                     </div>
-                                    <div style="font-size: 12px; color: #a49a90; font-style: italic;">
-                                        Default: 1,000 credits.
+                                    <div>
+                                        <input 
+                                            type="number" 
+                                            name="otp_credit" 
+                                            id="otp_credit" 
+                                            min="0" 
+                                            step="1" 
+                                            value="{{ old('otp_credit', $creditSettings->otp_credit ?? 1000) }}" 
+                                            required
+                                            style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #d7cfc7; font-size: 18px; font-weight: 800; color: #2f2a26; background: #fff; box-sizing: border-box;"
+                                        >
+                                        <span style="display: block; font-size: 11px; color: #a49a90; margin-top: 6px;">Default: 1,000 credits</span>
                                     </div>
                                 </div>
 
-                                {{-- Scenario 5 --}}
-                                <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); border-left: 5px solid var(--sidebar);">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
-                                        <div>
-                                            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--sidebar); margin-bottom: 4px;">
-                                                Scenario 5
-                                            </div>
-                                            <h4 style="font-size: 16px; font-weight: 800; color: #2f2a26; margin: 0 0 6px 0;">
-                                                Referral Bonus Upon Poster Approval
-                                            </h4>
-                                            <p style="font-size: 13px; color: #79706b; line-height: 1.5; margin: 0;">
-                                                Reward credits added to the referrer's wallet whenever an ad (Job or Offer) posted by a referred customer is approved by an administrator.
-                                            </p>
+                                <!-- Box 3: Scenario 5 -->
+                                <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--sidebar);">
+                                    <div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--sidebar);">Scenario 5</span>
+                                            <span style="font-size: 20px;">🎁</span>
                                         </div>
-                                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                                            <span style="font-size: 13px; font-weight: 700; color: #8b8179;">Credits:</span>
-                                            <input 
-                                                type="number" 
-                                                name="referral_credit" 
-                                                id="referral_credit" 
-                                                min="0" 
-                                                step="1" 
-                                                value="{{ old('referral_credit', $creditSettings->referral_credit ?? 100) }}" 
-                                                required
-                                                style="width: 140px; padding: 10px 14px; border-radius: 10px; border: 1px solid #d7cfc7; font-size: 15px; font-weight: 700; color: #2f2a26; background: #fff;"
-                                            >
-                                        </div>
+                                        <label for="referral_credit" style="display: block; font-size: 15px; font-weight: 800; color: #2f2a26; margin-bottom: 4px;">
+                                            Referral Bonus
+                                        </label>
+                                        <p style="font-size: 12px; color: #8b8179; margin-bottom: 16px; line-height: 1.4;">
+                                            Bonus added to referrer upon admin poster approval.
+                                        </p>
                                     </div>
-                                    <div style="font-size: 12px; color: #a49a90; font-style: italic;">
-                                        Default: 100 credits. (This value is also dynamically passed to the referral reward push notification sent to the referrer).
+                                    <div>
+                                        <input 
+                                            type="number" 
+                                            name="referral_credit" 
+                                            id="referral_credit" 
+                                            min="0" 
+                                            step="1" 
+                                            value="{{ old('referral_credit', $creditSettings->referral_credit ?? 100) }}" 
+                                            required
+                                            style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid #d7cfc7; font-size: 18px; font-weight: 800; color: #2f2a26; background: #fff; box-sizing: border-box;"
+                                        >
+                                        <span style="display: block; font-size: 11px; color: #a49a90; margin-top: 6px;">Default: 100 credits</span>
                                     </div>
                                 </div>
 
-                                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
-                                    <button type="submit" class="view-btn" style="padding: 12px 28px; font-size: 15px; cursor: pointer; border: none; background: var(--sidebar); border-radius: 10px;">
-                                        💾 Save Credit Settings
-                                    </button>
-                                </div>
+                            </div>
+
+                            <!-- Save Button -->
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button type="submit" class="view-btn" style="padding: 12px 32px; font-size: 15px; cursor: pointer; border: none; background: var(--sidebar); border-radius: 10px; color: #fff; font-weight: 800;">
+                                    💾 Save Credit Settings
+                                </button>
                             </div>
                         </form>
                     </div>
