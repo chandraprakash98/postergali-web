@@ -331,21 +331,21 @@
                         <form method="POST" action="{{ route('admin.creditSettings.update') }}">
                             @csrf
                             
-                            <!-- 3 Horizontal Boxes -->
+                            <!-- 3 Clear Horizontal Boxes -->
                             <div class="credit-settings-grid">
                                 
-                                <!-- Box 1: Scenario 1 -->
+                                <!-- Box 1: Welcome Sign-Up Credits -->
                                 <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--accent);">
                                     <div>
                                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent);">Scenario 1</span>
-                                            <span style="font-size: 20px;">👤</span>
+                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent); background: #fdf1ec; padding: 3px 8px; border-radius: 6px;">Direct Sign-Up</span>
+                                            <span style="font-size: 20px;">🎁</span>
                                         </div>
                                         <label for="signup_credit" style="display: block; font-size: 15px; font-weight: 800; color: #2f2a26; margin-bottom: 4px;">
-                                            Sign-Up / Check-in
+                                            Welcome Sign-Up Credits
                                         </label>
                                         <p style="font-size: 12px; color: #8b8179; margin-bottom: 16px; line-height: 1.4;">
-                                            New customer check-in via API (default welcome balance).
+                                            Given to new users upon registration when no influencer coupon is used.
                                         </p>
                                     </div>
                                     <div>
@@ -363,18 +363,18 @@
                                     </div>
                                 </div>
 
-                                <!-- Box 2: Scenario 2 -->
+                                <!-- Box 2: OTP First Login Credits -->
                                 <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid #2f8f6b;">
                                     <div>
                                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #2f8f6b;">Scenario 2</span>
+                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: #2f8f6b; background: #eaf7ef; padding: 3px 8px; border-radius: 6px;">OTP Verification</span>
                                             <span style="font-size: 20px;">📱</span>
                                         </div>
                                         <label for="otp_credit" style="display: block; font-size: 15px; font-weight: 800; color: #2f2a26; margin-bottom: 4px;">
-                                            OTP First Login
+                                            OTP First Login Credits
                                         </label>
                                         <p style="font-size: 12px; color: #8b8179; margin-bottom: 16px; line-height: 1.4;">
-                                            First-time OTP verification initial wallet balance.
+                                            Initial wallet balance created when a user verifies their phone via OTP for the first time.
                                         </p>
                                     </div>
                                     <div>
@@ -392,18 +392,18 @@
                                     </div>
                                 </div>
 
-                                <!-- Box 3: Scenario 5 -->
+                                <!-- Box 3: Referral Reward Credits -->
                                 <div style="background: var(--panel); border-radius: 14px; padding: 22px; box-shadow: 0 6px 18px rgba(43,30,24,0.04); display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--sidebar);">
                                     <div>
                                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--sidebar);">Scenario 5</span>
-                                            <span style="font-size: 20px;">🎁</span>
+                                            <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--sidebar); background: #fbeee8; padding: 3px 8px; border-radius: 6px;">On Ad Approval</span>
+                                            <span style="font-size: 20px;">🤝</span>
                                         </div>
                                         <label for="referral_credit" style="display: block; font-size: 15px; font-weight: 800; color: #2f2a26; margin-bottom: 4px;">
-                                            Referral Bonus
+                                            Referral Reward Credits
                                         </label>
                                         <p style="font-size: 12px; color: #8b8179; margin-bottom: 16px; line-height: 1.4;">
-                                            Bonus added to referrer upon admin poster approval.
+                                            Reward added to the referrer's wallet whenever their referred friend's ad is approved by Admin.
                                         </p>
                                     </div>
                                     <div>
@@ -424,10 +424,31 @@
                             </div>
 
                             <!-- Save Button -->
-                            <div style="display: flex; justify-content: flex-end;">
-                                <button type="submit" class="view-btn" style="padding: 12px 32px; font-size: 15px; cursor: pointer; border: none; background: var(--sidebar); border-radius: 10px; color: #fff; font-weight: 800;">
+                            <div style="display: flex; justify-content: flex-end; margin-bottom: 24px;">
+                                <button type="submit" class="view-btn" style="padding: 12px 36px; font-size: 15px; cursor: pointer; border: none; background: var(--sidebar); border-radius: 10px; color: #fff; font-weight: 800;">
                                     💾 Save Credit Settings
                                 </button>
+                            </div>
+
+                            <!-- Clear Informational Guide: When Each Credit is Sent & Influencer Flow -->
+                            <div style="background: var(--panel); border-radius: 14px; padding: 22px 24px; box-shadow: 0 4px 14px rgba(43,30,24,0.03); border: 1px solid #ebdcd5;">
+                                <h4 style="font-size: 14px; font-weight: 800; color: #302b27; margin: 0 0 14px 0; display: flex; align-items: center; gap: 8px;">
+                                    <span>💡</span> When Each Credit is Sent & How Influencer Coupons Differ:
+                                </h4>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; font-size: 12px; color: #6e655f; line-height: 1.5;">
+                                    <div style="background: #fff; padding: 14px; border-radius: 10px; border: 1px solid #ede7e3;">
+                                        <div style="font-weight: 800; color: #2f2a26; margin-bottom: 4px;">1. Standard User (No Coupon):</div>
+                                        <span>User registers directly without entering an influencer promo code &rarr; they immediately receive the <strong>Welcome Sign-Up Credits</strong> configured above.</span>
+                                    </div>
+                                    <div style="background: #fff; padding: 14px; border-radius: 10px; border: 1px solid #ede7e3;">
+                                        <div style="font-weight: 800; color: #2f2a26; margin-bottom: 4px;">2. Influencer Coupon User:</div>
+                                        <span>User registers using an Influencer Coupon (e.g. <code>DIWALI50</code>) &rarr; gets the specific bonus credits defined in the <strong>Bonus Coupons</strong> table. When their poster is approved, an incentive record is automatically created for that influencer.</span>
+                                    </div>
+                                    <div style="background: #fff; padding: 14px; border-radius: 10px; border: 1px solid #ede7e3;">
+                                        <div style="font-weight: 800; color: #2f2a26; margin-bottom: 4px;">3. Friend Referral Reward:</div>
+                                        <span>User A refers User B. When User B's ad (Job or Offer) is approved by Admin in the panel &rarr; User A gets the <strong>Referral Reward Credits</strong> configured above, plus an instant push notification.</span>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
