@@ -38,11 +38,6 @@ class OtpController extends Controller
         }
 
         $customer = \App\Models\Customer::firstOrCreate(['mobile' => $mobile]);
-        $otpCredit = \App\Models\CreditSetting::getOtpCredit();
-        \App\Models\CustomerCredit::firstOrCreate(
-            ['customer_id' => $customer->customer_id],
-            ['balance' => $otpCredit]
-        );
 
         $tokenData = \App\Models\CustomerAccessToken::createToken($customer);
 

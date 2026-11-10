@@ -36,6 +36,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('plans', [AdminAuthController::class, 'storePlan'])->name('plans.store');
         Route::get('plans/{plan}/edit', [AdminAuthController::class, 'editPlan'])->name('plans.edit');
         Route::put('plans/{plan}', [AdminAuthController::class, 'updatePlan'])->name('plans.update');
+        Route::get('influencers', [AdminAuthController::class, 'influencers'])->name('influencers');
+        Route::get('influencers/create', [AdminAuthController::class, 'createInfluencer'])->name('influencers.create');
+        Route::post('influencers', [AdminAuthController::class, 'storeInfluencer'])->name('influencers.store');
+        Route::get('influencers/{bonusCoupon}/edit', [AdminAuthController::class, 'editInfluencer'])->name('influencers.edit');
+        Route::put('influencers/{bonusCoupon}', [AdminAuthController::class, 'updateInfluencer'])->name('influencers.update');
+        Route::delete('influencers/{bonusCoupon}', [AdminAuthController::class, 'deleteInfluencer'])->name('influencers.delete');
         Route::get('referrals', [AdminAuthController::class, 'referrals'])->name('referrals');
         Route::get('ugc-reports', [AdminAuthController::class, 'ugcReports'])->name('ugcReports');
         Route::get('credit-settings', [AdminAuthController::class, 'creditSettings'])->name('creditSettings');

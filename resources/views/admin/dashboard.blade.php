@@ -130,6 +130,10 @@
                     <span class="menu-icon">🤝</span>
                     Referrals
                 </a>
+                <a href="{{ route('admin.influencers') }}" class="menu-item {{ ($active ?? null) === 'influencers' ? 'active' : '' }}">
+                    <span class="menu-icon">🌟</span>
+                    Influencers
+                </a>
                 <a href="{{ route('admin.ugcReports') }}" class="menu-item {{ ($active ?? null) === 'reports' ? 'active' : '' }}">
                     <span class="menu-icon">🚩</span>
                     UGC Reports
@@ -179,6 +183,9 @@
                     @elseif(($active ?? 'all') === 'referrals')
                         <h2>Referrals</h2>
                         <p>Referral records from the referral table</p>
+                    @elseif(($active ?? 'all') === 'influencers')
+                        <h2>Influencers</h2>
+                        <p>Manage influencer promo codes and registration credits</p>
                     @elseif(($active ?? 'all') === 'pricing')
                         <h2>Pricing Info</h2>
                         <p>Manage subscription plans</p>
@@ -190,7 +197,7 @@
                         <p>Overview of all ad listings</p>
                     @endif
                 </div>
-                @if(!in_array(($active ?? 'all'), ['referrals', 'pricing', 'reports', 'credit-settings'], true))
+                @if(!in_array(($active ?? 'all'), ['referrals', 'influencers', 'pricing', 'reports', 'credit-settings'], true))
                     <div class="type-toggle">
                         <div class="pill">
                             <button id="toggle-jobs" class="active">Jobs</button>
@@ -314,48 +321,86 @@
                         @endif
                     </div>
 
+                @elseif(($active ?? 'all') === 'influencers')
+                    <div class="table-section">
+                        <div class="table-header">
+                            <h3>Influencer Promo Codes</h3>
+                            <a href="{{ route('admin.influencers.create') }}" class="view-btn" style="text-decoration:none;">➕ Add Influencer</a>
+                        </div>
+
+                        @if(isset($influencers) && $influencers->isNotEmpty())
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>INFLUENCER</th>
+                                        <th>PROMO CODE</th>
+                                        <th>POSTER CREDITS</th>
+                                        <th>STATUS</th>
+                                        <th>ACTION</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($influencers as $influencer)
+                                        <tr>
+                                            <td>{{ $influencer->influencer_name }}</td>
+                                            <td>{{ $influencer->influencer_bonus_coupon_id }}</td>
+                                            <td>{{ $influencer->bonus_coupon_poster_credit }}</td>
+                                            <td>
+                                                <span class="status-badge {{ strtolower($influencer->bonus_coupon_status) === 'active' ? 'status-active' : 'status-expired' }}">
+                                                    {{ ucfirst($influencer->bonus_coupon_status) }}
+                                                </span>
+                                            </td>
+                                            <td style="display:flex; gap:8px; align-items:center;">
+                                                <a href="{{ route('admin.influencers.edit', $influencer) }}" class="view-btn" style="text-decoration:none;">✏️ Edit</a>
+                                                <form method="POST" action="{{ route('admin.influencers.delete', $influencer) }}" onsubmit="return confirm('Delete this influencer promo code?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="view-btn" style="border:0; background:var(--danger); cursor:pointer;">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <div class="empty-state" style="display:block;">
+                                <p>No influencers found</p>
+                            </div>
+                        @endif
+                    </div>
+
                 @elseif(($active ?? 'all') === 'credit-settings')
                     <div class="table-section" style="max-width: 780px;">
                         <div class="table-header" style="padding: 0 0 16px 0;">
                             <div>
-                                <h3 style="font-size: 20px;">Automated Credit Configuration</h3>
-                                <p style="color: #8b8179; font-size: 13px;">Configure credits awarded across customer lifecycle events</p>
+                                <h3 style="font-size: 20px;">Credit Settings</h3>
+                                <p style="color: #8b8179; font-size: 13px;">Configure the customer-check fallback and referral reward amounts</p>
                             </div>
-                            @if(isset($creditSettings) && $creditSettings->updated_by)
-                                <div style="font-size: 12px; color: #8b8179; background: var(--panel); padding: 6px 14px; border-radius: 999px; box-shadow: 0 2px 6px rgba(43,30,24,0.04);">
-                                    Last updated by <strong>{{ $creditSettings->updated_by }}</strong> on {{ $creditSettings->updated_at?->format('M d, Y \a\t H:i') }}
-                                </div>
-                            @endif
                         </div>
 
                         <form method="POST" action="{{ route('admin.creditSettings.update') }}">
                             @csrf
-                            
-                            <!-- Vertically Stacked Settings with Compact Input Boxes -->
                             <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
-                                
-                                <!-- 1. Standard User Sign-Up -->
                                 <div style="background: var(--panel); border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 12px rgba(43,30,24,0.04); display: flex; align-items: center; justify-content: space-between; gap: 20px; border-left: 4px solid var(--accent);">
                                     <div style="flex: 1;">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                             <span style="font-size: 16px;">🎁</span>
                                             <label for="signup_credit" style="font-size: 15px; font-weight: 800; color: #2f2a26; cursor: pointer;">
-                                                Standard User Sign-Up Credits
+                                                Default Customer Check Credits
                                             </label>
-                                            <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: var(--accent); background: #fdf1ec; padding: 2px 7px; border-radius: 5px;">Direct Registration</span>
                                         </div>
                                         <p style="font-size: 12px; color: #79706b; margin: 0; line-height: 1.4;">
-                                            Given to new users upon registration when no influencer coupon is used. (Default: 1,000)
+                                            Initial wallet credits granted by the customer-check API when no active influencer coupon is applied. (Default: 1,000)
                                         </p>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                                        <input 
-                                            type="number" 
-                                            name="signup_credit" 
-                                            id="signup_credit" 
-                                            min="0" 
-                                            step="1" 
-                                            value="{{ old('signup_credit', $creditSettings->signup_credit ?? 1000) }}" 
+                                        <input
+                                            type="number"
+                                            name="signup_credit"
+                                            id="signup_credit"
+                                            min="0"
+                                            step="0.01"
+                                            value="{{ old('signup_credit', $creditSettings->signup_credit ?? 1000) }}"
                                             required
                                             style="width: 120px; padding: 8px 12px; border-radius: 8px; border: 1px solid #d7cfc7; font-size: 15px; font-weight: 700; color: #2f2a26; background: #fff; text-align: right;"
                                         >
@@ -363,36 +408,6 @@
                                     </div>
                                 </div>
 
-                                <!-- 2. OTP First Login -->
-                                <div style="background: var(--panel); border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 12px rgba(43,30,24,0.04); display: flex; align-items: center; justify-content: space-between; gap: 20px; border-left: 4px solid #2f8f6b;">
-                                    <div style="flex: 1;">
-                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                            <span style="font-size: 16px;">📱</span>
-                                            <label for="otp_credit" style="font-size: 15px; font-weight: 800; color: #2f2a26; cursor: pointer;">
-                                                OTP First Login Credits
-                                            </label>
-                                            <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #2f8f6b; background: #eaf7ef; padding: 2px 7px; border-radius: 5px;">New Phone Verification</span>
-                                        </div>
-                                        <p style="font-size: 12px; color: #79706b; margin: 0; line-height: 1.4;">
-                                            Initial wallet balance created when a user verifies their phone via OTP for the first time. (Default: 1,000)
-                                        </p>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                                        <input 
-                                            type="number" 
-                                            name="otp_credit" 
-                                            id="otp_credit" 
-                                            min="0" 
-                                            step="1" 
-                                            value="{{ old('otp_credit', $creditSettings->otp_credit ?? 1000) }}" 
-                                            required
-                                            style="width: 120px; padding: 8px 12px; border-radius: 8px; border: 1px solid #d7cfc7; font-size: 15px; font-weight: 700; color: #2f2a26; background: #fff; text-align: right;"
-                                        >
-                                        <span style="font-size: 12px; font-weight: 700; color: #8b8179;">credits</span>
-                                    </div>
-                                </div>
-
-                                <!-- 3. Referral Reward -->
                                 <div style="background: var(--panel); border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 12px rgba(43,30,24,0.04); display: flex; align-items: center; justify-content: space-between; gap: 20px; border-left: 4px solid var(--sidebar);">
                                     <div style="flex: 1;">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
@@ -407,13 +422,13 @@
                                         </p>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                                        <input 
-                                            type="number" 
-                                            name="referral_credit" 
-                                            id="referral_credit" 
-                                            min="0" 
-                                            step="1" 
-                                            value="{{ old('referral_credit', $creditSettings->referral_credit ?? 100) }}" 
+                                        <input
+                                            type="number"
+                                            name="referral_credit"
+                                            id="referral_credit"
+                                            min="0"
+                                            step="0.01"
+                                            value="{{ old('referral_credit', $creditSettings->referral_credit ?? 100) }}"
                                             required
                                             style="width: 120px; padding: 8px 12px; border-radius: 8px; border: 1px solid #d7cfc7; font-size: 15px; font-weight: 700; color: #2f2a26; background: #fff; text-align: right;"
                                         >
@@ -423,17 +438,10 @@
 
                             </div>
 
-                            <!-- Save Button -->
                             <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
                                 <button type="submit" class="view-btn" style="padding: 10px 28px; font-size: 14px; cursor: pointer; border: none; background: var(--sidebar); border-radius: 8px; color: #fff; font-weight: 800;">
                                     💾 Save Credit Settings
                                 </button>
-                            </div>
-
-                            <!-- Compact Informational Note -->
-                            <div style="background: var(--panel); border-radius: 10px; padding: 14px 18px; border: 1px solid #ebdcd5; font-size: 12px; color: #79706b; line-height: 1.5;">
-                                <strong style="color: #2f2a26;">💡 Note on Influencer Coupons:</strong>
-                                Users who register with an Influencer Promo Code receive the specific credits assigned to that coupon in the <strong>Bonus Coupons</strong> table (not the standard sign-up credits above).
                             </div>
                         </form>
                     </div>

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CreditSetting;
+use App\Models\BonusCoupon;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Job;
@@ -62,11 +63,11 @@ class AdminCreditSettingsConfigurationTest extends TestCase
         $response = $this->actingAs($admin)->get('/admin/credit-settings');
 
         $response->assertStatus(200);
-        $response->assertSee('Automated Credit Configuration');
+        $response->assertSee('Credit Settings');
+        $response->assertSee('Default Customer Check Credits');
+        $response->assertDontSee('OTP First Login Credits');
         $response->assertSee('value="1200"', false);
-        $response->assertSee('value="800"', false);
         $response->assertSee('value="150"', false);
-        $response->assertSee('Super Admin');
     }
 
     public function test_admin_can_update_credit_settings(): void
@@ -75,7 +76,6 @@ class AdminCreditSettingsConfigurationTest extends TestCase
 
         $response = $this->actingAs($admin)->post('/admin/credit-settings', [
             'signup_credit'   => 1500,
-            'otp_credit'      => 1250,
             'referral_credit' => 200,
         ]);
 
@@ -84,13 +84,11 @@ class AdminCreditSettingsConfigurationTest extends TestCase
 
         $this->assertDatabaseHas('credit_settings', [
             'signup_credit'   => 1500.00,
-            'otp_credit'      => 1250.00,
             'referral_credit' => 200.00,
             'updated_by'      => 'Admin Boss',
         ]);
 
         $this->assertSame(1500.0, CreditSetting::getSignupCredit());
-        $this->assertSame(1250.0, CreditSetting::getOtpCredit());
         $this->assertSame(200.0, CreditSetting::getReferralCredit());
     }
 
@@ -100,11 +98,10 @@ class AdminCreditSettingsConfigurationTest extends TestCase
 
         $response = $this->actingAs($admin)->post('/admin/credit-settings', [
             'signup_credit'   => -50,
-            'otp_credit'      => 'invalid',
             'referral_credit' => '',
         ]);
 
-        $response->assertSessionHasErrors(['signup_credit', 'otp_credit', 'referral_credit']);
+        $response->assertSessionHasErrors(['signup_credit', 'referral_credit']);
     }
 
     public function test_scenario_1_new_customer_checkin_uses_configured_signup_credit(): void
@@ -131,12 +128,18 @@ class AdminCreditSettingsConfigurationTest extends TestCase
         $this->assertSame(1750.0, (float) $credit->balance);
     }
 
-    public function test_scenario_2_otp_verify_uses_configured_otp_credit(): void
+    public function test_customer_check_after_otp_verification_applies_coupon_credit_once(): void
     {
         CreditSetting::create([
-            'signup_credit'   => 1000.00,
+            'signup_credit'   => 1750.00,
             'otp_credit'      => 2500.00,
             'referral_credit' => 100.00,
+        ]);
+        BonusCoupon::create([
+            'influencer_bonus_coupon_id' => 'AFTEROTP',
+            'bonus_coupon_poster_credit' => 325.00,
+            'bonus_coupon_status' => 'active',
+            'influencer_name' => 'OTP Influencer',
         ]);
 
         $mobile = '9876543219';
@@ -155,9 +158,54 @@ class AdminCreditSettingsConfigurationTest extends TestCase
 
         $customer = Customer::where('mobile', $mobile)->first();
         $this->assertNotNull($customer);
+        $this->assertDatabaseMissing('customer_credits', ['customer_id' => $customer->customer_id]);
+
+        $this->postJson('/api/v1/customers/check', [
+            'mobile' => $mobile,
+            'coupon_code' => 'AFTEROTP',
+        ])
+            ->assertOk()
+            ->assertJsonPath('created', false)
+            ->assertJsonPath('coupon_applied', true)
+            ->assertJsonPath('coupon_code_status', 'active')
+            ->assertJsonPath('balance', 325);
 
         $credit = CustomerCredit::where('customer_id', $customer->customer_id)->first();
-        $this->assertSame(2500.0, (float) $credit->balance);
+        $this->assertSame(325.0, (float) $credit->balance);
+        $this->assertSame('AFTEROTP', $customer->fresh()->influencer_bonus_coupon_id);
+
+        $this->postJson('/api/v1/customers/check', [
+            'mobile' => $mobile,
+            'coupon_code' => 'AFTEROTP',
+        ])->assertJsonPath('balance', 325);
+        $this->assertSame(325.0, (float) $credit->fresh()->balance);
+    }
+
+    public function test_customer_check_after_otp_uses_configured_default_without_coupon(): void
+    {
+        CreditSetting::create([
+            'signup_credit' => 1777.00,
+            'otp_credit' => 2500.00,
+            'referral_credit' => 100.00,
+        ]);
+
+        $mobile = '9876543218';
+        $otpMock = Mockery::mock(OtpService::class);
+        $otpMock->shouldReceive('verify')->with($mobile, '1234')->once()->andReturn(true);
+        $this->app->instance(OtpService::class, $otpMock);
+
+        $this->postJson('/api/v1/auth/otp/verify', [
+            'mobile' => $mobile,
+            'otp' => '1234',
+        ])->assertOk();
+
+        $customer = Customer::where('mobile', $mobile)->firstOrFail();
+        $this->assertDatabaseMissing('customer_credits', ['customer_id' => $customer->customer_id]);
+
+        $this->postJson('/api/v1/customers/check', ['mobile' => $mobile])
+            ->assertOk()
+            ->assertJsonPath('balance', 1777)
+            ->assertJsonPath('coupon_applied', false);
     }
 
     public function test_scenario_5_admin_approval_awards_configured_referral_credit_and_notification(): void

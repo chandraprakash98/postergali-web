@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdSubcategory;
 use App\Models\BatchRunLog;
+use App\Models\BonusCoupon;
 use App\Models\CreditSetting;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FcmNotification;
@@ -391,6 +393,62 @@ class AdminAuthController extends Controller
         return redirect()->route('admin.pricingInfo')->with('success', 'Plan updated successfully.');
     }
 
+    public function influencers()
+    {
+        $influencers = BonusCoupon::orderBy('influencer_name')->get();
+        return $this->renderDashboard('influencers', ['influencers' => $influencers]);
+    }
+
+    public function createInfluencer()
+    {
+        return view('admin.influencers.form', ['influencer' => null]);
+    }
+
+    public function storeInfluencer(Request $request)
+    {
+        $data = $request->validate([
+            'influencer_name' => ['required', 'string', 'max:255'],
+            'influencer_bonus_coupon_id' => ['required', 'string', 'max:255', 'unique:bonus_coupons,influencer_bonus_coupon_id'],
+            'bonus_coupon_poster_credit' => ['required', 'numeric', 'min:0'],
+            'bonus_coupon_status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        BonusCoupon::create($data);
+
+        return redirect()->route('admin.influencers')->with('success', 'Influencer created successfully.');
+    }
+
+    public function editInfluencer(BonusCoupon $bonusCoupon)
+    {
+        return view('admin.influencers.form', ['influencer' => $bonusCoupon]);
+    }
+
+    public function updateInfluencer(Request $request, BonusCoupon $bonusCoupon)
+    {
+        $data = $request->validate([
+            'influencer_name' => ['required', 'string', 'max:255'],
+            'influencer_bonus_coupon_id' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('bonus_coupons', 'influencer_bonus_coupon_id')->ignore($bonusCoupon->id),
+            ],
+            'bonus_coupon_poster_credit' => ['required', 'numeric', 'min:0'],
+            'bonus_coupon_status' => ['required', Rule::in(['active', 'inactive'])],
+        ]);
+
+        $bonusCoupon->update($data);
+
+        return redirect()->route('admin.influencers')->with('success', 'Influencer updated successfully.');
+    }
+
+    public function deleteInfluencer(BonusCoupon $bonusCoupon)
+    {
+        $bonusCoupon->delete();
+
+        return redirect()->route('admin.influencers')->with('success', 'Influencer deleted successfully.');
+    }
+
     public function referrals()
     {
         $referrals = Referral::orderBy('created_at', 'desc')->get();
@@ -428,14 +486,12 @@ class AdminAuthController extends Controller
     {
         $data = $request->validate([
             'signup_credit'   => ['required', 'numeric', 'min:0', 'max:1000000'],
-            'otp_credit'      => ['required', 'numeric', 'min:0', 'max:1000000'],
             'referral_credit' => ['required', 'numeric', 'min:0', 'max:1000000'],
         ]);
 
         $settings = CreditSetting::getSettings();
         $settings->update([
             'signup_credit'   => $data['signup_credit'],
-            'otp_credit'      => $data['otp_credit'],
             'referral_credit' => $data['referral_credit'],
             'updated_by'      => Auth::user()->name ?? 'Admin',
         ]);

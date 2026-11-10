@@ -39,7 +39,8 @@ class CustomerController extends Controller
         $customer = Customer::where('mobile', $normalizedMobile)->first();
 
         if (!$customer) {
-            $couponCode = $validated['coupon_code'] ?? null;
+            $couponCode = isset($validated['coupon_code']) ? trim($validated['coupon_code']) : null;
+            $couponCode = $couponCode === '' ? null : $couponCode;
             $coupon = $couponCode
                 ? BonusCoupon::where('influencer_bonus_coupon_id', $couponCode)->first()
                 : null;
@@ -101,8 +102,49 @@ class CustomerController extends Controller
         }
 
         $credit = CustomerCredit::where('customer_id', $customer->customer_id)->first();
+        $creditWasInitialized = false;
+        $couponApplied = false;
+        $couponCodeStatus = null;
+        $couponCode = isset($validated['coupon_code']) ? trim($validated['coupon_code']) : null;
+        $couponCode = $couponCode === '' ? null : $couponCode;
 
-        return response()->json([
+        if (!$credit) {
+            $coupon = $couponCode
+                ? BonusCoupon::where('influencer_bonus_coupon_id', $couponCode)->first()
+                : null;
+            $couponApplied = $coupon && strtolower($coupon->bonus_coupon_status) === 'active';
+            $balance = $couponApplied ? $coupon->bonus_coupon_poster_credit : CreditSetting::getSignupCredit();
+
+            [$credit, $couponApplied, $creditWasInitialized] = DB::transaction(function () use ($customer, $couponCode, $couponApplied, $balance) {
+                $lockedCustomer = Customer::where('customer_id', $customer->customer_id)->lockForUpdate()->firstOrFail();
+                $existingCredit = CustomerCredit::where('customer_id', $lockedCustomer->customer_id)->first();
+                if ($existingCredit) {
+                    return [$existingCredit, false, false];
+                }
+
+                if ($couponApplied) {
+                    $lockedCustomer->influencer_bonus_coupon_id = $couponCode;
+                    $lockedCustomer->save();
+                }
+
+                return [
+                    CustomerCredit::create([
+                        'customer_id' => $lockedCustomer->customer_id,
+                        'balance' => $balance,
+                    ]),
+                    $couponApplied,
+                    true,
+                ];
+            });
+
+            if ($creditWasInitialized && $couponCode !== null) {
+                $couponCodeStatus = $couponApplied
+                    ? 'active'
+                    : ($coupon ? 'inactive' : 'invalid');
+            }
+        }
+
+        $response = [
             'success' => true,
             'created' => false,
             'customer_id' => $customer->customer_id,
@@ -110,7 +152,19 @@ class CustomerController extends Controller
             'language' => $customer->language ?? 'en',
             'balance' => $credit?->balance ?? 0,
             'fcm' => $customer->fcm,
-        ]);
+        ];
+
+        if ($creditWasInitialized || $couponCodeStatus !== null) {
+            $response['coupon_applied'] = (bool) $couponApplied;
+            if ($couponCodeStatus !== null) {
+                $response['coupon_code_status'] = $couponCodeStatus;
+                if (!$couponApplied) {
+                    $response['message'] = 'Coupon code is invalid or inactive. Default credit assigned.';
+                }
+            }
+        }
+
+        return response()->json($response);
     }
 
     public function exists(Request $request)
