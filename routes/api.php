@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
     Route::match(['get', 'post'], 'payments/transaction-invoice', [InvoiceController::class, 'creditInvoice']);
 
     // Public / App Credit Package Endpoints
+    Route::get('credits/settings', [CreditController::class, 'settings']);
     Route::get('credits/packages', [CreditController::class, 'packages']);
     Route::get('credits/packages/{id}', [CreditController::class, 'package']);
 

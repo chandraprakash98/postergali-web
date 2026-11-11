@@ -92,6 +92,25 @@ class AdminCreditSettingsConfigurationTest extends TestCase
         $this->assertSame(200.0, CreditSetting::getReferralCredit());
     }
 
+    public function test_public_credit_settings_api_returns_default_customer_and_referral_credit(): void
+    {
+        CreditSetting::create([
+            'signup_credit' => 1350.00,
+            'otp_credit' => 800.00,
+            'referral_credit' => 175.00,
+        ]);
+
+        $this->getJson('/api/v1/credits/settings')
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'default_customer_credit' => 1350,
+                    'referral_credit' => 175,
+                ],
+            ]);
+    }
+
     public function test_credit_settings_validation_rejects_negative_or_missing_values(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);

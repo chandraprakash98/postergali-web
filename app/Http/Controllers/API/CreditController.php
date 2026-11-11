@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\CreditLedger;
 use App\Models\CreditPack;
+use App\Models\CreditSetting;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Payment;
@@ -22,6 +23,24 @@ class CreditController extends Controller
     public function __construct(
         protected CreditTopupService $topupService = new CreditTopupService()
     ) {}
+
+    /**
+     * Get the public customer and referral credit settings.
+     *
+     * @route GET /api/v1/credits/settings
+     */
+    public function settings(): JsonResponse
+    {
+        $settings = CreditSetting::getSettings();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'default_customer_credit' => $settings->signup_credit,
+                'referral_credit' => $settings->referral_credit,
+            ],
+        ]);
+    }
 
     /**
      * List active consumable credit packages for purchase.
