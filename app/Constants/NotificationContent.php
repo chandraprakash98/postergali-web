@@ -9,21 +9,21 @@ class NotificationContent
     // ==========================================
 
     // Ad Approved - English
-    public const AD_APPROVED_TITLE_EN = 'Ad Approved ✓';
-    public const AD_APPROVED_BODY_EN  = 'Your ad has been approved and is now live!';
+    public const AD_APPROVED_TITLE_EN = '🎉 Congratulations!';  
+    public const AD_APPROVED_BODY_EN  = 'Your poster <ID> is now LIVE on PosterGali.';
 
     // Ad Approved - Hindi
-    public const AD_APPROVED_TITLE_HI = 'विज्ञापन स्वीकृत ✓';
-    public const AD_APPROVED_BODY_HI  = 'आपका विज्ञापन स्वीकृत हो गया है और अब लाइव है!';
+    public const AD_APPROVED_TITLE_HI = '🎉 बधाई हो!';
+    public const AD_APPROVED_BODY_HI  = 'आपका पोस्टर अब PosterGali पर LIVE है.';
 
     // Ad Rejected - English
-    public const AD_REJECTED_TITLE_EN = 'Ad Rejected ✕';
-    public const AD_REJECTED_BODY_EN  = 'Your ad was rejected. :reason';
+    public const AD_REJECTED_TITLE_EN = '❌ Sorry!';
+    public const AD_REJECTED_BODY_EN  = 'Your poster was rejected, Your refund will be processed within 2 days.';
     public const AD_REJECTED_DEFAULT_REASON_EN = 'Contact support for details.';
 
     // Ad Rejected - Hindi
-    public const AD_REJECTED_TITLE_HI = 'विज्ञापन अस्वीकृत ✕';
-    public const AD_REJECTED_BODY_HI  = 'आपका विज्ञापन अस्वीकृत कर दिया गया है। :reason';
+    public const AD_REJECTED_TITLE_HI = '❌ क्षमा करें!';
+    public const AD_REJECTED_BODY_HI  = 'आपका पोस्टर :reason के कारण अस्वीकार कर दिया गया है। आपका रिफंड 2 दिनों के भीतर कर दिया जाएगा।';
     public const AD_REJECTED_DEFAULT_REASON_HI = 'विवरण के लिए सहायता से संपर्क करें।';
 
     // ==========================================
@@ -55,12 +55,12 @@ class NotificationContent
     // ==========================================
 
     // Day Before Expiry - English
-    public const DAY_BEFORE_EXPIRY_TITLE_EN = '⏰ Poster Expires Tomorrow';
-    public const DAY_BEFORE_EXPIRY_BODY_EN  = '⏰ Reminder: Your poster ":business_name" expires tomorrow! Create a new poster on PosterGali to keep your business live without interruption.';
+    public const DAY_BEFORE_EXPIRY_TITLE_EN = '📅 Your poster expires tomorrow.';
+    public const DAY_BEFORE_EXPIRY_BODY_EN  = '⏰ Create a new poster today and continue reaching more people on PosterGali.';
 
     // Day Before Expiry - Hindi
-    public const DAY_BEFORE_EXPIRY_TITLE_HI = '⏰ पोस्टर कल समाप्त हो रहा है';
-    public const DAY_BEFORE_EXPIRY_BODY_HI  = '⏰ सूचना: आपका पोस्टर ":business_name" कल समाप्त हो रहा है! अपना प्रचार बिना रुके जारी रखने के लिए PosterGali पर नया पोस्टर बनाएं।';
+    public const DAY_BEFORE_EXPIRY_TITLE_HI = '📅 आपके पोस्टर की अवधि कल समाप्त हो रही है।';
+    public const DAY_BEFORE_EXPIRY_BODY_HI  = '⏰  नया पोस्टर बनाएं और PosterGali पर अधिक लोगों तक पहुंचना जारी रखें।';
 
     // ==========================================
     // 5. On Poster Expiry Notifications
