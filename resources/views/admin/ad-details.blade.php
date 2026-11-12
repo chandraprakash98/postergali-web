@@ -430,7 +430,7 @@
 
         const loadingOverlay = document.getElementById('loadingOverlay');
         const detailsForm = document.getElementById('details-form');
-        const subcategorySelect = detailsForm.querySelector('select[name="subcategory"]');
+        const subcategorySelect = document.querySelector('select[name="subcategory"][form="details-form"]');
         const statusInputs = detailsForm.querySelectorAll('input[name="status"]');
         let toastTimer;
 
@@ -443,7 +443,7 @@
         }
 
         function requireSubcategory(event) {
-            if (subcategorySelect.value) return true;
+            if (subcategorySelect && subcategorySelect.value.trim()) return true;
 
             event.preventDefault();
             event.stopImmediatePropagation();
@@ -451,10 +451,10 @@
             return false;
         }
 
-        detailsForm.querySelectorAll('.radio-field').forEach((label) => {
-            label.addEventListener('click', (event) => {
+        detailsForm.addEventListener('click', (event) => {
+            if (event.target.closest('.radio-field')) {
                 requireSubcategory(event);
-            }, true);
+            }
         });
 
         statusInputs.forEach((input) => {
@@ -472,10 +472,7 @@
                 return;
             }
 
-            const selectedStatus = detailsForm.querySelector('input[name="status"]:checked');
-            if (selectedStatus && !subcategorySelect.value) {
-                event.preventDefault();
-                showToast('Please select a subcategory');
+            if (!requireSubcategory(event)) {
                 return;
             }
 
