@@ -10,7 +10,7 @@ class NotificationContent
 
     // Ad Approved - English
     public const AD_APPROVED_TITLE_EN = '🎉 Congratulations!';  
-    public const AD_APPROVED_BODY_EN  = 'Your poster <ID> is now LIVE on PosterGali.';
+    public const AD_APPROVED_BODY_EN  = 'Your poster is now LIVE on PosterGali.';
 
     // Ad Approved - Hindi
     public const AD_APPROVED_TITLE_HI = '🎉 बधाई हो!';
