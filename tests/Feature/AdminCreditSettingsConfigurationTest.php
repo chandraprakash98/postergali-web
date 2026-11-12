@@ -100,15 +100,21 @@ class AdminCreditSettingsConfigurationTest extends TestCase
             'referral_credit' => 175.00,
         ]);
 
+        $expected = [
+            'success' => true,
+            'data' => [
+                'default_customer_credit' => 1350,
+                'referral_credit' => 175,
+            ],
+        ];
+
         $this->getJson('/api/v1/credits/settings')
             ->assertOk()
-            ->assertJson([
-                'success' => true,
-                'data' => [
-                    'default_customer_credit' => 1350,
-                    'referral_credit' => 175,
-                ],
-            ]);
+            ->assertJson($expected);
+
+        $this->getJson('/api/v1/credits/setting')
+            ->assertOk()
+            ->assertJson($expected);
     }
 
     public function test_credit_settings_validation_rejects_negative_or_missing_values(): void
