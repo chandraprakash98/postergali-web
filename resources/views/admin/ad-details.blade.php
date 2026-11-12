@@ -442,11 +442,25 @@
             toastTimer = window.setTimeout(() => toast.classList.remove('visible'), 2400);
         }
 
+        function requireSubcategory(event) {
+            if (subcategorySelect.value) return true;
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            showToast('Please select a subcategory');
+            return false;
+        }
+
+        detailsForm.querySelectorAll('.radio-field').forEach((label) => {
+            label.addEventListener('click', (event) => {
+                requireSubcategory(event);
+            }, true);
+        });
+
         statusInputs.forEach((input) => {
-            input.addEventListener('click', (event) => {
-                if (!subcategorySelect.value) {
-                    event.preventDefault();
-                    showToast('Please select a subcategory');
+            input.addEventListener('keydown', (event) => {
+                if (event.key === ' ' || event.key === 'Enter') {
+                    requireSubcategory(event);
                 }
             });
         });
