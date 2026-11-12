@@ -93,6 +93,18 @@
         .empty-state{ padding:40px 18px; text-align:center; color:#8b8179; display:none; }
 
         .credit-settings-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; margin-bottom:24px; }
+        .logo{ display:flex; align-items:center; margin-bottom:30px; }
+        .logo img{ display:block; width:176px; max-width:100%; height:auto; }
+        .loading-overlay{ display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(38,30,27,.56); backdrop-filter:blur(3px); }
+        .loading-overlay.active{ display:flex; }
+        .loading-content{ width:min(280px, calc(100vw - 40px)); display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px; border-radius:18px; background:var(--panel); box-shadow:0 18px 50px rgba(0,0,0,.2); }
+        .loading-logo{ width:170px; height:auto; animation:logoPulse 1.4s ease-in-out infinite; }
+        .loading-shimmer{ width:100%; height:7px; overflow:hidden; border-radius:999px; background:#f0e9e2; }
+        .loading-shimmer::after{ content:""; display:block; width:45%; height:100%; border-radius:inherit; background:linear-gradient(90deg, transparent, var(--accent), transparent); animation:shimmer 1.2s ease-in-out infinite; }
+        .loading-text{ color:#4f463f; font-size:14px; font-weight:700; }
+        @keyframes shimmer{ to{ transform:translateX(230%); } }
+        @keyframes logoPulse{ 50%{ opacity:.65; } }
+        @media (prefers-reduced-motion: reduce){ .loading-logo,.loading-shimmer::after{ animation:none; } }
         @media (max-width: 900px){ .stats-grid, .credit-settings-grid{ grid-template-columns:1fr; } .main-content{ margin-left:0; } .sidebar{ display:none; } }
     </style>
 </head>
@@ -101,10 +113,8 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
-                <span class="menu-icon">🎨</span>
-                <span>POSTER<br>GALI</span>
+                <img src="{{ asset('images/primarylogo.png') }}" alt="PosterGali">
             </div>
-
             <div class="menu-items">
                 <a href="{{ route('admin.allAds') }}" class="menu-item {{ ($active ?? 'all') === 'all' ? 'active' : '' }}">
                     <span class="menu-icon">📋</span>
@@ -575,6 +585,13 @@
             </div>
         </div>
     </div>
+    <div class="loading-overlay" id="adminLoadingOverlay" aria-hidden="true">
+        <div class="loading-content">
+            <img class="loading-logo" src="{{ asset('images/primarylogo.png') }}" alt="">
+            <div class="loading-shimmer"></div>
+            <div class="loading-text">Loading...</div>
+        </div>
+    </div>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const btnJobs = document.getElementById('toggle-jobs');
@@ -615,7 +632,25 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 });
 </script>
+<script>
+(() => {
+    const overlay = document.getElementById('adminLoadingOverlay');
+    if (!overlay) return;
 
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('a[href]');
+        if (!link || event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || link.target === '_blank') return;
+        const url = new URL(link.href, window.location.href);
+        if (url.origin === window.location.origin && url.href !== window.location.href) {
+            overlay.classList.add('active');
+        }
+    });
+
+    document.addEventListener('submit', (event) => {
+        if (!event.defaultPrevented) overlay.classList.add('active');
+    });
+})();
+</script>
 <script>
 // Batch status sidebar widget
 (function() {

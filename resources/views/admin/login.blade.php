@@ -31,17 +31,7 @@
             text-align: center;
         }
 
-        .lock-icon {
-            width: 80px;
-            height: 80px;
-            background: #fef3c7;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 30px;
-            font-size: 40px;
-        }
+        .login-logo { display:block; width:220px; max-width:100%; height:auto; margin:0 auto 30px; }
 
         h1 {
             font-size: 32px;
@@ -215,11 +205,22 @@
             font-size: 14px;
             border-left: 4px solid #16a34a;
         }
+
+        .loading-overlay { display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; background:rgba(38,30,27,.56); backdrop-filter:blur(3px); }
+        .loading-overlay.active { display:flex; }
+        .loading-content { width:min(280px, calc(100vw - 40px)); display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px; border-radius:18px; background:#fff; box-shadow:0 18px 50px rgba(0,0,0,.2); }
+        .loading-logo { width:170px; height:auto; animation:logoPulse 1.4s ease-in-out infinite; }
+        .loading-shimmer { width:100%; height:7px; overflow:hidden; border-radius:999px; background:#f0e9e2; }
+        .loading-shimmer::after { content:""; display:block; width:45%; height:100%; border-radius:inherit; background:linear-gradient(90deg, transparent, #e58b6a, transparent); animation:shimmer 1.2s ease-in-out infinite; }
+        .loading-text { color:#4f463f; font-size:14px; font-weight:700; }
+        @keyframes shimmer { to { transform:translateX(230%); } }
+        @keyframes logoPulse { 50% { opacity:.65; } }
+        @media (prefers-reduced-motion: reduce) { .loading-logo,.loading-shimmer::after { animation:none; } }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="lock-icon">🔒</div>
+        <img class="login-logo" src="{{ asset('images/primarylogo.png') }}" alt="PosterGali">
         
         <h1>Admin Login</h1>
         <p class="subtitle">Enter your credentials to access the admin panel</p>
@@ -272,6 +273,13 @@
             </div>
         </form>
     </div>
+    <div class="loading-overlay" id="loginLoadingOverlay" aria-hidden="true">
+        <div class="loading-content">
+            <img class="loading-logo" src="{{ asset('images/primarylogo.png') }}" alt="">
+            <div class="loading-shimmer"></div>
+            <div class="loading-text">Signing in...</div>
+        </div>
+    </div>
 
     <script>
         function togglePassword() {
@@ -286,6 +294,10 @@
                 button.textContent = '👁️';
             }
         }
+
+        document.querySelector('form').addEventListener('submit', function () {
+            document.getElementById('loginLoadingOverlay').classList.add('active');
+        });
     </script>
 </body>
 </html>

@@ -22,8 +22,8 @@
         .container{ display:flex; min-height:100vh; }
 
         .sidebar{ width:240px; background:var(--sidebar); color:#fff; padding:28px 22px; position:fixed; height:100vh; overflow-y:auto; }
-        .logo{ font-size:20px; font-weight:800; margin-bottom:30px; }
-        .logo .menu-icon{ background:#fff; color:var(--sidebar); padding:8px; border-radius:8px; display:inline-block; }
+        .logo{ margin-bottom:30px; }
+        .logo img{ display:block; width:176px; max-width:100%; height:auto; }
         .menu-items{ display:flex; flex-direction:column; gap:14px; }
         .menu-item{ color: rgba(255,255,255,0.95); text-decoration:none; padding:12px 14px; border-radius:10px; display:flex; gap:12px; align-items:center; font-weight:600; }
         .menu-item:hover{ background: rgba(255,255,255,0.06); }
@@ -78,20 +78,25 @@
         @media (max-width:1024px){ .grid{ grid-template-columns:1fr } .sidebar{ position:relative; height:auto } .main-panel{ margin-left:0 } }
         @media (max-width:640px){ .page-header{ flex-direction:column; align-items:flex-start } .form-row{ grid-template-columns:1fr } }
 
-        .loading-overlay{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center }
+        .loading-overlay{ display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(38,30,27,0.56); backdrop-filter:blur(3px); z-index:9999; justify-content:center; align-items:center }
         .loading-overlay.active{ display:flex }
-        .loading-content{ display:flex; flex-direction:column; align-items:center; gap:20px }
-        .loading-spinner{ width:60px; height:60px; border:5px solid rgba(255,255,255,0.3); border-top:5px solid #ffffff; border-radius:50%; animation:spin 0.8s linear infinite }
-        .loading-text{ color:#ffffff; font-size:18px; font-weight:500; text-align:center }
-        @keyframes spin{ 0%{ transform:rotate(0deg) } 100%{ transform:rotate(360deg) } }
+        .loading-content{ width:min(280px, calc(100vw - 40px)); display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px; border-radius:18px; background:#fffdf8; box-shadow:0 18px 50px rgba(0,0,0,.2) }
+        .loading-logo{ width:170px; height:auto; animation:logoPulse 1.4s ease-in-out infinite }
+        .loading-shimmer{ width:100%; height:7px; overflow:hidden; border-radius:999px; background:#f0e9e2 }
+        .loading-shimmer::after{ content:""; display:block; width:45%; height:100%; border-radius:inherit; background:linear-gradient(90deg, transparent, var(--accent), transparent); animation:shimmer 1.2s ease-in-out infinite }
+        .loading-text{ color:#4f463f; font-size:14px; font-weight:700; text-align:center }
+        .admin-toast{ position:fixed; left:50%; bottom:28px; z-index:10001; transform:translate(-50%, 12px); padding:10px 16px; border-radius:9px; background:#302b27; color:#fff; font-size:13px; font-weight:600; box-shadow:0 8px 24px rgba(0,0,0,.2); opacity:0; pointer-events:none; transition:opacity .18s ease, transform .18s ease }
+        .admin-toast.visible{ opacity:1; transform:translate(-50%, 0) }
+        @keyframes shimmer{ to{ transform:translateX(230%) } }
+        @keyframes logoPulse{ 50%{ opacity:.65 } }
+        @media (prefers-reduced-motion: reduce){ .loading-logo,.loading-shimmer::after{ animation:none } }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="sidebar">
             <div class="logo">
-                <span class="menu-icon">🎨</span>
-                <span>POSTER<br>GALI</span>
+                <img src="{{ asset('images/primarylogo.png') }}" alt="PosterGali">
             </div>
             <div class="menu-items">
                 <a href="{{ route('admin.allAds') }}" class="menu-item {{ ($active ?? '') === 'all' ? 'active' : '' }}">
@@ -375,7 +380,7 @@
                                 </div>
 
                                 <div class="form-footer">
-                                    <button type="submit" class="button-primary" onclick="showLoading(event)">Confirm</button>
+                                    <button type="submit" class="button-primary">Confirm</button>
                                 </div>
                             </div>
                         </form>
@@ -388,10 +393,12 @@
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-content">
-            <div class="loading-spinner"></div>
+            <img class="loading-logo" src="{{ asset('images/primarylogo.png') }}" alt="">
+            <div class="loading-shimmer"></div>
             <div class="loading-text">Processing your request...</div>
         </div>
     </div>
+    <div class="admin-toast" id="adminToast" role="status" aria-live="polite"></div>
 
     <div class="media-viewer" id="mediaViewer" role="dialog" aria-modal="true" aria-label="Media viewer" onclick="closeMediaViewer(event)">
         <button type="button" class="media-viewer-close" title="Close media viewer" aria-label="Close media viewer" onclick="closeMediaViewer()">&times;</button>
@@ -421,15 +428,54 @@
             if (event.key === 'Escape') closeMediaViewer();
         });
 
-        function showLoading(event) {
-            // Show the loading overlay
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.classList.add('active');
-            
-            // Set the action value and submit the form
-            document.getElementById('details-action').value = 'status';
-            document.getElementById('details-form').submit();
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const detailsForm = document.getElementById('details-form');
+        const subcategorySelect = detailsForm.querySelector('select[name="subcategory"]');
+        const statusInputs = detailsForm.querySelectorAll('input[name="status"]');
+        let toastTimer;
+
+        function showToast(message) {
+            const toast = document.getElementById('adminToast');
+            toast.textContent = message;
+            toast.classList.add('visible');
+            window.clearTimeout(toastTimer);
+            toastTimer = window.setTimeout(() => toast.classList.remove('visible'), 2400);
         }
+
+        statusInputs.forEach((input) => {
+            input.addEventListener('click', (event) => {
+                if (!subcategorySelect.value) {
+                    event.preventDefault();
+                    showToast('Please select a subcategory');
+                }
+            });
+        });
+
+        detailsForm.addEventListener('submit', (event) => {
+            const action = document.getElementById('details-action');
+            if (action.value === 'subcategory') {
+                loadingOverlay.classList.add('active');
+                return;
+            }
+
+            const selectedStatus = detailsForm.querySelector('input[name="status"]:checked');
+            if (selectedStatus && !subcategorySelect.value) {
+                event.preventDefault();
+                showToast('Please select a subcategory');
+                return;
+            }
+
+            action.value = 'status';
+            loadingOverlay.classList.add('active');
+        });
+
+        document.querySelectorAll('a[href]').forEach((link) => {
+            link.addEventListener('click', (event) => {
+                if (!event.defaultPrevented && !event.metaKey && !event.ctrlKey && !event.shiftKey && link.target !== '_blank') {
+                    loadingOverlay.classList.add('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>

@@ -259,6 +259,7 @@ class AdminCreditSettingsConfigurationTest extends TestCase
             'device_id'       => 'device-job-ref',
             'device_os'       => 'android',
             'master_category' => 'Services',
+            'subcategory'     => 'IT and Software',
             'business_name'   => 'Referral Enterprise',
             'job_role'        => 'Marketing Lead',
             'job_type'        => 'full_time',

@@ -7,6 +7,7 @@ use App\Models\CreditPack;
 use App\Models\Customer;
 use App\Models\CustomerAccessToken;
 use App\Models\CustomerCredit;
+use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Models\Plan;
 use App\Models\User;
@@ -782,12 +783,13 @@ class CreditTopupAndLedgerTest extends TestCase
         ]);
 
         $responseB->assertStatus(200)
-            ->assertJsonCount(0, 'data'); // Customer B sees 0 transactions
+            ->assertJsonCount(0, 'data.wallet_trans')
+            ->assertJsonCount(0, 'data.order_trans');
 
         $responseA = $this->getJson('/api/v1/credits/transactions', $this->customerHeaders());
         $responseA->assertStatus(200)
-            ->assertJsonPath('data.0.transaction_uuid', $txnA->transaction_uuid)
-            ->assertJsonPath('data.0.plan_title', $this->consumablePlan->name);
+            ->assertJsonPath('data.wallet_trans.0.transaction_uuid', $txnA->transaction_uuid)
+            ->assertJsonPath('data.wallet_trans.0.plan_title', $this->consumablePlan->name);
 
         // Customer B cannot view Customer A's single transaction by UUID
         $this->getJson("/api/v1/credits/transactions/{$txnA->transaction_uuid}", [
@@ -798,6 +800,67 @@ class CreditTopupAndLedgerTest extends TestCase
         $this->getJson("/api/v1/credits/transactions/{$txnA->transaction_uuid}", $this->customerHeaders())
             ->assertStatus(200)
             ->assertJsonPath('data.transaction_uuid', $txnA->transaction_uuid);
+    }
+
+    public function test_payment_history_only_returns_verified_successful_records(): void
+    {
+        $verifiedTransaction = PaymentTransaction::create([
+            'customer_id' => $this->customer->customer_id,
+            'plan_id' => $this->consumablePlan->id,
+            'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
+            'amount' => $this->consumablePlan->price,
+            'currency' => 'INR',
+            'credits_to_add' => $this->consumablePlan->credits,
+            'provider_order_id' => 'order_verified_history',
+            'status' => PaymentTransaction::STATUS_SUCCESS,
+            'verification_status' => PaymentTransaction::VERIFICATION_VERIFIED,
+        ]);
+
+        PaymentTransaction::create([
+            'customer_id' => $this->customer->customer_id,
+            'plan_id' => $this->consumablePlan->id,
+            'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
+            'amount' => $this->consumablePlan->price,
+            'currency' => 'INR',
+            'credits_to_add' => $this->consumablePlan->credits,
+            'provider_order_id' => 'order_unverified_history',
+            'status' => PaymentTransaction::STATUS_SUCCESS,
+            'verification_status' => PaymentTransaction::VERIFICATION_UNVERIFIED,
+        ]);
+
+        PaymentTransaction::create([
+            'customer_id' => $this->customer->customer_id,
+            'plan_id' => $this->consumablePlan->id,
+            'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
+            'amount' => $this->consumablePlan->price,
+            'currency' => 'INR',
+            'credits_to_add' => $this->consumablePlan->credits,
+            'provider_order_id' => 'order_failed_history',
+            'status' => PaymentTransaction::STATUS_FAILED,
+            'verification_status' => PaymentTransaction::VERIFICATION_VERIFIED,
+        ]);
+
+        Payment::create([
+            'customer_id' => $this->customer->customer_id,
+            'transaction_id' => 'order_completed_history',
+            'credit_mode' => 'full_upi',
+            'payment_status' => Payment::STATUS_COMPLETED,
+        ]);
+
+        Payment::create([
+            'customer_id' => $this->customer->customer_id,
+            'transaction_id' => 'order_failed_history',
+            'credit_mode' => 'full_upi',
+            'payment_status' => Payment::STATUS_FAILED,
+        ]);
+
+        $this->getJson('/api/v1/credits/transactions', $this->customerHeaders())
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.wallet_trans.0.transaction_uuid', $verifiedTransaction->transaction_uuid)
+            ->assertJsonCount(1, 'data.wallet_trans')
+            ->assertJsonPath('data.order_trans.0.transaction_id', 'order_completed_history')
+            ->assertJsonCount(1, 'data.order_trans');
     }
 
     /**

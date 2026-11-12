@@ -391,6 +391,8 @@ class CreditController extends Controller
         $perPage = min((int) $request->input('per_page', 20), 100);
 
         $transactions = PaymentTransaction::byCustomer($customer->customer_id)
+            ->where('status', PaymentTransaction::STATUS_SUCCESS)
+            ->where('verification_status', PaymentTransaction::VERIFICATION_VERIFIED)
             ->with(['plan:id,name,pack_code,credits'])
             ->orderByDesc('id')
             ->paginate($perPage);
@@ -411,6 +413,7 @@ class CreditController extends Controller
         });
 
         $orderTrans = Payment::where('customer_id', $customer->customer_id)
+            ->whereIn('payment_status', [Payment::STATUS_COMPLETED, Payment::STATUS_SUCCESS])
             ->orderByDesc('created_at')
             ->get()
             ->map(function (Payment $p) {

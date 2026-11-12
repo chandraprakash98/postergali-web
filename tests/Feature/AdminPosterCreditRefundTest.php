@@ -28,6 +28,7 @@ class AdminPosterCreditRefundTest extends TestCase
             'device_id' => 'device-job-refund',
             'device_os' => 'android',
             'master_category' => 'Services',
+            'subcategory' => 'IT and Software',
             'business_name' => 'Refund Test Business',
             'job_role' => 'Developer',
             'job_type' => 'full_time',

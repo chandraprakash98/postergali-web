@@ -48,6 +48,7 @@ class AdminApprovalReferralCreditTest extends TestCase
             'device_id' => 'device-job-approval',
             'device_os' => 'android',
             'master_category' => 'Services',
+            'subcategory' => 'IT and Software',
             'business_name' => 'Test Business',
             'job_role' => 'Developer',
             'job_type' => 'full_time',

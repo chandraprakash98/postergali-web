@@ -136,6 +136,7 @@ class AdminAuthController extends Controller
         $action = $request->input('action', 'status');
 
         if ($action === 'status') {
+            $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
             $data = $request->validate([
                 'status' => 'required|in:approved,rejected',
                 'comment' => 'nullable|string|max:255',
@@ -143,10 +144,19 @@ class AdminAuthController extends Controller
                 'expires_at' => 'nullable|date',
             ]);
 
-            $model = $type === 'job' ? Job::findOrFail($id) : Offer::findOrFail($id);
+            $subcategory = trim((string) ($data['subcategory'] ?? ''));
+            if ($subcategory === '') {
+                $subcategory = trim((string) $model->subcategory);
+            }
+
+            if ($subcategory === '') {
+                return back()
+                    ->withErrors(['subcategory' => 'Please select a subcategory before approving or rejecting.'])
+                    ->withInput();
+            }
 
             $model->status = $data['status'];
-            if (isset($data['subcategory'])) {
+            if (!empty($data['subcategory'])) {
                 $model->subcategory = $data['subcategory'];
             }
             if ($type === 'job') {

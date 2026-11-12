@@ -27,6 +27,54 @@ class AdminPosterApprovalExpiryTest extends TestCase
         parent::tearDown();
     }
 
+    public function test_admin_cannot_approve_poster_without_a_subcategory(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $plan = Plan::create([
+            'plan_title' => 'Basic Plan',
+            'duration' => '30 days',
+            'price' => 499,
+        ]);
+        $job = Job::create([
+            'temp_id' => 'temp-job-no-subcategory',
+            'device_id' => 'device-job-no-subcategory',
+            'device_os' => 'android',
+            'master_category' => 'Services',
+            'business_name' => 'Uncategorized Business',
+            'job_role' => 'Developer',
+            'job_type' => 'full_time',
+            'salary' => 50000,
+            'phone_number' => '9876543210',
+            'latitude' => 28.6139,
+            'longitude' => 77.2090,
+            'city' => 'New Delhi',
+            'status' => 'pending',
+            'plan_id' => (string) $plan->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->from('/admin/ads/job/' . $job->id)
+            ->post('/admin/ads/job/' . $job->id . '/status', [
+                'status' => 'approved',
+            ])
+            ->assertRedirect('/admin/ads/job/' . $job->id)
+            ->assertSessionHasErrors([
+                'subcategory' => 'Please select a subcategory before approving or rejecting.',
+            ]);
+
+        $this->assertSame('pending', $job->fresh()->status);
+
+        $this->actingAs($admin)
+            ->from('/admin/ads/job/' . $job->id)
+            ->post('/admin/ads/job/' . $job->id . '/status', [
+                'status' => 'rejected',
+            ])
+            ->assertRedirect('/admin/ads/job/' . $job->id)
+            ->assertSessionHasErrors('subcategory');
+
+        $this->assertSame('pending', $job->fresh()->status);
+    }
+
     public function test_approving_job_sets_expiry_at_end_of_day(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
@@ -42,6 +90,7 @@ class AdminPosterApprovalExpiryTest extends TestCase
             'device_id'       => 'device-job-1',
             'device_os'       => 'android',
             'master_category' => 'Services',
+            'subcategory'     => 'IT and Software',
             'business_name'   => 'Test Business',
             'job_role'        => 'Developer',
             'job_type'        => 'full_time',
@@ -90,6 +139,7 @@ class AdminPosterApprovalExpiryTest extends TestCase
             'device_id'       => 'device-offer-1',
             'device_os'       => 'android',
             'master_category' => 'Retail',
+            'subcategory'     => 'Fashion',
             'business_name'   => 'Offer Mart',
             'offer_details'   => '50% off today only',
             'offer_type'      => 'Discount',
@@ -135,6 +185,7 @@ class AdminPosterApprovalExpiryTest extends TestCase
             'device_id'       => 'device-job-custom-exp',
             'device_os'       => 'android',
             'master_category' => 'Services',
+            'subcategory'     => 'IT and Software',
             'business_name'   => 'Custom Exp Business',
             'job_role'        => 'Manager',
             'job_type'        => 'full_time',
@@ -176,6 +227,7 @@ class AdminPosterApprovalExpiryTest extends TestCase
             'device_id'       => 'device-job-reject',
             'device_os'       => 'android',
             'master_category' => 'Services',
+            'subcategory'     => 'Retail and Sales',
             'business_name'   => 'Rejected Business',
             'job_role'        => 'Cashier',
             'job_type'        => 'part_time',
