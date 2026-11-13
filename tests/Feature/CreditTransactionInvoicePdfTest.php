@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CreditPack;
+use App\Models\CreditLedger;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\PaymentTransaction;
@@ -177,5 +178,75 @@ class CreditTransactionInvoicePdfTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertStringContainsString('invoice_PSTGL88888_razorpay_', $response->headers->get('content-disposition'));
+    }
+
+    public function test_credit_invoice_can_be_generated_from_mobile_and_credit_ledger_id(): void
+    {
+        $transaction = PaymentTransaction::create([
+            'transaction_uuid' => 'txn-ledger-invoice-001',
+            'customer_id' => $this->customer->customer_id,
+            'credit_pack_id' => $this->pack->id,
+            'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
+            'amount' => 199.00,
+            'currency' => 'INR',
+            'credits_to_add' => 220,
+            'provider_order_id' => 'order-ledger-invoice-001',
+            'status' => PaymentTransaction::STATUS_SUCCESS,
+            'verification_status' => PaymentTransaction::VERIFICATION_VERIFIED,
+            'paid_at' => now(),
+        ]);
+        $ledgerEntry = CreditLedger::create([
+            'customer_id' => $this->customer->customer_id,
+            'payment_transaction_id' => $transaction->id,
+            'entry_type' => CreditLedger::TYPE_CREDIT,
+            'transaction_category' => CreditLedger::CATEGORY_WALLET_TOPUP,
+            'credit_amount' => 220,
+            'debit_amount' => 0,
+            'balance_before' => 1000,
+            'balance_after' => 1220,
+            'reference_type' => 'payment_transaction',
+            'reference_id' => $transaction->transaction_uuid,
+            'description' => 'Credit Top-up invoice test',
+        ]);
+
+        $response = $this->get('/api/v1/credits/invoice?' . http_build_query([
+            'mobile' => $this->customer->mobile,
+            'credit_ledger_id' => $ledgerEntry->id,
+        ]));
+
+        $response->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('invoice_PSTGL88888_razorpay_', $response->headers->get('content-disposition'));
+        $this->assertStringStartsWith('%PDF-', $response->getContent());
+    }
+
+    public function test_credit_ledger_invoice_rejects_non_purchase_ledger_entries(): void
+    {
+        $ledgerEntry = CreditLedger::create([
+            'customer_id' => $this->customer->customer_id,
+            'entry_type' => CreditLedger::TYPE_CREDIT,
+            'transaction_category' => CreditLedger::CATEGORY_BONUS,
+            'credit_amount' => 100,
+            'debit_amount' => 0,
+            'balance_before' => 1000,
+            'balance_after' => 1100,
+            'reference_type' => 'referral',
+            'reference_id' => 'referral-1',
+            'description' => 'Referral bonus',
+        ]);
+
+        $this->getJson('/api/v1/credits/invoice?' . http_build_query([
+            'mobile' => $this->customer->mobile,
+            'credit_ledger_id' => $ledgerEntry->id,
+        ]))
+            ->assertNotFound()
+            ->assertJsonPath('message', 'The selected credit ledger entry is not a credit purchase.');
+    }
+
+    public function test_credit_ledger_invoice_requires_a_mobile_number(): void
+    {
+        $this->getJson('/api/v1/credits/invoice?credit_ledger_id=1')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['mobile']);
     }
 }

@@ -378,7 +378,7 @@ class CreditController extends Controller
     }
 
     /**
-     * Paginated credit ledger history with linked payment transaction details.
+     * Credit ledger history for the authenticated customer.
      * 
      * @route GET /api/v1/credits/transactions
      */
@@ -387,79 +387,12 @@ class CreditController extends Controller
         /** @var Customer $customer */
         $customer = $request->attributes->get('customer') ?? $request->user();
 
-        $perPage = min((int) $request->input('per_page', 20), 100);
-
-        $ledgerEntries = CreditLedger::byCustomer($customer->customer_id)
-            ->with(['paymentTransaction.plan'])
+        $entries = CreditLedger::byCustomer($customer->customer_id)
             ->orderByDesc('id')
-            ->paginate($perPage);
-
-        $entries = collect($ledgerEntries->items())->map(function (CreditLedger $entry) {
-            $paymentTransaction = $entry->paymentTransaction;
-
-            return array_merge($entry->toArray(), [
-                'payment_transaction' => $paymentTransaction ? [
-                    'transaction_uuid' => $paymentTransaction->transaction_uuid,
-                    'payment_provider' => $paymentTransaction->payment_provider,
-                    'amount' => (float) $paymentTransaction->amount,
-                    'currency' => $paymentTransaction->currency,
-                    'credits_to_add' => $paymentTransaction->credits_to_add,
-                    'status' => $paymentTransaction->status,
-                    'verification_status' => $paymentTransaction->verification_status,
-                    'plan_title' => $paymentTransaction->plan?->plan_title,
-                    'paid_at' => $paymentTransaction->paid_at?->toIso8601String(),
-                    'created_at' => $paymentTransaction->created_at?->toIso8601String(),
-                ] : null,
-            ]);
-        });
-
-        $walletTransactions = $entries
-            ->filter(fn (array $entry) => $entry['payment_transaction'] !== null)
-            ->map(function (array $entry) {
-                $transaction = $entry['payment_transaction'];
-
-                return [
-                    'transaction_uuid' => $transaction['transaction_uuid'],
-                    'plan_title' => $transaction['plan_title'],
-                    'payment_provider' => $transaction['payment_provider'],
-                    'amount' => $transaction['amount'],
-                    'currency' => $transaction['currency'],
-                    'credits_to_add' => $transaction['credits_to_add'],
-                    'status' => $transaction['status'],
-                    'paid_at' => $transaction['paid_at'],
-                    'created_at' => $transaction['created_at'],
-                ];
-            })
-            ->values();
-
-        $orderTransactions = $entries
-            ->filter(fn (array $entry) => $entry['entry_type'] === CreditLedger::TYPE_DEBIT)
-            ->map(fn (array $entry) => [
-                'transaction_id' => $entry['ledger_uuid'],
-                'job_or_offer_id' => $entry['reference_id'],
-                'item_type' => $entry['reference_type'],
-                'payment_type' => $entry['transaction_category'],
-                'total_amount' => (float) $entry['debit_amount'],
-                'razorpay_amount' => 0.0,
-                'credit_amount' => (float) $entry['debit_amount'],
-                'payment_status' => 'COMPLETED',
-                'created_at' => $entry['created_at'],
-            ])
-            ->values();
+            ->get();
 
         return response()->json([
-            'success' => true,
-            'data' => [
-                'wallet_trans' => $walletTransactions,
-                'order_trans' => $orderTransactions,
-                'credit_ledger' => $entries,
-            ],
-            'meta' => [
-                'current_page' => $ledgerEntries->currentPage(),
-                'per_page' => $ledgerEntries->perPage(),
-                'total' => $ledgerEntries->total(),
-                'last_page' => $ledgerEntries->lastPage(),
-            ],
+            'credit_ledger' => $entries,
         ]);
     }
 

@@ -21,8 +21,11 @@ class GenerateInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $ledgerInvoiceRequiresMobile = $this->filled('credit_ledger_id');
+
         return [
             'mobile' => [
+                ...($ledgerInvoiceRequiresMobile && !$this->filled('mobile_number') ? ['required'] : []),
                 'required_without_all:customer_id,postergali_id,postergaliid,mobile_number',
                 'nullable',
                 'string',
@@ -30,7 +33,9 @@ class GenerateInvoiceRequest extends FormRequest
                 'regex:/^\+?[0-9\-\s]{7,15}$/',
             ],
             'mobile_number' => [
-                'sometimes',
+                ...($ledgerInvoiceRequiresMobile && !$this->filled('mobile')
+                    ? ['required']
+                    : ['sometimes']),
                 'nullable',
                 'string',
                 'max:20',
@@ -42,6 +47,7 @@ class GenerateInvoiceRequest extends FormRequest
             'transaction_uuid' => ['sometimes', 'nullable', 'string'],
             'transaction_id' => ['sometimes', 'nullable', 'string'],
             'order_id' => ['sometimes', 'nullable', 'string'],
+            'credit_ledger_id' => ['sometimes', 'integer', 'min:1'],
             'download' => ['sometimes', 'nullable', 'boolean'],
         ];
     }

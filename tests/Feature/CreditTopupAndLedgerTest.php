@@ -784,18 +784,15 @@ class CreditTopupAndLedgerTest extends TestCase
         ]);
 
         $responseB->assertStatus(200)
-            ->assertJsonCount(0, 'data.wallet_trans')
-            ->assertJsonCount(0, 'data.order_trans')
-            ->assertJsonCount(0, 'data.credit_ledger')
-            ->assertJsonPath('meta.total', 0);
+            ->assertExactJson(['credit_ledger' => []]);
 
         $responseA = $this->getJson('/api/v1/credits/transactions', $this->customerHeaders());
         $responseA->assertStatus(200)
-            ->assertJsonCount(1, 'data.wallet_trans')
-            ->assertJsonCount(0, 'data.order_trans')
-            ->assertJsonPath('data.credit_ledger.0.payment_transaction.transaction_uuid', $txnA->transaction_uuid)
-            ->assertJsonPath('data.credit_ledger.0.payment_transaction.plan_title', $this->consumablePlan->name)
-            ->assertJsonPath('data.wallet_trans.0.transaction_uuid', $txnA->transaction_uuid);
+            ->assertJsonPath('credit_ledger.0.payment_transaction_id', $txnA->id)
+            ->assertJsonPath('credit_ledger.0.reference_id', $txnA->transaction_uuid)
+            ->assertJsonMissingPath('success')
+            ->assertJsonMissingPath('data')
+            ->assertJsonMissingPath('meta');
 
         // Customer B cannot view Customer A's single transaction by UUID
         $this->getJson("/api/v1/credits/transactions/{$txnA->transaction_uuid}", [
@@ -876,13 +873,8 @@ class CreditTopupAndLedgerTest extends TestCase
 
         $this->getJson('/api/v1/credits/transactions', $this->customerHeaders())
             ->assertOk()
-            ->assertJsonPath('meta.total', 1)
-            ->assertJsonPath('data.credit_ledger.0.payment_transaction.transaction_uuid', $verifiedTransaction->transaction_uuid)
-            ->assertJsonPath('data.credit_ledger.0.payment_transaction.status', PaymentTransaction::STATUS_SUCCESS)
-            ->assertJsonCount(1, 'data.wallet_trans')
-            ->assertJsonCount(0, 'data.order_trans')
-            ->assertJsonCount(1, 'data.credit_ledger')
-            ->assertJsonPath('data.wallet_trans.0.transaction_uuid', $verifiedTransaction->transaction_uuid);
+            ->assertJsonPath('credit_ledger.0.payment_transaction_id', $verifiedTransaction->id)
+            ->assertJsonPath('credit_ledger.0.reference_id', $verifiedTransaction->transaction_uuid);
     }
 
     public function test_credit_transactions_history_includes_non_payment_wallet_credits(): void
@@ -899,13 +891,19 @@ class CreditTopupAndLedgerTest extends TestCase
 
         $this->getJson('/api/v1/credits/transactions', $this->customerHeaders())
             ->assertOk()
-            ->assertJsonPath('data.credit_ledger.0.ledger_uuid', $entry->ledger_uuid)
-            ->assertJsonPath('data.credit_ledger.0.transaction_category', CreditLedger::CATEGORY_BONUS)
-            ->assertJsonPath('data.credit_ledger.0.credit_amount', '75.00')
-            ->assertJsonPath('data.credit_ledger.0.payment_transaction', null)
-            ->assertJsonCount(0, 'data.wallet_trans')
-            ->assertJsonCount(0, 'data.order_trans')
-            ->assertJsonPath('meta.total', 1);
+            ->assertJsonStructure([
+                'credit_ledger' => [
+                    ['customer_id', 'created_at'],
+                ],
+            ])
+            ->assertJsonPath('credit_ledger.0.customer_id', $this->customer->customer_id)
+            ->assertJsonPath('credit_ledger.0.ledger_uuid', $entry->ledger_uuid)
+            ->assertJsonPath('credit_ledger.0.transaction_category', CreditLedger::CATEGORY_BONUS)
+            ->assertJsonPath('credit_ledger.0.credit_amount', '75.00')
+            ->assertJsonMissingPath('success')
+            ->assertJsonMissingPath('data')
+            ->assertJsonMissingPath('meta')
+            ->assertJsonMissingPath('credit_ledger.0.payment_transaction');
     }
 
     public function test_transactions_history_preserves_order_trans_using_ledger_debits(): void
@@ -922,11 +920,8 @@ class CreditTopupAndLedgerTest extends TestCase
 
         $this->getJson('/api/v1/credits/transactions', $this->customerHeaders())
             ->assertOk()
-            ->assertJsonPath('data.order_trans.0.transaction_id', $entry->ledger_uuid)
-            ->assertJsonPath('data.order_trans.0.job_or_offer_id', 'poster-42')
-            ->assertJsonPath('data.order_trans.0.item_type', 'job')
-            ->assertJsonPath('data.order_trans.0.credit_amount', 40)
-            ->assertJsonPath('data.credit_ledger.0.ledger_uuid', $entry->ledger_uuid);
+            ->assertJsonPath('credit_ledger.0.ledger_uuid', $entry->ledger_uuid)
+            ->assertJsonPath('credit_ledger.0.debit_amount', '40.00');
     }
 
     /**

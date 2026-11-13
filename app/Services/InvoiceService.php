@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Customer;
 use App\Models\CustomerCredit;
+use App\Models\CreditLedger;
 use App\Models\PaymentTransaction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\DomPDF\PDF as DomPDFInstance;
@@ -156,6 +157,49 @@ class InvoiceService
             'customer' => $customer,
             'transaction' => $transaction,
         ];
+    }
+
+    /**
+     * Generate an invoice for a verified wallet top-up referenced by a customer's ledger entry.
+     *
+     * @throws NotFoundHttpException
+     */
+    public function generateCreditLedgerInvoicePdf(string $mobile, int $ledgerId): array
+    {
+        $customer = $this->resolveCustomer($mobile);
+        $ledgerEntry = CreditLedger::query()
+            ->where('id', $ledgerId)
+            ->where('customer_id', $customer->customer_id)
+            ->first();
+
+        if (!$ledgerEntry) {
+            throw new NotFoundHttpException('Credit ledger entry not found for the provided mobile number.');
+        }
+
+        if (
+            $ledgerEntry->entry_type !== CreditLedger::TYPE_CREDIT
+            || $ledgerEntry->transaction_category !== CreditLedger::CATEGORY_WALLET_TOPUP
+            || !$ledgerEntry->payment_transaction_id
+        ) {
+            throw new NotFoundHttpException('The selected credit ledger entry is not a credit purchase.');
+        }
+
+        $transaction = PaymentTransaction::query()
+            ->where('id', $ledgerEntry->payment_transaction_id)
+            ->where('customer_id', $customer->customer_id)
+            ->where('status', PaymentTransaction::STATUS_SUCCESS)
+            ->where('verification_status', PaymentTransaction::VERIFICATION_VERIFIED)
+            ->first();
+
+        if (!$transaction) {
+            throw new NotFoundHttpException('No verified payment transaction was found for this credit ledger entry.');
+        }
+
+        return $this->generateCreditTransactionInvoicePdf(
+            mobile: $customer->mobile,
+            customerId: $customer->customer_id,
+            transactionId: $transaction->transaction_uuid,
+        );
     }
 
     /**

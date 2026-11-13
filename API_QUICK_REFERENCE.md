@@ -47,6 +47,21 @@ The `mobile_number` parameter can also be sent as `mobile` or `phone_number`.
 The response includes `is_daily_limit_over`, `can_post`, today's poster count,
 the configured daily limit, and the remaining number of posters allowed.
 
+### Generate a Credit Purchase Invoice
+Request an invoice PDF for a specific verified credit purchase using the customer's
+mobile number and its `credit_ledger` row ID:
+
+```bash
+curl -G "http://localhost:8000/api/v1/credits/invoice" \
+  --data-urlencode "mobile=9876543210" \
+  --data-urlencode "credit_ledger_id=123"
+```
+
+The endpoint streams the PDF inline by default. Add `download=1` to download it.
+The ledger entry must be a successful, verified wallet top-up belonging to that
+mobile number. The same parameters are accepted by
+`/api/v1/payments/transaction-invoice`.
+
 ---
 
 ## Postman Examples

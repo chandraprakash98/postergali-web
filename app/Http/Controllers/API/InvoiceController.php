@@ -36,14 +36,20 @@ class InvoiceController extends Controller
                 'mobile' => $mobile,
                 'customer_id' => $customerId,
                 'transaction_id' => $transactionId,
+                'credit_ledger_id' => $request->input('credit_ledger_id'),
                 'wants_download' => $request->wantsDownload(),
             ]);
 
-            $result = $this->invoiceService->generateCreditTransactionInvoicePdf(
-                $mobile,
-                $customerId,
-                $transactionId
-            );
+            $result = $request->filled('credit_ledger_id')
+                ? $this->invoiceService->generateCreditLedgerInvoicePdf(
+                    (string) $mobile,
+                    (int) $request->input('credit_ledger_id')
+                )
+                : $this->invoiceService->generateCreditTransactionInvoicePdf(
+                    $mobile,
+                    $customerId,
+                    $transactionId
+                );
 
             // Direct open in browser viewer by default; force download if requested
             if ($request->wantsDownload()) {

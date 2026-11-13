@@ -502,17 +502,12 @@ Accept: application/json
   }
   ```
 
-#### 4. View Payment Transactions History (Paginated)
-- **Route:** `GET /credits/transactions?page=1&per_page=20`
-- `data.credit_ledger` is the transaction history source and includes the customer's
-  append-only wallet ledger: purchased credits, signup/influencer bonuses, referral
-  rewards, poster purchases, and refunds.
-- The existing `wallet_trans` and `order_trans` response keys are retained and
-  populated from linked payment transactions and ledger debits, respectively.
-- Each entry's `payment_transaction` contains linked payment transaction details
-  when the ledger entry is for a credit top-up; it is `null` for other entries.
-- Pagination is in `meta`. This endpoint does not read or return records from the
-  legacy `payments` table.
+#### 4. View Credit Transaction History
+- **Route:** `GET /credits/transactions`
+- Returns only the authenticated customer's `credit_ledger` records. Payment
+  transaction references are available through the ledger fields
+  `payment_transaction_id` and `reference_id`; no payment or transaction wrappers
+  are added to the response.
 
 #### 5. View Single Transaction Details
 - **Route:** `GET /credits/transactions/{transaction_uuid}`
