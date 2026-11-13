@@ -36,20 +36,28 @@ class InvoiceController extends Controller
                 'mobile' => $mobile,
                 'customer_id' => $customerId,
                 'transaction_id' => $transactionId,
+                'ledger_uuid' => $request->input('ledger_uuid'),
                 'credit_ledger_id' => $request->input('credit_ledger_id'),
                 'wants_download' => $request->wantsDownload(),
             ]);
 
-            $result = $request->filled('credit_ledger_id')
-                ? $this->invoiceService->generateCreditLedgerInvoicePdf(
+            if ($request->filled('ledger_uuid')) {
+                $result = $this->invoiceService->generateCreditLedgerInvoiceByUuid(
+                    (string) $customerId,
+                    (string) $request->input('ledger_uuid')
+                );
+            } elseif ($request->filled('credit_ledger_id')) {
+                $result = $this->invoiceService->generateCreditLedgerInvoicePdf(
                     (string) $mobile,
                     (int) $request->input('credit_ledger_id')
-                )
-                : $this->invoiceService->generateCreditTransactionInvoicePdf(
+                );
+            } else {
+                $result = $this->invoiceService->generateCreditTransactionInvoicePdf(
                     $mobile,
                     $customerId,
                     $transactionId
                 );
+            }
 
             // Direct open in browser viewer by default; force download if requested
             if ($request->wantsDownload()) {
@@ -96,7 +104,13 @@ class InvoiceController extends Controller
             $customerId = $request->resolvedCustomerId();
 
             // If user explicitly asks for credit top-up invoice or passes a transaction ID, forward to creditInvoice
-            if ($request->input('type') === 'credit' || $request->input('type') === 'topup' || $request->has('transaction_uuid') || $request->has('transaction_id')) {
+            if (
+                $request->input('type') === 'credit'
+                || $request->input('type') === 'topup'
+                || $request->has('transaction_uuid')
+                || $request->has('transaction_id')
+                || $request->has('ledger_uuid')
+            ) {
                 return $this->creditInvoice($request);
             }
 

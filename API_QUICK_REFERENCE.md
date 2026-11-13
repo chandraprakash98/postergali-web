@@ -48,18 +48,19 @@ The response includes `is_daily_limit_over`, `can_post`, today's poster count,
 the configured daily limit, and the remaining number of posters allowed.
 
 ### Generate a Credit Purchase Invoice
-Request an invoice PDF for a specific verified credit purchase using the customer's
-mobile number and its `credit_ledger` row ID:
+Request an invoice PDF for a specific verified credit purchase using the ledger UUID
+and its customer's ID:
 
 ```bash
 curl -G "http://localhost:8000/api/v1/credits/invoice" \
-  --data-urlencode "mobile=9876543210" \
-  --data-urlencode "credit_ledger_id=123"
+  --data-urlencode "customer_id=PSTGL_9876543210" \
+  --data-urlencode "ledger_uuid=7b236c22-66be-4c79-8f63-7c5c1e0a4f58"
 ```
 
 The endpoint streams the PDF inline by default. Add `download=1` to download it.
-The ledger entry must be a successful, verified wallet top-up belonging to that
-mobile number. The same parameters are accepted by
+Both identifiers must belong to the same customer, and the ledger entry must be a
+successful, verified wallet top-up. The legacy `mobile` plus `credit_ledger_id`
+parameters are also supported. The same parameters are accepted by
 `/api/v1/payments/transaction-invoice`.
 
 ---

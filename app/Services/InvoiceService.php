@@ -176,6 +176,31 @@ class InvoiceService
             throw new NotFoundHttpException('Credit ledger entry not found for the provided mobile number.');
         }
 
+        return $this->generateCreditLedgerInvoiceForEntry($customer, $ledgerEntry);
+    }
+
+    /**
+     * Generate an invoice for a verified wallet top-up referenced by ledger UUID and customer ID.
+     *
+     * @throws NotFoundHttpException
+     */
+    public function generateCreditLedgerInvoiceByUuid(string $customerId, string $ledgerUuid): array
+    {
+        $customer = $this->resolveCustomer(customerId: $customerId);
+        $ledgerEntry = CreditLedger::query()
+            ->where('ledger_uuid', $ledgerUuid)
+            ->where('customer_id', $customer->customer_id)
+            ->first();
+
+        if (!$ledgerEntry) {
+            throw new NotFoundHttpException('Credit ledger entry not found for the provided customer ID.');
+        }
+
+        return $this->generateCreditLedgerInvoiceForEntry($customer, $ledgerEntry);
+    }
+
+    private function generateCreditLedgerInvoiceForEntry(Customer $customer, CreditLedger $ledgerEntry): array
+    {
         if (
             $ledgerEntry->entry_type !== CreditLedger::TYPE_CREDIT
             || $ledgerEntry->transaction_category !== CreditLedger::CATEGORY_WALLET_TOPUP

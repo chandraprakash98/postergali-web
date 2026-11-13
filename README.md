@@ -21,6 +21,27 @@ Laravel is a web application framework with expressive, elegant syntax. We belie
 
 Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
+## Truncating Application Data
+
+Preview the application tables that would be cleared:
+
+```bash
+php artisan db:truncate-app
+```
+
+To truncate them, run:
+
+```bash
+php artisan db:truncate-app --execute
+```
+
+The command asks for confirmation and preserves Laravel system tables such as
+cache, sessions, and migrations. In production, `--force` is required:
+
+```bash
+php artisan db:truncate-app --execute --force
+```
+
 ## Learning Laravel
 
 Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
