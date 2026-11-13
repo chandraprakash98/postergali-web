@@ -46,6 +46,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('ugc-reports', [AdminAuthController::class, 'ugcReports'])->name('ugcReports');
         Route::get('credit-settings', [AdminAuthController::class, 'creditSettings'])->name('creditSettings');
         Route::post('credit-settings', [AdminAuthController::class, 'updateCreditSettings'])->name('creditSettings.update');
+        Route::get('poster-limit-settings', [AdminAuthController::class, 'posterLimitSettings'])->name('posterLimitSettings');
+        Route::post('poster-limit-settings', [AdminAuthController::class, 'updatePosterLimitSettings'])->name('posterLimitSettings.update');
 
         Route::get('batch-status', [AdminAuthController::class, 'batchStatus'])->name('batch.status');
         Route::get('ads/{type}/{id}', [AdminAuthController::class, 'showAd'])->name('ad.show');

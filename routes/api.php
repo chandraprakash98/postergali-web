@@ -22,6 +22,7 @@ Route::post('ugc/report', [UgcReportController::class, 'store'])
 Route::prefix('v1')->group(function () {
     Route::get('categories', [CategoryController::class, 'index']);
     Route::get('posters/check', [PosterController::class, 'check']);
+    Route::get('posters/daily-limit', [PosterController::class, 'check']);
     Route::get('offers/search', [OfferController::class, 'search']);
     Route::apiResource('offers', OfferController::class);
     Route::get('jobs/search', [JobController::class, 'search']);

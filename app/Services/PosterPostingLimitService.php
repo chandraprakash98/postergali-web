@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Job;
 use App\Models\Offer;
+use App\Models\PosterSetting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -91,7 +92,11 @@ class PosterPostingLimitService
      */
     public function getDailyLimit(): int
     {
-        return (int) config('posters.daily_limit_per_phone', 2);
+        $configuredLimit = PosterSetting::query()->latest('id')->value('daily_limit_per_phone');
+
+        return $configuredLimit !== null
+            ? (int) $configuredLimit
+            : (int) config('posters.daily_limit_per_phone', 2);
     }
 
     /**

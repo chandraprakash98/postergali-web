@@ -152,6 +152,10 @@
                     <span class="menu-icon">💳</span>
                     Credit Settings
                 </a>
+                <a href="{{ route('admin.posterLimitSettings') }}" class="menu-item {{ ($active ?? null) === 'poster-limit-settings' ? 'active' : '' }}">
+                    <span class="menu-icon">📊</span>
+                    Poster Limit
+                </a>
             </div>
             <div class="sidebar-footer">
                 {{-- Batch Status Mini Widget --}}
@@ -202,12 +206,15 @@
                     @elseif(($active ?? 'all') === 'credit-settings')
                         <h2>Credit Settings</h2>
                         <p>Configure automated credit balance allocations</p>
+                    @elseif(($active ?? 'all') === 'poster-limit-settings')
+                        <h2>Poster Limit</h2>
+                        <p>Configure how many posters each phone number can create per day</p>
                     @else
                         <h2>Dashboard</h2>
                         <p>Overview of all ad listings</p>
                     @endif
                 </div>
-                @if(!in_array(($active ?? 'all'), ['referrals', 'influencers', 'pricing', 'reports', 'credit-settings'], true))
+                @if(!in_array(($active ?? 'all'), ['referrals', 'influencers', 'pricing', 'reports', 'credit-settings', 'poster-limit-settings'], true))
                     <div class="type-toggle">
                         <div class="pill">
                             <button id="toggle-jobs" class="active">Jobs</button>
@@ -451,6 +458,49 @@
                             <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
                                 <button type="submit" class="view-btn" style="padding: 10px 28px; font-size: 14px; cursor: pointer; border: none; background: var(--sidebar); border-radius: 8px; color: #fff; font-weight: 800;">
                                     💾 Save Credit Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                @elseif(($active ?? 'all') === 'poster-limit-settings')
+                    <div class="table-section" style="max-width: 780px;">
+                        <div class="table-header" style="padding: 0 0 16px 0;">
+                            <div>
+                                <h3 style="font-size: 20px;">Daily Poster Limit</h3>
+                                <p style="color: #8b8179; font-size: 13px;">Set the maximum number of posters a phone number can create each day. Set to 0 for unlimited posting.</p>
+                            </div>
+                        </div>
+
+                        <form method="POST" action="{{ route('admin.posterLimitSettings.update') }}">
+                            @csrf
+                            <div style="background: var(--panel); border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 12px rgba(43,30,24,0.04); display: flex; align-items: center; justify-content: space-between; gap: 20px; border-left: 4px solid var(--accent);">
+                                <div style="flex: 1;">
+                                    <label for="daily_limit_per_phone" style="font-size: 15px; font-weight: 800; color: #2f2a26; cursor: pointer;">
+                                        Posters per phone number per day
+                                    </label>
+                                    <p style="font-size: 12px; color: #79706b; margin: 4px 0 0; line-height: 1.4;">
+                                        Applies according to the current limit mode: combined or per poster type.
+                                    </p>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                    <input
+                                        type="number"
+                                        name="daily_limit_per_phone"
+                                        id="daily_limit_per_phone"
+                                        min="0"
+                                        max="2147483647"
+                                        step="1"
+                                        value="{{ old('daily_limit_per_phone', $dailyPosterLimit) }}"
+                                        required
+                                        style="width: 140px; padding: 8px 12px; border-radius: 8px; border: 1px solid #d7cfc7; font-size: 15px; font-weight: 700; color: #2f2a26; background: #fff; text-align: right;"
+                                    >
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; margin: 20px 0;">
+                                <button type="submit" class="view-btn" style="padding: 10px 28px; font-size: 14px; cursor: pointer; border: none; background: var(--sidebar); border-radius: 8px; color: #fff; font-weight: 800;">
+                                    💾 Save Poster Limit
                                 </button>
                             </div>
                         </form>

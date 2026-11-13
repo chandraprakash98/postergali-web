@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Job;
 use App\Models\Offer;
+use App\Models\PosterSetting;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -230,6 +232,7 @@ class PosterDailyLimitTest extends TestCase
                 'daily_count' => 1,
                 'daily_limit' => 2,
                 'remaining' => 1,
+                'is_daily_limit_over' => false,
                 'type' => 'all',
             ]);
     }
@@ -249,8 +252,75 @@ class PosterDailyLimitTest extends TestCase
                 'daily_count' => 2,
                 'daily_limit' => 2,
                 'remaining' => 0,
+                'is_daily_limit_over' => true,
                 'type' => 'all',
                 'message' => 'Daily poster limit reached. You can only post up to 2 posters per day.',
             ]);
+    }
+
+    public function test_admin_can_configure_daily_limit_and_saved_value_controls_poster_creation(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'name' => 'Poster Admin']);
+
+        $this->actingAs($admin)
+            ->get('/admin/poster-limit-settings')
+            ->assertOk()
+            ->assertSee('Daily Poster Limit')
+            ->assertSee('value="2"', false);
+
+        $this->actingAs($admin)
+            ->post('/admin/poster-limit-settings', ['daily_limit_per_phone' => 1])
+            ->assertRedirect('/admin/poster-limit-settings')
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('poster_settings', [
+            'daily_limit_per_phone' => 1,
+            'updated_by' => 'Poster Admin',
+        ]);
+
+        $phone = '9876543221';
+        $this->postJson('/api/v1/jobs', $this->jobPayload($phone))->assertCreated();
+        $this->postJson('/api/v1/jobs', $this->jobPayload($phone))->assertUnprocessable();
+        $this->getJson('/api/v1/posters/daily-limit?mobile=' . $phone)
+            ->assertOk()
+            ->assertJsonPath('is_daily_limit_over', true)
+            ->assertJsonPath('daily_count', 1)
+            ->assertJsonPath('daily_limit', 1);
+    }
+
+    public function test_daily_limit_setting_validation_rejects_negative_values(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)
+            ->post('/admin/poster-limit-settings', ['daily_limit_per_phone' => -1])
+            ->assertSessionHasErrors('daily_limit_per_phone');
+
+        $this->assertDatabaseCount('poster_settings', 0);
+    }
+
+    public function test_per_type_limit_check_reports_over_only_when_both_types_are_at_their_limit(): void
+    {
+        config(['posters.limit_mode' => 'per_type']);
+        PosterSetting::create(['daily_limit_per_phone' => 2]);
+        $phone = '9876543222';
+
+        $this->postJson('/api/v1/jobs', $this->jobPayload($phone))->assertCreated();
+        $this->postJson('/api/v1/jobs', $this->jobPayload($phone))->assertCreated();
+
+        $this->getJson('/api/v1/posters/daily-limit?mobile_number=' . $phone)
+            ->assertOk()
+            ->assertJsonPath('is_daily_limit_over', false)
+            ->assertJsonPath('daily_count', 2)
+            ->assertJsonPath('remaining', 2);
+
+        $this->postJson('/api/v1/offers', $this->offerPayload($phone))->assertCreated();
+        $this->postJson('/api/v1/offers', $this->offerPayload($phone))->assertCreated();
+
+        $this->getJson('/api/v1/posters/daily-limit?mobile_number=' . $phone)
+            ->assertOk()
+            ->assertJsonPath('is_daily_limit_over', true)
+            ->assertJsonPath('daily_count', 4)
+            ->assertJsonPath('remaining', 0);
     }
 }

@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Plan;
+use App\Models\PosterSetting;
 use App\Models\Notification;
 use App\Models\Payment;
 use App\Models\UgcReport;
@@ -507,6 +508,32 @@ class AdminAuthController extends Controller
         ]);
 
         return redirect()->route('admin.creditSettings')->with('success', 'Credit configuration amounts updated successfully.');
+    }
+
+    public function posterLimitSettings()
+    {
+        $settings = PosterSetting::query()->latest('id')->first();
+
+        return $this->renderDashboard('poster-limit-settings', [
+            'dailyPosterLimit' => $settings?->daily_limit_per_phone
+                ?? config('posters.daily_limit_per_phone', 2),
+        ]);
+    }
+
+    public function updatePosterLimitSettings(Request $request)
+    {
+        $data = $request->validate([
+            'daily_limit_per_phone' => ['required', 'integer', 'min:0', 'max:2147483647'],
+        ]);
+
+        $settings = PosterSetting::query()->latest('id')->first() ?? new PosterSetting();
+        $settings->fill([
+            'daily_limit_per_phone' => $data['daily_limit_per_phone'],
+            'updated_by' => Auth::user()->name ?? 'Admin',
+        ])->save();
+
+        return redirect()->route('admin.posterLimitSettings')
+            ->with('success', 'Daily poster limit updated successfully.');
     }
 
     private function getAllAds()

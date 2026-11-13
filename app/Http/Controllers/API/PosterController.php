@@ -27,13 +27,24 @@ class PosterController extends Controller
         $requestedType = strtolower((string) ($validated['type'] ?? 'all'));
         $type = in_array($requestedType, ['offer', 'offers'], true) ? 'offer' : 'job';
         $limit = $this->posterLimitService->getDailyLimit();
-        $count = $this->posterLimitService->getDailyCount($phoneNumber, $type);
-        $remaining = $limit > 0 ? max(0, $limit - $count) : null;
-        $canPost = $limit <= 0 || $count < $limit;
+        if ($requestedType === 'all' && config('posters.limit_mode', 'combined') === 'per_type') {
+            $jobCount = $this->posterLimitService->getDailyCount($phoneNumber, 'job');
+            $offerCount = $this->posterLimitService->getDailyCount($phoneNumber, 'offer');
+            $count = $jobCount + $offerCount;
+            $canPost = $limit <= 0 || $jobCount < $limit || $offerCount < $limit;
+            $remaining = $limit > 0
+                ? max(0, $limit - $jobCount) + max(0, $limit - $offerCount)
+                : null;
+        } else {
+            $count = $this->posterLimitService->getDailyCount($phoneNumber, $type);
+            $remaining = $limit > 0 ? max(0, $limit - $count) : null;
+            $canPost = $limit <= 0 || $count < $limit;
+        }
 
         $response = [
             'success' => true,
             'can_post' => $canPost,
+            'is_daily_limit_over' => ! $canPost,
             'daily_count' => $count,
             'daily_limit' => $limit,
             'remaining' => $remaining,

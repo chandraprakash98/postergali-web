@@ -38,6 +38,15 @@ Successful requests return `201 Created`, save the report for admins, and email
 `contact@postergali.com`. Admins can review reports in the **UGC Reports** section
 of the admin panel.
 
+### Check a Phone Number's Daily Poster Limit
+```bash
+curl "http://localhost:8000/api/v1/posters/daily-limit?mobile_number=9876543210"
+```
+
+The `mobile_number` parameter can also be sent as `mobile` or `phone_number`.
+The response includes `is_daily_limit_over`, `can_post`, today's poster count,
+the configured daily limit, and the remaining number of posters allowed.
+
 ---
 
 ## Postman Examples
