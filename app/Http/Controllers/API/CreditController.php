@@ -8,7 +8,6 @@ use App\Models\CreditPack;
 use App\Models\CreditSetting;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
-use App\Models\Payment;
 use App\Models\PaymentTransaction;
 use App\Models\Plan;
 use App\Services\Payments\CreditTopupService;
@@ -379,7 +378,7 @@ class CreditController extends Controller
     }
 
     /**
-     * Paginated payment transaction history for authenticated customer.
+     * Paginated credit ledger history with linked payment transaction details.
      * 
      * @route GET /api/v1/credits/transactions
      */
@@ -390,68 +389,76 @@ class CreditController extends Controller
 
         $perPage = min((int) $request->input('per_page', 20), 100);
 
-        $transactions = PaymentTransaction::byCustomer($customer->customer_id)
-            ->where('status', PaymentTransaction::STATUS_SUCCESS)
-            ->where('verification_status', PaymentTransaction::VERIFICATION_VERIFIED)
-            ->with(['plan:id,name,pack_code,credits'])
+        $ledgerEntries = CreditLedger::byCustomer($customer->customer_id)
+            ->with(['paymentTransaction.plan'])
             ->orderByDesc('id')
             ->paginate($perPage);
 
-        $ledgerEntries = CreditLedger::byCustomer($customer->customer_id)
-            ->orderByDesc('id')
-            ->paginate($perPage, ['*'], 'ledger_page');
+        $entries = collect($ledgerEntries->items())->map(function (CreditLedger $entry) {
+            $paymentTransaction = $entry->paymentTransaction;
 
-        // Map cleanly without exposing provider secrets or internal json blobs
-        $transformed = collect($transactions->items())->map(function (PaymentTransaction $txn) {
-            return [
-                'transaction_uuid' => $txn->transaction_uuid,
-                'plan_title' => $txn->plan?->plan_title,
-                'payment_provider' => $txn->payment_provider,
-                'amount' => (float) $txn->amount,
-                'currency' => $txn->currency,
-                'credits_to_add' => $txn->credits_to_add,
-                'status' => $txn->status,
-                'paid_at' => $txn->paid_at?->toIso8601String(),
-                'created_at' => $txn->created_at?->toIso8601String(),
-            ];
+            return array_merge($entry->toArray(), [
+                'payment_transaction' => $paymentTransaction ? [
+                    'transaction_uuid' => $paymentTransaction->transaction_uuid,
+                    'payment_provider' => $paymentTransaction->payment_provider,
+                    'amount' => (float) $paymentTransaction->amount,
+                    'currency' => $paymentTransaction->currency,
+                    'credits_to_add' => $paymentTransaction->credits_to_add,
+                    'status' => $paymentTransaction->status,
+                    'verification_status' => $paymentTransaction->verification_status,
+                    'plan_title' => $paymentTransaction->plan?->plan_title,
+                    'paid_at' => $paymentTransaction->paid_at?->toIso8601String(),
+                    'created_at' => $paymentTransaction->created_at?->toIso8601String(),
+                ] : null,
+            ]);
         });
 
-        $orderTrans = Payment::where('customer_id', $customer->customer_id)
-            ->whereIn('payment_status', [Payment::STATUS_COMPLETED, Payment::STATUS_SUCCESS])
-            ->orderByDesc('created_at')
-            ->get()
-            ->map(function (Payment $p) {
+        $walletTransactions = $entries
+            ->filter(fn (array $entry) => $entry['payment_transaction'] !== null)
+            ->map(function (array $entry) {
+                $transaction = $entry['payment_transaction'];
+
                 return [
-                    'transaction_id' => $p->transaction_id,
-                    'job_or_offer_id' => $p->job_or_offer_id,
-                    'item_type' => $p->item_type,
-                    'payment_type' => $p->payment_type,
-                    'total_amount' => (float) $p->total_amount,
-                    'razorpay_amount' => (float) $p->razorpay_amount,
-                    'credit_amount' => (float) $p->credit_amount,
-                    'payment_status' => $p->payment_status,
-                    'created_at' => $p->created_at?->toIso8601String(),
+                    'transaction_uuid' => $transaction['transaction_uuid'],
+                    'plan_title' => $transaction['plan_title'],
+                    'payment_provider' => $transaction['payment_provider'],
+                    'amount' => $transaction['amount'],
+                    'currency' => $transaction['currency'],
+                    'credits_to_add' => $transaction['credits_to_add'],
+                    'status' => $transaction['status'],
+                    'paid_at' => $transaction['paid_at'],
+                    'created_at' => $transaction['created_at'],
                 ];
-            });
+            })
+            ->values();
+
+        $orderTransactions = $entries
+            ->filter(fn (array $entry) => $entry['entry_type'] === CreditLedger::TYPE_DEBIT)
+            ->map(fn (array $entry) => [
+                'transaction_id' => $entry['ledger_uuid'],
+                'job_or_offer_id' => $entry['reference_id'],
+                'item_type' => $entry['reference_type'],
+                'payment_type' => $entry['transaction_category'],
+                'total_amount' => (float) $entry['debit_amount'],
+                'razorpay_amount' => 0.0,
+                'credit_amount' => (float) $entry['debit_amount'],
+                'payment_status' => 'COMPLETED',
+                'created_at' => $entry['created_at'],
+            ])
+            ->values();
 
         return response()->json([
             'success' => true,
             'data' => [
-                'wallet_trans' => $transformed,
-                'order_trans' => $orderTrans,
-                'credit_ledger' => $ledgerEntries->items(),
+                'wallet_trans' => $walletTransactions,
+                'order_trans' => $orderTransactions,
+                'credit_ledger' => $entries,
             ],
             'meta' => [
-                'current_page' => $transactions->currentPage(),
-                'per_page' => $transactions->perPage(),
-                'total' => $transactions->total(),
-                'last_page' => $transactions->lastPage(),
-                'credit_ledger' => [
-                    'current_page' => $ledgerEntries->currentPage(),
-                    'per_page' => $ledgerEntries->perPage(),
-                    'total' => $ledgerEntries->total(),
-                    'last_page' => $ledgerEntries->lastPage(),
-                ],
+                'current_page' => $ledgerEntries->currentPage(),
+                'per_page' => $ledgerEntries->perPage(),
+                'total' => $ledgerEntries->total(),
+                'last_page' => $ledgerEntries->lastPage(),
             ],
         ]);
     }
