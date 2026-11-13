@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use App\Models\CustomerCredit;
+use App\Models\CreditLedger;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -60,6 +61,16 @@ class PaymentCreditFlowTest extends TestCase
 
         $credit = CustomerCredit::where('customer_id', $customer->customer_id)->first();
         $this->assertSame(0.0, (float) $credit->balance);
+        $this->assertDatabaseHas('credit_ledger', [
+            'customer_id' => $customer->customer_id,
+            'entry_type' => CreditLedger::TYPE_DEBIT,
+            'transaction_category' => CreditLedger::CATEGORY_POSTER_PURCHASE,
+            'debit_amount' => 1000,
+            'balance_before' => 1000,
+            'balance_after' => 0,
+            'reference_type' => 'poster',
+            'reference_id' => '1',
+        ]);
     }
 
     public function test_offer_posting_with_semi_credit_reduces_customer_balance_and_creates_payment(): void
@@ -141,6 +152,21 @@ class PaymentCreditFlowTest extends TestCase
         $credit = CustomerCredit::where('customer_id', $customer->customer_id)->first();
         $this->assertNotNull($credit);
         $this->assertSame(700.0, (float) $credit->balance);
+        $this->assertDatabaseHas('credit_ledger', [
+            'customer_id' => $customer->customer_id,
+            'entry_type' => CreditLedger::TYPE_CREDIT,
+            'transaction_category' => CreditLedger::CATEGORY_BONUS,
+            'credit_amount' => 1000,
+            'description' => 'Initial wallet credit',
+        ]);
+        $this->assertDatabaseHas('credit_ledger', [
+            'customer_id' => $customer->customer_id,
+            'entry_type' => CreditLedger::TYPE_DEBIT,
+            'transaction_category' => CreditLedger::CATEGORY_POSTER_PURCHASE,
+            'debit_amount' => 300,
+            'balance_before' => 1000,
+            'balance_after' => 700,
+        ]);
 
         $this->assertDatabaseHas('offers', [
             'temp_id' => 'temp-offer-2',

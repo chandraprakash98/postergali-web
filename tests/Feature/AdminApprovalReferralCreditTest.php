@@ -83,6 +83,15 @@ class AdminApprovalReferralCreditTest extends TestCase
 
         $credit = CustomerCredit::where('customer_id', $referrer->customer_id)->first();
         $this->assertSame(350.0, (float) $credit->balance);
+        $this->assertDatabaseHas('credit_ledger', [
+            'customer_id' => $referrer->customer_id,
+            'entry_type' => 'CREDIT',
+            'transaction_category' => 'BONUS',
+            'credit_amount' => 100,
+            'balance_before' => 250,
+            'balance_after' => 350,
+            'reference_type' => 'referral',
+        ]);
 
         $this->assertDatabaseHas('referrals', [
             'referral_mobile' => '9560213954',
@@ -94,5 +103,14 @@ class AdminApprovalReferralCreditTest extends TestCase
         $this->assertCount(1, $sentMessages);
         $this->assertSame('fcm_referrer_token_xyz', $sentMessages[0]['token']);
         $this->assertStringContainsString('Congratulations! 100 Poster Credits have been added to your account', $sentMessages[0]['body']);
+
+        $this->actingAs($admin)
+            ->postJson('/admin/ads/job/' . $job->id . '/status', [
+                'status' => 'approved',
+                'comment' => 'Looks good',
+            ])
+            ->assertRedirect();
+        $this->assertDatabaseCount('credit_ledger', 1);
+        $this->assertSame(350.0, (float) $credit->fresh()->balance);
     }
 }

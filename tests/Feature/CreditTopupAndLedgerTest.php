@@ -12,6 +12,7 @@ use App\Models\PaymentTransaction;
 use App\Models\Plan;
 use App\Models\User;
 use App\Services\Payments\CreditTopupService;
+use App\Services\CreditLedgerService;
 use Database\Seeders\CreditPackSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -861,6 +862,26 @@ class CreditTopupAndLedgerTest extends TestCase
             ->assertJsonCount(1, 'data.wallet_trans')
             ->assertJsonPath('data.order_trans.0.transaction_id', 'order_completed_history')
             ->assertJsonCount(1, 'data.order_trans');
+    }
+
+    public function test_credit_transactions_history_includes_non_payment_wallet_credits(): void
+    {
+        $entry = app(CreditLedgerService::class)->credit(
+            customerId: $this->customer->customer_id,
+            amount: 75,
+            description: 'Referral reward credit',
+            category: CreditLedger::CATEGORY_BONUS,
+            referenceType: 'referral',
+            referenceId: 'referral-123',
+            idempotencyKey: 'referral-reward-history-test',
+        );
+
+        $this->getJson('/api/v1/credits/transactions', $this->customerHeaders())
+            ->assertOk()
+            ->assertJsonPath('data.credit_ledger.0.ledger_uuid', $entry->ledger_uuid)
+            ->assertJsonPath('data.credit_ledger.0.transaction_category', CreditLedger::CATEGORY_BONUS)
+            ->assertJsonPath('data.credit_ledger.0.credit_amount', '75.00')
+            ->assertJsonPath('meta.credit_ledger.total', 1);
     }
 
     /**

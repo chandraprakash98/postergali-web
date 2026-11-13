@@ -197,6 +197,7 @@ class AdminCreditSettingsConfigurationTest extends TestCase
 
         $credit = CustomerCredit::where('customer_id', $customer->customer_id)->first();
         $this->assertSame(325.0, (float) $credit->balance);
+        $this->assertDatabaseCount('credit_ledger', 1);
         $this->assertSame('AFTEROTP', $customer->fresh()->influencer_bonus_coupon_id);
 
         $this->postJson('/api/v1/customers/check', [

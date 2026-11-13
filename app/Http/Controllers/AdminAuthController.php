@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\AdSubcategory;
 use App\Models\BatchRunLog;
 use App\Models\BonusCoupon;
+use App\Models\CreditLedger;
 use App\Models\CreditSetting;
 use App\Models\Customer;
-use App\Models\CustomerCredit;
 use App\Models\Referral;
 use App\Models\User;
 use App\Models\Job;
@@ -19,6 +19,7 @@ use App\Models\Payment;
 use App\Models\UgcReport;
 use App\Models\CouponIncentive;
 use App\Services\PaymentService;
+use App\Services\CreditLedgerService;
 
 use Carbon\Carbon;
 use App\Services\PostergaliAlphaBatchService;
@@ -603,23 +604,26 @@ class AdminAuthController extends Controller
             return;
         }
 
-        $credit = CustomerCredit::where('customer_id', $referrerCustomer->customer_id)->first();
-        if (!$credit) {
-            $credit = CustomerCredit::create([
-                'customer_id' => $referrerCustomer->customer_id,
-                'balance' => 0,
-            ]);
+        if (strtolower((string) $referral->status) === 'success') {
+            return;
         }
 
         $referralReward = CreditSetting::getReferralCredit();
-        $credit->balance = (float) $credit->balance + $referralReward;
-        $credit->save();
+        $ledgerEntry = app(CreditLedgerService::class)->credit(
+            customerId: $referrerCustomer->customer_id,
+            amount: $referralReward,
+            description: 'Referral reward credit',
+            category: CreditLedger::CATEGORY_BONUS,
+            referenceType: 'referral',
+            referenceId: (string) $referral->id,
+            idempotencyKey: "referral-reward:{$referral->id}",
+        );
 
         $referral->status = 'Success';
         $referral->save();
 
         // Dispatch congratulations push notification to the referrer customer
-        $this->sendReferralRewardNotification($referrerCustomer, (float) $credit->balance, $referralReward);
+        $this->sendReferralRewardNotification($referrerCustomer, (float) $ledgerEntry->balance_after, $referralReward);
     }
 
     /**

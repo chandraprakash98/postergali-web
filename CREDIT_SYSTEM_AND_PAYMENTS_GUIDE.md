@@ -504,6 +504,9 @@ Accept: application/json
 
 #### 4. View Payment Transactions History (Paginated)
 - **Route:** `GET /credits/transactions?page=1&per_page=20`
+- `data.credit_ledger` includes the customer's append-only wallet ledger, including
+  purchased credits, signup/influencer bonuses, referral rewards, poster purchases,
+  and refunds. Its pagination metadata is available under `meta.credit_ledger`.
 
 #### 5. View Single Transaction Details
 - **Route:** `GET /credits/transactions/{transaction_uuid}`

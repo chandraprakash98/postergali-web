@@ -42,6 +42,17 @@ class CustomerCouponCheckApiTest extends TestCase
             'customer_id' => $response->json('customer_id'),
             'balance' => 250.50,
         ]);
+        $this->assertDatabaseHas('credit_ledger', [
+            'customer_id' => $response->json('customer_id'),
+            'entry_type' => 'CREDIT',
+            'transaction_category' => 'BONUS',
+            'credit_amount' => 250.50,
+            'balance_before' => 0,
+            'balance_after' => 250.50,
+            'reference_type' => 'influencer_coupon',
+            'reference_id' => 'INFLUENCER25',
+            'description' => 'Influencer coupon credit: INFLUENCER25',
+        ]);
     }
 
     public function test_new_customer_gets_default_credit_and_invalid_coupon_is_reported(): void
@@ -57,6 +68,14 @@ class CustomerCouponCheckApiTest extends TestCase
             ->assertJsonPath('coupon_applied', false)
             ->assertJsonPath('coupon_code_status', 'invalid')
             ->assertJsonPath('message', 'Coupon code is invalid or inactive. Default credit assigned.');
+
+        $customer = Customer::where('mobile', '1111111118')->firstOrFail();
+        $this->assertDatabaseHas('credit_ledger', [
+            'customer_id' => $customer->customer_id,
+            'transaction_category' => 'BONUS',
+            'credit_amount' => 1000,
+            'description' => 'Signup credit',
+        ]);
     }
 
     public function test_new_customer_gets_default_credit_for_inactive_coupon(): void

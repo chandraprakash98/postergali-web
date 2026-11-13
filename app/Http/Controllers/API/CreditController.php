@@ -397,6 +397,10 @@ class CreditController extends Controller
             ->orderByDesc('id')
             ->paginate($perPage);
 
+        $ledgerEntries = CreditLedger::byCustomer($customer->customer_id)
+            ->orderByDesc('id')
+            ->paginate($perPage, ['*'], 'ledger_page');
+
         // Map cleanly without exposing provider secrets or internal json blobs
         $transformed = collect($transactions->items())->map(function (PaymentTransaction $txn) {
             return [
@@ -435,12 +439,19 @@ class CreditController extends Controller
             'data' => [
                 'wallet_trans' => $transformed,
                 'order_trans' => $orderTrans,
+                'credit_ledger' => $ledgerEntries->items(),
             ],
             'meta' => [
                 'current_page' => $transactions->currentPage(),
                 'per_page' => $transactions->perPage(),
                 'total' => $transactions->total(),
                 'last_page' => $transactions->lastPage(),
+                'credit_ledger' => [
+                    'current_page' => $ledgerEntries->currentPage(),
+                    'per_page' => $ledgerEntries->perPage(),
+                    'total' => $ledgerEntries->total(),
+                    'last_page' => $ledgerEntries->lastPage(),
+                ],
             ],
         ]);
     }

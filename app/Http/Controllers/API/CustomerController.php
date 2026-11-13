@@ -4,12 +4,14 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\BonusCoupon;
+use App\Models\CreditLedger;
 use App\Models\CreditSetting;
 use App\Models\Customer;
 use App\Models\CustomerCredit;
 use App\Models\Job;
 use App\Models\Offer;
 use App\Models\Payment;
+use App\Services\CreditLedgerService;
 use App\Services\FilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +20,7 @@ class CustomerController extends Controller
 {
     public function __construct(
         protected FilterService $filterService = new FilterService(),
+        protected CreditLedgerService $creditLedgerService = new CreditLedgerService(),
     ) {}
 
     public function check(Request $request)
@@ -57,10 +60,19 @@ class CustomerController extends Controller
                     'influencer_bonus_coupon_id' => $couponIsActive ? $couponCode : null,
                 ]);
 
-                $newCredit = CustomerCredit::create([
-                    'customer_id' => $newCustomer->customer_id,
-                    'balance' => $balance,
-                ]);
+                $description = $couponIsActive
+                    ? "Influencer coupon credit: {$couponCode}"
+                    : 'Signup credit';
+                $this->creditLedgerService->credit(
+                    customerId: $newCustomer->customer_id,
+                    amount: $balance,
+                    description: $description,
+                    category: CreditLedger::CATEGORY_BONUS,
+                    referenceType: $couponIsActive ? 'influencer_coupon' : 'signup_bonus',
+                    referenceId: $couponIsActive ? $couponCode : $newCustomer->customer_id,
+                    idempotencyKey: "signup-credit:{$newCustomer->customer_id}",
+                );
+                $newCredit = CustomerCredit::where('customer_id', $newCustomer->customer_id)->firstOrFail();
 
                 return [$newCustomer, $newCredit];
             });
@@ -127,11 +139,21 @@ class CustomerController extends Controller
                     $lockedCustomer->save();
                 }
 
+                $description = $couponApplied
+                    ? "Influencer coupon credit: {$couponCode}"
+                    : 'Signup credit';
+                $this->creditLedgerService->credit(
+                    customerId: $lockedCustomer->customer_id,
+                    amount: $balance,
+                    description: $description,
+                    category: CreditLedger::CATEGORY_BONUS,
+                    referenceType: $couponApplied ? 'influencer_coupon' : 'signup_bonus',
+                    referenceId: $couponApplied ? $couponCode : $lockedCustomer->customer_id,
+                    idempotencyKey: "signup-credit:{$lockedCustomer->customer_id}",
+                );
+
                 return [
-                    CustomerCredit::create([
-                        'customer_id' => $lockedCustomer->customer_id,
-                        'balance' => $balance,
-                    ]),
+                    CustomerCredit::where('customer_id', $lockedCustomer->customer_id)->firstOrFail(),
                     $couponApplied,
                     true,
                 ];

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\DTOs\PaymentData;
 use App\Models\Customer;
+use App\Models\CreditLedger;
 use App\Models\CustomerCredit;
 use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
@@ -105,7 +106,13 @@ class PaymentService
             // Deduct customer credit if applicable
             $creditAmount = $paymentData->creditAmount;
             if ($customerId && bccomp($creditAmount, '0.00', 2) > 0) {
-                $this->deductCustomerCredit($customerId, $creditAmount);
+                $this->deductCustomerCredit(
+                    $customerId,
+                    $creditAmount,
+                    $paymentData->jobOrOfferId,
+                    $paymentData->itemType,
+                    $paymentData->transactionId,
+                );
             }
 
             $paymentAttributes = $paymentData->toArray();
@@ -121,29 +128,41 @@ class PaymentService
     /**
      * Deduct customer credit with precision.
      */
-    public function deductCustomerCredit(string $customerId, string $amountToDeduct): CustomerCredit
+    public function deductCustomerCredit(
+        string $customerId,
+        string $amountToDeduct,
+        ?int $posterId = null,
+        ?string $posterType = null,
+        ?string $transactionId = null,
+    ): CustomerCredit
     {
         $credit = CustomerCredit::where('customer_id', $customerId)->lockForUpdate()->first();
 
         if (!$credit) {
-            $credit = CustomerCredit::create([
-                'customer_id' => $customerId,
-                'balance' => 1000.00,
-            ]);
+            app(CreditLedgerService::class)->credit(
+                customerId: $customerId,
+                amount: 1000,
+                description: 'Initial wallet credit',
+                category: CreditLedger::CATEGORY_BONUS,
+                referenceType: 'legacy_wallet_initialization',
+                referenceId: $customerId,
+                idempotencyKey: "legacy-initial-credit:{$customerId}",
+            );
         }
 
-        $currentBalance = number_format((float) $credit->balance, 2, '.', '');
-        $newBalance = bcsub($currentBalance, $amountToDeduct, 2);
+        app(CreditLedgerService::class)->debit(
+            customerId: $customerId,
+            amount: $amountToDeduct,
+            description: $posterType ? "Poster purchase ({$posterType})" : 'Poster purchase',
+            category: CreditLedger::CATEGORY_POSTER_PURCHASE,
+            referenceType: 'poster',
+            referenceId: $posterId !== null ? (string) $posterId : $transactionId,
+            idempotencyKey: $posterId !== null
+                ? "poster-purchase:{$customerId}:{$posterId}"
+                : ($transactionId !== null ? "poster-purchase:{$customerId}:{$transactionId}" : null),
+        );
 
-        // Don't go below 0
-        if (bccomp($newBalance, '0.00', 2) < 0) {
-            $newBalance = '0.00';
-        }
-
-        $credit->balance = (float) $newBalance;
-        $credit->save();
-
-        return $credit;
+        return CustomerCredit::where('customer_id', $customerId)->firstOrFail();
     }
 
     /**
@@ -180,20 +199,15 @@ class PaymentService
                 return $payment;
             }
 
-            $credit = CustomerCredit::where('customer_id', $customerId)
-                ->lockForUpdate()
-                ->first();
-
-            if (!$credit) {
-                $credit = CustomerCredit::create([
-                    'customer_id' => $customerId,
-                    'balance' => 0,
-                ]);
-            }
-
-            $currentBalance = number_format((float) $credit->balance, 2, '.', '');
-            $credit->balance = (float) bcadd($currentBalance, $refundAmount, 2);
-            $credit->save();
+            app(CreditLedgerService::class)->credit(
+                customerId: $customerId,
+                amount: $refundAmount,
+                description: 'Poster credit refund after rejection',
+                category: CreditLedger::CATEGORY_REFUND,
+                referenceType: 'poster_payment',
+                referenceId: (string) $payment->id,
+                idempotencyKey: "poster-refund:{$payment->id}",
+            );
 
             $payment->payment_status = Payment::STATUS_REFUNDED;
             $payment->save();

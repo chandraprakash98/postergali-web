@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Customer;
 use App\Models\CustomerCredit;
+use App\Models\CreditLedger;
 use App\Models\Job;
 use App\Models\Payment;
 use App\Models\User;
@@ -85,6 +86,14 @@ class AdminPosterCreditRefundTest extends TestCase
             'transaction_id' => 'transaction-wrong-customer',
             'payment_status' => Payment::STATUS_COMPLETED,
         ]);
+        $this->assertDatabaseHas('credit_ledger', [
+            'customer_id' => $customer->customer_id,
+            'entry_type' => CreditLedger::TYPE_CREDIT,
+            'transaction_category' => CreditLedger::CATEGORY_REFUND,
+            'credit_amount' => 100,
+            'balance_before' => 250,
+            'balance_after' => 350,
+        ]);
 
         $this->actingAs($admin)
             ->postJson('/admin/ads/job/' . $job->id . '/status', [
@@ -97,5 +106,6 @@ class AdminPosterCreditRefundTest extends TestCase
             'customer_id' => $customer->customer_id,
             'balance' => 350,
         ]);
+        $this->assertDatabaseCount('credit_ledger', 1);
     }
 }
