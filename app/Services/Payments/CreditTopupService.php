@@ -30,7 +30,8 @@ class CreditTopupService
         CreditPack|Plan $pack,
         ?string $idempotencyKey = null,
         ?string $gstnum = null,
-        ?bool $agstbusiness = null
+        ?bool $agstbusiness = null,
+        ?string $gstbusinessname = null
     ): array {
         $this->ensurePackIsActiveConsumable($pack);
 
@@ -47,7 +48,10 @@ class CreditTopupService
                 if ($agstbusiness !== null) {
                     $existing->agstbusiness = $agstbusiness;
                 }
-                if ($existing->isDirty(['gstnum', 'agstbusiness'])) {
+                if ($gstbusinessname !== null) {
+                    $existing->gstbusinessname = $gstbusinessname;
+                }
+                if ($existing->isDirty(['gstnum', 'agstbusiness', 'gstbusinessname'])) {
                     $existing->save();
                 }
 
@@ -79,6 +83,7 @@ class CreditTopupService
             'credit_pack_id' => $pack->id,
             'plan_id' => $pack->id,
             'gstnum' => $gstnum,
+            'gstbusinessname' => $gstbusinessname,
             'agstbusiness' => $agstbusiness,
             'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
             'amount' => $pack->price,
@@ -125,7 +130,8 @@ class CreditTopupService
         string $signature,
         ?string $idempotencyKey = null,
         ?string $gstnum = null,
-        ?bool $agstbusiness = null
+        ?bool $agstbusiness = null,
+        ?string $gstbusinessname = null
     ): PaymentTransaction {
         $this->ensurePackIsActiveConsumable($pack);
 
@@ -167,7 +173,8 @@ class CreditTopupService
             $paymentId,
             $idempotencyKey,
             $gstnum,
-            $agstbusiness
+            $agstbusiness,
+            $gstbusinessname
         ) {
             // Check if payment already processed by provider_payment_id
             $existing = PaymentTransaction::where('provider_payment_id', $paymentId)
@@ -227,6 +234,9 @@ class CreditTopupService
             if ($agstbusiness !== null) {
                 $transaction->agstbusiness = $agstbusiness;
             }
+            if ($gstbusinessname !== null) {
+                $transaction->gstbusinessname = $gstbusinessname;
+            }
             $transaction->provider_payment_id = $paymentId;
             $transaction->provider_product_id = $pack->product_id;
             $transaction->status = PaymentTransaction::STATUS_SUCCESS;
@@ -270,7 +280,8 @@ class CreditTopupService
         string $transactionReceiptOrJws,
         ?string $idempotencyKey = null,
         ?string $gstnum = null,
-        ?bool $agstbusiness = null
+        ?bool $agstbusiness = null,
+        ?string $gstbusinessname = null
     ): PaymentTransaction {
         $this->ensurePackIsActiveConsumable($pack);
 
@@ -327,7 +338,8 @@ class CreditTopupService
             $verifiedData,
             $idempotencyKey,
             $gstnum,
-            $agstbusiness
+            $agstbusiness,
+            $gstbusinessname
         ) {
             Log::info('[CreditTopup][AppleIAP] Step 3: Acquiring row lock & checking for existing transaction (Anti-Replay)', [
                 'customer_id' => $customer->customer_id,
@@ -392,6 +404,9 @@ class CreditTopupService
             }
             if ($agstbusiness !== null) {
                 $transaction->agstbusiness = $agstbusiness;
+            }
+            if ($gstbusinessname !== null) {
+                $transaction->gstbusinessname = $gstbusinessname;
             }
             $transaction->save();
 

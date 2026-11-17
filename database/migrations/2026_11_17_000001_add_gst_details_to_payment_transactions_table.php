@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::table('payment_transactions', function (Blueprint $table) {
             $table->string('gstnum')->nullable();
+            $table->string('gstbusinessname')->nullable();
             $table->boolean('agstbusiness')->nullable();
         });
     }
@@ -17,7 +18,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('payment_transactions', function (Blueprint $table) {
-            $table->dropColumn(['gstnum', 'agstbusiness']);
+            $table->dropColumn(['gstnum', 'gstbusinessname', 'agstbusiness']);
         });
     }
 };

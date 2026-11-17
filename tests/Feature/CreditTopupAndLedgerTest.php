@@ -614,6 +614,7 @@ class CreditTopupAndLedgerTest extends TestCase
             'payment_provider' => 'RAZORPAY',
             'action' => 'initiate',
             'gstnum' => '27ABCDE1234F1Z5',
+            'gstbusinessname' => 'PosterGali Pvt Ltd',
             'agstbusiness' => true,
         ], $this->customerHeaders())
             ->assertStatus(200);
@@ -621,6 +622,7 @@ class CreditTopupAndLedgerTest extends TestCase
         $this->assertDatabaseHas('payment_transactions', [
             'customer_id' => $this->customer->customer_id,
             'gstnum' => '27ABCDE1234F1Z5',
+            'gstbusinessname' => 'PosterGali Pvt Ltd',
             'agstbusiness' => true,
         ]);
     }

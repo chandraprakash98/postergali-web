@@ -33,6 +33,7 @@ class PaymentTransaction extends Model
         'credit_pack_id',
         'plan_id',
         'gstnum',
+        'gstbusinessname',
         'agstbusiness',
         'payment_provider',
         'amount',

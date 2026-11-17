@@ -119,6 +119,7 @@ class CreditController extends Controller
         $validated = $request->validate([
             'mobile_number' => ['sometimes', 'nullable', 'string'],
             'gstnum' => ['sometimes', 'nullable', 'string'],
+            'gstbusinessname' => ['sometimes', 'nullable', 'string'],
             'agstbusiness' => ['sometimes', 'nullable', 'boolean'],
             'package_id' => ['required_without:plan_code', 'nullable'],
             'plan_code' => ['required_without:package_id', 'nullable', 'string'],
@@ -188,7 +189,8 @@ class CreditController extends Controller
                         $plan,
                         $idempotencyKey,
                         $validated['gstnum'] ?? null,
-                        $validated['agstbusiness'] ?? null
+                        $validated['agstbusiness'] ?? null,
+                        $validated['gstbusinessname'] ?? null
                     );
 
                     Log::info('[CreditController][Razorpay] Order created and returned to client', [
@@ -220,7 +222,8 @@ class CreditController extends Controller
                     $validated['razorpay_signature'],
                     $idempotencyKey,
                     $validated['gstnum'] ?? null,
-                    $validated['agstbusiness'] ?? null
+                    $validated['agstbusiness'] ?? null,
+                    $validated['gstbusinessname'] ?? null
                 );
 
                 $currentBalance = CustomerCredit::where('customer_id', $customer->customer_id)->value('balance') ?? 0;
@@ -279,7 +282,8 @@ class CreditController extends Controller
                     $receiptData,
                     $idempotencyKey,
                     $validated['gstnum'] ?? null,
-                    $validated['agstbusiness'] ?? null
+                    $validated['agstbusiness'] ?? null,
+                    $validated['gstbusinessname'] ?? null
                 );
 
                 $currentBalance = CustomerCredit::where('customer_id', $customer->customer_id)->value('balance') ?? 0;
