@@ -118,6 +118,8 @@ class CreditController extends Controller
 
         $validated = $request->validate([
             'mobile_number' => ['sometimes', 'nullable', 'string'],
+            'gstnum' => ['sometimes', 'nullable', 'string'],
+            'agstbusiness' => ['sometimes', 'nullable', 'boolean'],
             'package_id' => ['required_without:plan_code', 'nullable'],
             'plan_code' => ['required_without:package_id', 'nullable', 'string'],
             'payment_provider' => ['required', 'string', 'in:RAZORPAY,APPLE_IAP,razorpay,apple_iap'],
@@ -181,7 +183,13 @@ class CreditController extends Controller
                 $action = strtolower($validated['action'] ?? ($isCompletion ? 'complete' : 'initiate'));
 
                 if ($action === 'initiate' || $action === 'create_order' || !$isCompletion) {
-                    $orderData = $this->topupService->initiateRazorpayOrder($customer, $plan, $idempotencyKey);
+                    $orderData = $this->topupService->initiateRazorpayOrder(
+                        $customer,
+                        $plan,
+                        $idempotencyKey,
+                        $validated['gstnum'] ?? null,
+                        $validated['agstbusiness'] ?? null
+                    );
 
                     Log::info('[CreditController][Razorpay] Order created and returned to client', [
                         'customer_id' => $customer->customer_id,
@@ -210,7 +218,9 @@ class CreditController extends Controller
                     $validated['razorpay_order_id'],
                     $validated['razorpay_payment_id'],
                     $validated['razorpay_signature'],
-                    $idempotencyKey
+                    $idempotencyKey,
+                    $validated['gstnum'] ?? null,
+                    $validated['agstbusiness'] ?? null
                 );
 
                 $currentBalance = CustomerCredit::where('customer_id', $customer->customer_id)->value('balance') ?? 0;
@@ -267,7 +277,9 @@ class CreditController extends Controller
                     $customer,
                     $plan,
                     $receiptData,
-                    $idempotencyKey
+                    $idempotencyKey,
+                    $validated['gstnum'] ?? null,
+                    $validated['agstbusiness'] ?? null
                 );
 
                 $currentBalance = CustomerCredit::where('customer_id', $customer->customer_id)->value('balance') ?? 0;

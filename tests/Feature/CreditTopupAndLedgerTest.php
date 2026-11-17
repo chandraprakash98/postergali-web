@@ -607,6 +607,24 @@ class CreditTopupAndLedgerTest extends TestCase
         ]);
     }
 
+    public function test_topup_accepts_and_saves_optional_gst_details(): void
+    {
+        $this->postJson('/api/v1/credits/topup', [
+            'package_id' => $this->consumablePlan->id,
+            'payment_provider' => 'RAZORPAY',
+            'action' => 'initiate',
+            'gstnum' => '27ABCDE1234F1Z5',
+            'agstbusiness' => true,
+        ], $this->customerHeaders())
+            ->assertStatus(200);
+
+        $this->assertDatabaseHas('payment_transactions', [
+            'customer_id' => $this->customer->customer_id,
+            'gstnum' => '27ABCDE1234F1Z5',
+            'agstbusiness' => true,
+        ]);
+    }
+
     /**
      * Test 10: Duplicate API request with same Idempotency-Key yields NO duplicate credits.
      */

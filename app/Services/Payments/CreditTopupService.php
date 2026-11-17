@@ -28,7 +28,9 @@ class CreditTopupService
     public function initiateRazorpayOrder(
         Customer $customer,
         CreditPack|Plan $pack,
-        ?string $idempotencyKey = null
+        ?string $idempotencyKey = null,
+        ?string $gstnum = null,
+        ?bool $agstbusiness = null
     ): array {
         $this->ensurePackIsActiveConsumable($pack);
 
@@ -39,6 +41,16 @@ class CreditTopupService
                 ->first();
 
             if ($existing) {
+                if ($gstnum !== null) {
+                    $existing->gstnum = $gstnum;
+                }
+                if ($agstbusiness !== null) {
+                    $existing->agstbusiness = $agstbusiness;
+                }
+                if ($existing->isDirty(['gstnum', 'agstbusiness'])) {
+                    $existing->save();
+                }
+
                 Log::info('Razorpay order initiation reused existing transaction', [
                     'customer_id' => $customer->customer_id,
                     'credit_pack_id' => $pack->id,
@@ -66,6 +78,8 @@ class CreditTopupService
             'customer_id' => $customer->customer_id,
             'credit_pack_id' => $pack->id,
             'plan_id' => $pack->id,
+            'gstnum' => $gstnum,
+            'agstbusiness' => $agstbusiness,
             'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
             'amount' => $pack->price,
             'currency' => $pack->currency ?? 'INR',
@@ -109,7 +123,9 @@ class CreditTopupService
         string $orderId,
         string $paymentId,
         string $signature,
-        ?string $idempotencyKey = null
+        ?string $idempotencyKey = null,
+        ?string $gstnum = null,
+        ?bool $agstbusiness = null
     ): PaymentTransaction {
         $this->ensurePackIsActiveConsumable($pack);
 
@@ -144,7 +160,15 @@ class CreditTopupService
         }
 
         // 2. Process database transaction with strict row locking & concurrency protection
-        $transaction = DB::transaction(function () use ($customer, $pack, $orderId, $paymentId, $idempotencyKey) {
+        $transaction = DB::transaction(function () use (
+            $customer,
+            $pack,
+            $orderId,
+            $paymentId,
+            $idempotencyKey,
+            $gstnum,
+            $agstbusiness
+        ) {
             // Check if payment already processed by provider_payment_id
             $existing = PaymentTransaction::where('provider_payment_id', $paymentId)
                 ->lockForUpdate()
@@ -197,6 +221,12 @@ class CreditTopupService
 
             $packTitle = $pack->name ?? $pack->plan_title ?? 'Credit Pack';
             $transaction->credit_pack_id = $pack->id;
+            if ($gstnum !== null) {
+                $transaction->gstnum = $gstnum;
+            }
+            if ($agstbusiness !== null) {
+                $transaction->agstbusiness = $agstbusiness;
+            }
             $transaction->provider_payment_id = $paymentId;
             $transaction->provider_product_id = $pack->product_id;
             $transaction->status = PaymentTransaction::STATUS_SUCCESS;
@@ -238,7 +268,9 @@ class CreditTopupService
         Customer $customer,
         CreditPack|Plan $pack,
         string $transactionReceiptOrJws,
-        ?string $idempotencyKey = null
+        ?string $idempotencyKey = null,
+        ?string $gstnum = null,
+        ?bool $agstbusiness = null
     ): PaymentTransaction {
         $this->ensurePackIsActiveConsumable($pack);
 
@@ -293,7 +325,9 @@ class CreditTopupService
             $providerTxnId,
             $originalTxnId,
             $verifiedData,
-            $idempotencyKey
+            $idempotencyKey,
+            $gstnum,
+            $agstbusiness
         ) {
             Log::info('[CreditTopup][AppleIAP] Step 3: Acquiring row lock & checking for existing transaction (Anti-Replay)', [
                 'customer_id' => $customer->customer_id,
@@ -353,6 +387,12 @@ class CreditTopupService
                 'raw_payload' => $verifiedData,
                 'paid_at' => now(),
             ]);
+            if ($gstnum !== null) {
+                $transaction->gstnum = $gstnum;
+            }
+            if ($agstbusiness !== null) {
+                $transaction->agstbusiness = $agstbusiness;
+            }
             $transaction->save();
 
             $packTitle = $pack->name ?? $pack->plan_title ?? 'Credit Pack';

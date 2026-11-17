@@ -99,6 +99,8 @@ CREATE TABLE `payment_transactions` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `transaction_uuid` char(36) NOT NULL,
   `customer_id` varchar(50) NOT NULL,
+  `gstnum` varchar(255) DEFAULT NULL,
+  `agstbusiness` tinyint(1) DEFAULT NULL,
   `plan_id` bigint unsigned NOT NULL,
   `payment_provider` varchar(30) NOT NULL,
   `amount` decimal(10,2) NOT NULL,
@@ -381,9 +383,13 @@ Accept: application/json
 {
   "package_id": 6,
   "payment_provider": "RAZORPAY",
-  "action": "initiate"
+  "action": "initiate",
+  "gstnum": "27ABCDE1234F1Z5",
+  "agstbusiness": true
 }
 ```
+`gstnum` (string) and `agstbusiness` (boolean) are optional and are saved with the
+payment transaction. They may also be sent in the completion request.
 *Response (`200 OK`):*
 ```json
 {

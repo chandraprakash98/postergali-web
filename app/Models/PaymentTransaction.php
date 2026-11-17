@@ -32,6 +32,8 @@ class PaymentTransaction extends Model
         'customer_id',
         'credit_pack_id',
         'plan_id',
+        'gstnum',
+        'agstbusiness',
         'payment_provider',
         'amount',
         'currency',
@@ -51,6 +53,7 @@ class PaymentTransaction extends Model
     ];
 
     protected $casts = [
+        'agstbusiness' => 'boolean',
         'amount' => 'decimal:2',
         'credits_to_add' => 'integer',
         'raw_payload' => 'array',
