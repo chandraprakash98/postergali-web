@@ -19,6 +19,11 @@ class AppleIapPaymentService
         $this->environment = (string) config('services.apple.environment', 'Sandbox');
     }
 
+    public function calculateGrossAmount(float $baseAmount): float
+    {
+        return round($baseAmount * 1.18, 2);
+    }
+
     /**
      * Verify an Apple IAP transaction token / JWS or receipt.
      *

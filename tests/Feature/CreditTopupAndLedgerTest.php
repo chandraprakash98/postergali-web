@@ -394,6 +394,7 @@ class CreditTopupAndLedgerTest extends TestCase
             'customer_id' => $this->customer->customer_id,
             'payment_provider' => PaymentTransaction::PROVIDER_APPLE_IAP,
             'provider_transaction_id' => $appleTxnId,
+            'amount' => 234.82,
             'status' => PaymentTransaction::STATUS_SUCCESS,
         ]);
 
@@ -575,6 +576,7 @@ class CreditTopupAndLedgerTest extends TestCase
             'customer_id' => $this->customer->customer_id,
             'payment_provider' => PaymentTransaction::PROVIDER_APPLE_IAP,
             'provider_transaction_id' => $appleTxnId,
+            'amount' => 234.82,
             'status' => PaymentTransaction::STATUS_SUCCESS,
         ]);
     }

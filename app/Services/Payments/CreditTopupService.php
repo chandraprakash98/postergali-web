@@ -377,7 +377,7 @@ class CreditTopupService
             Log::info('[CreditTopup][AppleIAP] Step 4: Recording successful payment transaction', [
                 'customer_id' => $customer->customer_id,
                 'provider_transaction_id' => $providerTxnId,
-                'amount' => (float) $pack->price,
+                'amount' => $this->appleIapService->calculateGrossAmount((float) $pack->price),
                 'credits_to_add' => (int) $pack->credits,
             ]);
 
@@ -388,7 +388,7 @@ class CreditTopupService
                 'credit_pack_id' => $pack->id,
                 'plan_id' => $pack->id,
                 'payment_provider' => PaymentTransaction::PROVIDER_APPLE_IAP,
-                'amount' => $pack->price,
+                'amount' => $this->appleIapService->calculateGrossAmount((float) $pack->price),
                 'currency' => $pack->currency ?? 'INR',
                 'credits_to_add' => (int) $pack->credits,
                 'provider_transaction_id' => $providerTxnId,
@@ -747,9 +747,13 @@ class CreditTopupService
         string $reason,
         ?string $idempotencyKey
     ): PaymentTransaction {
-        $chargedAmount = $provider === PaymentTransaction::PROVIDER_RAZORPAY
-            ? $this->razorpayService->calculateGrossAmount((float) $pack->price)
-            : (float) $pack->price;
+        $chargedAmount = match ($provider) {
+            PaymentTransaction::PROVIDER_RAZORPAY =>
+                $this->razorpayService->calculateGrossAmount((float) $pack->price),
+            PaymentTransaction::PROVIDER_APPLE_IAP =>
+                $this->appleIapService->calculateGrossAmount((float) $pack->price),
+            default => (float) $pack->price,
+        };
 
         return PaymentTransaction::create([
             'transaction_uuid' => (string) Str::uuid(),
