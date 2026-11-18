@@ -30,7 +30,10 @@ class RazorpayPaymentService
      */
     public function createOrder(Customer $customer, CreditPack|Plan $pack, ?string $receipt = null): array
     {
-        $amountInSubunits = (int) round((float) $pack->price * 100);
+        $grossAmount = $this->calculateGrossAmount((float) $pack->price);
+        $amountInSubunits = (int) round($grossAmount * 100);
+        $taxableAmount = round($grossAmount / 1.18, 2);
+        $taxAmount = round($grossAmount - $taxableAmount, 2);
 
         $payload = [
             'amount' => $amountInSubunits,
@@ -42,6 +45,10 @@ class RazorpayPaymentService
                 'credit_pack_id' => (string) $pack->id,
                 'pack_code' => (string) ($pack->pack_code ?? $pack->plan_code ?? ''),
                 'credits' => (string) $pack->credits,
+                'base_amount' => number_format((float) $pack->price, 2, '.', ''),
+                'tax_percent' => '18',
+                'tax_amount' => number_format($taxAmount, 2, '.', ''),
+                'gross_amount' => number_format($grossAmount, 2, '.', ''),
             ],
         ];
 
@@ -94,6 +101,11 @@ class RazorpayPaymentService
         ]);
 
         return $order;
+    }
+
+    public function calculateGrossAmount(float $baseAmount): float
+    {
+        return round($baseAmount * 1.18, 2);
     }
 
     /**

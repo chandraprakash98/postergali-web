@@ -223,6 +223,44 @@ class CreditTopupAndLedgerTest extends TestCase
             ])->assertStatus(403);
     }
 
+    public function test_razorpay_order_includes_18_percent_tax(): void
+    {
+        config([
+            'services.razorpay.key_id' => 'rzp_test_key',
+            'services.razorpay.key_secret' => 'rzp_test_secret',
+        ]);
+
+        Http::fake([
+            '*/orders' => Http::response([
+                'id' => 'order_tax_test',
+                'amount' => 23482,
+                'currency' => 'INR',
+                'status' => 'created',
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/v1/credits/topup', [
+            'package_id' => $this->consumablePlan->id,
+            'payment_provider' => 'RAZORPAY',
+            'action' => 'create_order',
+        ], $this->customerHeaders());
+
+        $response->assertStatus(200)
+            ->assertJsonPath('order.amount', 234.82);
+
+        Http::assertSent(function ($request): bool {
+            return str_ends_with($request->url(), '/orders')
+                && $request['amount'] === 23482
+                && $request['notes']['tax_percent'] === '18'
+                && $request['notes']['tax_amount'] === '35.82';
+        });
+
+        $this->assertDatabaseHas('payment_transactions', [
+            'provider_order_id' => 'order_tax_test',
+            'amount' => 234.82,
+        ]);
+    }
+
     /**
      * Test 6: Successful Razorpay payment processing using mocked verification.
      */

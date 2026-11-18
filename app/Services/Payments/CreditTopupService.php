@@ -76,6 +76,7 @@ class CreditTopupService
         }
 
         $order = $this->razorpayService->createOrder($customer, $pack);
+        $chargedAmount = $this->razorpayService->calculateGrossAmount((float) $pack->price);
 
         $transaction = PaymentTransaction::create([
             'transaction_uuid' => (string) Str::uuid(),
@@ -86,7 +87,7 @@ class CreditTopupService
             'gstbusinessname' => $gstbusinessname,
             'agstbusiness' => $agstbusiness,
             'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
-            'amount' => $pack->price,
+            'amount' => $chargedAmount,
             'currency' => $pack->currency ?? 'INR',
             'credits_to_add' => (int) $pack->credits,
             'provider_order_id' => $order['id'] ?? null,
@@ -218,7 +219,7 @@ class CreditTopupService
                     'credit_pack_id' => $pack->id,
                     'plan_id' => $pack->id,
                     'payment_provider' => PaymentTransaction::PROVIDER_RAZORPAY,
-                    'amount' => $pack->price,
+                    'amount' => $this->razorpayService->calculateGrossAmount((float) $pack->price),
                     'currency' => $pack->currency ?? 'INR',
                     'credits_to_add' => (int) $pack->credits,
                     'provider_order_id' => $orderId,
@@ -746,13 +747,17 @@ class CreditTopupService
         string $reason,
         ?string $idempotencyKey
     ): PaymentTransaction {
+        $chargedAmount = $provider === PaymentTransaction::PROVIDER_RAZORPAY
+            ? $this->razorpayService->calculateGrossAmount((float) $pack->price)
+            : (float) $pack->price;
+
         return PaymentTransaction::create([
             'transaction_uuid' => (string) Str::uuid(),
             'customer_id' => $customer->customer_id,
             'credit_pack_id' => $pack->id,
             'plan_id' => $pack->id,
             'payment_provider' => $provider,
-            'amount' => $pack->price,
+            'amount' => $chargedAmount,
             'currency' => $pack->currency ?? 'INR',
             'credits_to_add' => (int) $pack->credits,
             'provider_order_id' => $orderId,
