@@ -4,8 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>PosterGali - India's Hyperlocal Poster Bazaar</title>
+<meta name="description" content="PosterGali is India's hyperlocal poster platform. Find local jobs and post opportunities across your city and neighborhood.">
+<link rel="canonical" href="{{ url('/') }}">
 <link rel="icon" type="image/png" sizes="any" href="{{ asset('images/primarylogo.png') }}">
 <link rel="shortcut icon" type="image/png" href="{{ asset('images/primarylogo.png') }}">
+<link rel="apple-touch-icon" href="{{ asset('images/google-logo.png') }}">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PosterGali">
+<meta property="og:title" content="PosterGali - India's Hyperlocal Poster Bazaar">
+<meta property="og:description" content="Find local jobs and post opportunities across your city and neighborhood.">
+<meta property="og:url" content="{{ url('/') }}">
+<meta property="og:image" content="{{ asset('images/google-logo.png') }}">
+<meta property="og:image:width" content="1400">
+<meta property="og:image:height" content="1400">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="PosterGali - India's Hyperlocal Poster Bazaar">
+<meta name="twitter:description" content="Find local jobs and post opportunities across your city and neighborhood.">
+<meta name="twitter:image" content="{{ asset('images/google-logo.png') }}">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "{{ url('/') }}#organization",
+      "name": "PosterGali",
+      "url": "{{ url('/') }}",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "{{ asset('images/google-logo.png') }}",
+        "width": 1400,
+        "height": 1400
+      },
+      "sameAs": [
+        "https://www.facebook.com/postergali",
+        "https://www.instagram.com/postergali"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "{{ url('/') }}#website",
+      "url": "{{ url('/') }}",
+      "name": "PosterGali",
+      "publisher": {
+        "@id": "{{ url('/') }}#organization"
+      }
+    }
+  ]
+}
+</script>
 
 <!-- Google Fonts for Modern Display & Geometric Typography -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
