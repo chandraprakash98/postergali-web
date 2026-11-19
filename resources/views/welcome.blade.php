@@ -6,9 +6,13 @@
 <title>PosterGali - India's Hyperlocal Poster Bazaar</title>
 <meta name="description" content="PosterGali is India's hyperlocal poster platform. Find local jobs and post opportunities across your city and neighborhood.">
 <link rel="canonical" href="{{ url('/') }}">
-<link rel="icon" type="image/png" sizes="any" href="{{ asset('images/primarylogo.png') }}">
-<link rel="shortcut icon" type="image/png" href="{{ asset('images/primarylogo.png') }}">
-<link rel="apple-touch-icon" href="{{ asset('images/google-logo.png') }}">
+<link rel="icon" href="{{ asset('favicon.ico') }}" sizes="16x16 32x32 48x48">
+<link rel="icon" type="image/png" sizes="48x48" href="{{ asset('images/favicon-48.png') }}">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32.png') }}">
+<link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16.png') }}">
+<link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}">
+<link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PosterGali">
