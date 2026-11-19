@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>PosterGali - India's Hyperlocal Poster Bazaar</title>
+<link rel="icon" type="image/png" sizes="any" href="{{ asset('images/primarylogo.png') }}">
+<link rel="shortcut icon" type="image/png" href="{{ asset('images/primarylogo.png') }}">
 
 <!-- Google Fonts for Modern Display & Geometric Typography -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
