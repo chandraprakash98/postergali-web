@@ -135,13 +135,14 @@ class InvoiceService
             'sgst' => $sgst,
             'total_amount' => $amount,
             'company' => [
-                'name' => config('app.name', 'PosterGali'),
-                'tagline' => 'Connecting Local Businesses & Opportunities',
-                'support_email' => 'support@postergali.com',
-                'support_phone' => '+91 98765 43210',
+                'name' => 'UnityGrid Private Limited',
+                'tagline' => 'Apni Gali mein sab milta hai',
+                'support_email' => 'contact@postergali.com',
+                'support_phone' => '+918149624125',
                 'website' => url('/'),
-                'address' => 'PosterGali Services Private Limited, Sector 62, Noida, Uttar Pradesh, 201309',
-                'gstin' => '07AABCP1234F1Z5',
+                'address' => 'R 202 ROSELAND RESIDENCY, GATE NO4, PIMPLE SAUDAGAR, Sangavi, Pune, Pune City, Maharashtra, India, 411027',
+                'gstin' => '27AADCU9540M1ZR',
+                'logo' => public_path('images/primarylogo.png'),
             ],
         ];
 
@@ -271,11 +272,24 @@ class InvoiceService
             );
         }
 
+        $gstTransaction = $customer->paymentTransactions()
+            ->where(function ($query) {
+                $query->whereNotNull('gstnum')
+                    ->orWhereNotNull('gstbusinessname');
+            })
+            ->orderByDesc('paid_at')
+            ->orderByDesc('id')
+            ->first();
+
         $invoiceData = [
             'invoice_number' => 'INV-' . $customer->customer_id . '-' . date('YmdHis'),
             'generated_at' => now()->format('d M Y, h:i A'),
             'issue_date' => now()->format('d M Y'),
             'customer' => $customer,
+            'gst_details' => [
+                'gstnum' => $gstTransaction?->gstnum,
+                'gstbusinessname' => $gstTransaction?->gstbusinessname,
+            ],
             'credit_balance' => $creditBalance,
             'payments' => $payments,
             'totals' => [
@@ -285,13 +299,14 @@ class InvoiceService
                 'count' => $payments->count(),
             ],
             'company' => [
-                'name' => config('app.name', 'PosterGali'),
-                'tagline' => 'Connecting Local Businesses & Opportunities',
-                'support_email' => 'support@postergali.com',
-                'support_phone' => '+91 98765 43210',
+                'name' => 'UnityGrid Private Limited',
+                'tagline' => 'Apni Gali mein sab milta hai',
+                'support_email' => 'contact@postergali.com',
+                'support_phone' => '+918149624125',
                 'website' => url('/'),
-                'address' => 'PosterGali Services, Sector 62, Noida, Uttar Pradesh, 201309',
-                'gstin' => '07AABCP1234F1Z5',
+                'address' => 'R 202 ROSELAND RESIDENCY, GATE NO4, PIMPLE SAUDAGAR, Sangavi, Pune, Pune City, Maharashtra, India, 411027',
+                'gstin' => '27AADCU9540M1ZR',
+                'logo' => public_path('images/primarylogo.png'),
             ],
         ];
 

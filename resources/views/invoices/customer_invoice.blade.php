@@ -34,6 +34,12 @@
             margin: 0 0 4px 0;
             text-transform: uppercase;
         }
+        .brand-logo {
+            width: 170px;
+            max-height: 82px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
         .brand-subtitle {
             font-size: 9px;
             color: #64748b;
@@ -232,7 +238,11 @@
     <table class="header-table">
         <tr>
             <td style="width: 55%;">
-                <div class="brand-title">{{ $company['name'] }}</div>
+                @if (!empty($company['logo']))
+                    <img class="brand-logo" src="{{ $company['logo'] }}" alt="PosterGali"/>
+                @else
+                    <div class="brand-title">{{ $company['name'] }}</div>
+                @endif
                 <div class="brand-subtitle">{{ $company['tagline'] }}</div>
                 <div class="company-info">
                     {{ $company['address'] }}<br/>
@@ -270,6 +280,18 @@
                         <span class="info-label">Customer Since:</span>
                         <span class="info-value">{{ $customer->created_at ? $customer->created_at->format('d M Y') : 'N/A' }}</span>
                     </div>
+                    @if (!empty($gst_details['gstbusinessname']))
+                    <div class="info-row">
+                        <span class="info-label">GST Business Name:</span>
+                        <span class="info-value">{{ $gst_details['gstbusinessname'] }}</span>
+                    </div>
+                    @endif
+                    @if (!empty($gst_details['gstnum']))
+                    <div class="info-row">
+                        <span class="info-label">GST Number:</span>
+                        <span class="info-value">{{ $gst_details['gstnum'] }}</span>
+                    </div>
+                    @endif
                 </div>
             </td>
             <td style="width: 4%;"></td>
@@ -384,9 +406,9 @@
 
     <!-- Footer Section -->
     <div class="footer">
-        <p>Thank you for choosing <strong>{{ $company['name'] }}</strong> for your business and hiring needs.</p>
+        <p><strong>{{ $company['name'] }}</strong> &bull; {{ $company['address'] }} &bull; GSTIN: {{ $company['gstin'] }}</p>
         <p>For any billing inquiries, please contact our support team at {{ $company['support_email'] }} or call {{ $company['support_phone'] }}.</p>
-        <p><em>PosterGali Technologies &copy; {{ date('Y') }} &bull; All Rights Reserved.</em></p>
+        <p><em>Thank you for choosing {{ $company['name'] }} &copy; {{ date('Y') }} &bull; All Rights Reserved.</em></p>
     </div>
 
 </body>

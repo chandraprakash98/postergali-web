@@ -34,6 +34,12 @@
             margin: 0 0 4px 0;
             text-transform: uppercase;
         }
+        .brand-logo {
+            width: 170px;
+            max-height: 82px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
         .brand-subtitle {
             font-size: 9.5px;
             color: #64748b;
@@ -271,7 +277,11 @@
     <table class="header-table">
         <tr>
             <td style="width: 55%;">
-                <div class="brand-title">{{ $company['name'] }}</div>
+                @if (!empty($company['logo']))
+                    <img class="brand-logo" src="{{ $company['logo'] }}" alt="PosterGali"/>
+                @else
+                    <div class="brand-title">{{ $company['name'] }}</div>
+                @endif
                 <div class="brand-subtitle">{{ $company['tagline'] }}</div>
                 <div class="company-info">
                     {{ $company['address'] }}<br/>
@@ -309,6 +319,18 @@
                         <span class="info-label">Wallet Balance:</span>
                         <span class="info-value">{{ number_format($credit_balance, 2) }} Credits</span>
                     </div>
+                    @if (!empty($transaction->gstbusinessname))
+                    <div class="info-row">
+                        <span class="info-label">GST Business Name:</span>
+                        <span class="info-value">{{ $transaction->gstbusinessname }}</span>
+                    </div>
+                    @endif
+                    @if (!empty($transaction->gstnum))
+                    <div class="info-row">
+                        <span class="info-label">GST Number:</span>
+                        <span class="info-value">{{ $transaction->gstnum }}</span>
+                    </div>
+                    @endif
                     <div class="info-row">
                         <span class="info-label">Place of Supply:</span>
                         <span class="info-value">Uttar Pradesh (09)</span>
@@ -441,8 +463,8 @@
 
     <!-- Footer -->
     <div class="footer">
-        <p><strong>PosterGali Services Private Limited</strong> &bull; Sector 62, Noida, Uttar Pradesh, 201309 &bull; GSTIN: 07AABCP1234F1Z5</p>
-        <p>Thank you for choosing PosterGali. For invoice queries, please write to support@postergali.com quoting Invoice # {{ $invoice_number }}.</p>
+        <p><strong>{{ $company['name'] }}</strong> &bull; {{ $company['address'] }} &bull; GSTIN: {{ $company['gstin'] }}</p>
+        <p>Thank you for choosing {{ $company['name'] }}. For invoice queries, please write to {{ $company['support_email'] }} quoting Invoice # {{ $invoice_number }}.</p>
         <p>This is an electronically generated document and does not require a physical signature.</p>
     </div>
 
