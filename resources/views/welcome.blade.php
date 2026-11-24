@@ -1,3 +1,4 @@
+@php($playStoreUrl = 'https://play.google.com/store/apps/details?id=com.postergali.postergali')
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -193,7 +194,8 @@
             <!-- Left Card: Google Play Store -->
             <div class="qr-store-card qr-card-play">
                 <div class="qr-code-box">
-                    <svg class="qr-code-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <img class="qr-code-svg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;margin=0&amp;data={{ rawurlencode($playStoreUrl) }}" alt="Scan to open PosterGali on Google Play">
+                    <svg class="qr-code-placeholder" style="display: none;" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <!-- Corner bracket alignment markers -->
                         <path d="M14 44V18C14 15.7909 15.7909 14 18 14H44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
                         <path d="M156 14H182C184.209 14 186 15.7909 186 18V44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
@@ -261,7 +263,8 @@
             <!-- Right Card: Apple App Store -->
             <div class="qr-store-card qr-card-apple">
                 <div class="qr-code-box">
-                    <svg class="qr-code-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <img class="qr-code-svg" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;margin=0&amp;data={{ rawurlencode($playStoreUrl) }}" alt="Scan to open PosterGali on Google Play">
+                    <svg class="qr-code-placeholder" style="display: none;" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <!-- Corner bracket alignment markers -->
                         <path d="M14 44V18C14 15.7909 15.7909 14 18 14H44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
                         <path d="M156 14H182C184.209 14 186 15.7909 186 18V44" stroke="#111111" stroke-width="5.5" stroke-linecap="round"/>
